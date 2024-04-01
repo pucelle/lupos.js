@@ -1,0 +1,8 @@
+node_modules
+.vscode
+src
+test
+tsconfig.json
+typedoc.json
+README.md
+*.tgz
