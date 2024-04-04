@@ -1,16 +1,8 @@
 import {DependencyTracker, EventFirer, FrameQueue} from '@pucelle/ff'
-import type {ComponentStyle} from './style'
+import {ensureComponentStyle, type ComponentStyle} from './style'
 import {getComponentFromElement} from './from-element'
-import {ContentSlot, ContentPosition, ContentPositionType, TemplateResult, CompiledTemplateResult} from '../template'
-
-
-/** 
- * Context is the scope when compiling a template.
- * When uses `render` or `renderComponent`, you can choose to pass a context parameter,
- * So the `@click=${eventHandler}` can capture right context.
- * Context may be `null`, in this senoario current template should be context-free.
- */
-export type Context = Component | null
+import {ContentSlot, ContentPosition, ContentPositionType, CompiledTemplateResult} from '../template'
+import {ComponentConstructor, RenderResult} from './types'
 
 
 export interface ComponentEvents {
@@ -86,21 +78,15 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> {
 	 */
 	static style: ComponentStyle | null = null
 
-
-	/** The root element of component. */
-	readonly el: Element
-
-	/**
-	 * Caches slot elements which is marked as `:slot="slotName"`.
-	 * You should re-define the detailed type like `{name1: Element[], ...}` in derived components.
-	 */
-	readonly slots: Record<string, Element[]> = {}
 	
 	/** 
 	 * Help to identify the create orders of component.
 	 * Only for internal usages.
 	 */
-	protected readonly incrementalId: number = IncrementalId++
+	readonly incrementalId: number = IncrementalId++
+
+	/** The root element of component. */
+	readonly el: Element
 
 	/* Whether current component was connected into a document. */
 	protected connected: boolean = false
@@ -108,13 +94,20 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> {
 	/** Help to patch render result. */
 	protected readonly rootContentSlot: ContentSlot
 
-	constructor(el: Element, properties: Record<string, any> = {}) {
+	/**
+	 * Caches slot elements which is marked as `:slot="slotName"`.
+	 * You should re-define the detailed type like `{name1: Element[], ...}` in derived components.
+	 */
+	protected readonly slots: Record<string, Element[]> = {}
+
+	constructor(properties: Record<string, any> = {}, el: Element = document.createElement('div')) {
 		super()
 
 		this.el = el
-		Object.assign(this, properties)
 		this.rootContentSlot = new ContentSlot(new ContentPosition(ContentPositionType.AfterContentBegin, this.el), this)
+		Object.assign(this, properties)
 
+		ensureComponentStyle(this.constructor as ComponentConstructor)
 		ComponentsNotReadySet.add(this)
 		this.onCreated()
 	}
@@ -194,25 +187,6 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> {
 		}) as Promise<void>
 	}
 
-	/** Append current element into a container, and connect. */
-	appendTo(container: Element) {
-		container.append(this.el)
-		
-		if (this.el.ownerDocument) {
-			this.connect()
-		}
-	}
-
-	/** Insert current element before an element, and connect. */
-	insertBefore(sibling: Element) {
-		sibling.before(this.el)
-	}
-
-	/** Insert current element after an element, and connect. */
-	insertAfter(sibling: Element) {
-		sibling.after(this.el)
-	}
-
 	/** 
 	 * Connect current component to make it responsive.
 	 * 
@@ -277,7 +251,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> {
 			result = null
 			console.warn(err)
 		}
-		finally{
+		finally {
 			DependencyTracker.endTrack()
 		}
 
@@ -292,7 +266,48 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> {
 	 * You can choose to not overwrite `render()` to keep it returns `null`,
 	 * when you don't want to render any child nodes.
 	 */
-	protected render(): TemplateResult | TemplateResult[] | CompiledTemplateResult | CompiledTemplateResult[] | string | null {
+	protected render(): RenderResult {
 		return null
+	}
+	
+	/** Append current element into a container, and connect. */
+	appendTo(container: Element) {
+		container.append(this.el)
+		
+		if (this.el.ownerDocument) {
+			this.connect()
+		}
+	}
+
+	/** Insert current element before an element, and connect. */
+	insertBefore(sibling: Element) {
+		sibling.before(this.el)
+
+		if (this.el.ownerDocument) {
+			this.connect()
+		}
+	}
+
+	/** Insert current element after an element, and connect. */
+	insertAfter(sibling: Element) {
+		sibling.after(this.el)
+
+		if (this.el.ownerDocument) {
+			this.connect()
+		}
+	}
+
+	/** Remove element from document, and disconnect. */
+	remove() {
+		this.el.remove()
+		this.disconnect()
+	}
+}
+
+
+// For localhost debugging.
+if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+	(Component as any).prototype.onCreated = function() {
+		this.el.setAttribute('com', this.constructor.name)
 	}
 }

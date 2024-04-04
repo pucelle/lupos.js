@@ -1,0 +1,62 @@
+import {Watcher} from '@pucelle/ff'
+import {TemplateResult} from '../template'
+import {ComponentConstructor} from './types'
+
+
+/** Type of the values returned from `Component.style()`. */
+export type ComponentStyle = TemplateResult | (() => TemplateResult)
+
+
+/** Caches component constructors that already applied style. */
+const ComponentStyleAndTagMap: WeakSet<ComponentConstructor> = new WeakSet()
+
+
+/** 
+ * Call after any instance of component constructor created,
+ * to ensure it's relied styles appended into document.
+ */
+export function ensureComponentStyle(Com: ComponentConstructor) {
+	if (Com.style && !ComponentStyleAndTagMap.has(Com)) {
+		createStyleElement(Com.style, Com.name)
+	}
+
+	ComponentStyleAndTagMap.add(Com)
+}
+
+
+/** 
+ * Create <style> element and insert it into document head.
+ * `identifyName` should be `global` for global style.
+ * Always insert it into before any script tags.
+ * So you may put overwritten styles after script tag to avoid conflict.
+ */
+function createStyleElement(style: ComponentStyle, identifyName: string) {
+	let styleTag = document.createElement('style')
+	styleTag.setAttribute('name', identifyName)
+
+	Watcher.watchImmediately(() => getStyleContent(style), value => {
+		styleTag.textContent = value
+	})
+	
+	let scriptTag = document.head.querySelector('script')
+	document.head.insertBefore(styleTag, scriptTag)
+}
+
+
+/** Get style text from static style property. */
+function getStyleContent(style: ComponentStyle): string {
+	if (typeof style === 'function') {
+		style = style()
+	}
+
+	return String(style)
+}
+
+
+/** 
+ * Add a global style. compare to normal style codes, it can use variables and can be updated dynamically.
+ * - `style`: A string, css`...`, or a function return preceding.
+ */
+export function addGlobalStyle(style: ComponentStyle) {
+	createStyleElement(style, 'global')
+}

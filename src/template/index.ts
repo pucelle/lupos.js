@@ -1,4 +1,4 @@
-export * from './apis'
+export * from './apis-bridge'
 export * from './content-slot'
 export * from './content-position'
 export * from './template'

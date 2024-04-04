@@ -10,7 +10,7 @@ export interface TemplateInitResult {
 	/** End inner position, indicate the end edge of current content. */
 	endInnerPosition: ContentPosition<ContentEndInnerPositionType>
 
-	update: () => void
+	update: (values: any[]) => void
 	destroy?: () => void
 }
 

@@ -1,13 +1,6 @@
-import type {Component} from './component'
 import {addElementComponentMap, getComponentFromElement} from './from-element'
-import {ComponentStyle} from './style'
+import {ComponentConstructor} from './types'
 
-
-/** Constructor of component. */
-interface ComponentConstructor {
-	style: ComponentStyle | null
-	new(...args: any[]): Component
-}
 
 /** Map custom element property to component property. */
 type PropertyMapOf<T extends ComponentConstructor> = Record<string, keyof InstanceType<T> | [keyof InstanceType<T>, PropertyFormatter]>
@@ -73,7 +66,7 @@ function onConnected(el: HTMLElement) {
 		let {Com, propertyMap} = CustomElementConstructorMap.get(el.localName)!
 		let props = makeProperties(el, propertyMap)
 
-		com = new Com(el, props)
+		com = new Com(props, el)
 		addElementComponentMap(el, com)
 	}
 }
