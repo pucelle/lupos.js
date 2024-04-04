@@ -1,5 +1,5 @@
 import type {Component} from './component'
-import {hasComponentFromElement} from './from-element'
+import {addElementComponentMap, getComponentFromElement} from './from-element'
 import {ComponentStyle} from './style'
 
 
@@ -20,16 +20,18 @@ const CustomElementConstructorMap: Map<string, {Com: ComponentConstructor, prope
 
 /**
  * Defines a custom element which will initialize specified component.
+ * - `name`: The custom element name.
+ * - `Com`: The Component class constructor.
+ * - `propertyMap`: A map, which's key is custom element attribute name, and value is component property,
+ *   or `[component property, formatter]`. Frequently used formatters can be `Number`, `String`, `JSON.parse`.
  * 
  * Note normally only when working with pure HTML codes,
  * you should define an custom element for initializing a component there.
- * Otherwise just reference a component in a template or new it directly.
+ * Otherwise just refer a component in a template or new it directly.
  * 
- * - `name`: The custom element name.
- * - `Com`: The Component class constructor.
- * - `propertyMap`: A map, which's key is custom element attribute name,
- * 	  and value is component property, or `[component property, formatter]`.
- *    Frequently used formatters can be `Number`, `String`, `JSON.parse`.
+ * Defining custom elements gains an additional benefit:
+ * - the component will be automatically `disconnected` if the element is disconnected from document.
+ * - same action with `connected`.
  */
 export function defineCustomElement<T extends ComponentConstructor>(name: string, Com: T, propertyMap: PropertyMapOf<T> = {}) {
 	if (!name.includes('-')) {
@@ -61,16 +63,19 @@ function defineCallbacks(name: string) {
 
 /** Enqueue connection for an element. */
 function onConnected(el: HTMLElement) {
+	let com = getComponentFromElement(el)
 
 	// Component instance is created.
-	if (hasComponentFromElement(el)) {
-		return
+	if (com) {
+		com.connect()
 	}
+	else {
+		let {Com, propertyMap} = CustomElementConstructorMap.get(el.localName)!
+		let props = makeProperties(el, propertyMap)
 
-	let {Com, propertyMap} = CustomElementConstructorMap.get(el.localName)!
-	let props = makeProperties(el, propertyMap)
-
-	new Com(el, props)
+		com = new Com(el, props)
+		addElementComponentMap(el, com)
+	}
 }
 
 
@@ -98,6 +103,9 @@ function makeProperties(el: HTMLElement, propertyMap: PropertyMapOf<any>): Recor
 
 /** Enqueue disconnection for an element. */
 function onDisconnected(el: HTMLElement) {
-	
+	let com = getComponentFromElement(el)
+	if (com) {
+		com.disconnect()
+	}
 }
 

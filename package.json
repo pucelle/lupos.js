@@ -17,7 +17,7 @@
 		"test": "jest"
 	},
 	"dependencies": {
-		"@pucelle/ff": "^1.4.0"
+		"@pucelle/ff": "^2.0.0"
 	},
 	"devDependencies": {
 		"@types/jest": "^26.0.20",
