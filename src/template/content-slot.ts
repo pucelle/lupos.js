@@ -1,5 +1,6 @@
-import {ContentPosition} from './contant-position'
-import {TemplateResult} from './template-result'
+import {ContentPosition, ContentPositionType, ContentStartOuterPositionType} from './content-position'
+import {Template} from './template'
+import {CompiledTemplateResult} from './template-result-compiled'
 
 
 /** Contents that can be included in a `<tag>${...}<.tag>`. */
@@ -14,42 +15,79 @@ export enum SlotContentType {
 export class ContentSlot {
 
 	/** Start outer position, indicate where to put content. */
-	private startOuterPosition: ContentPosition
+	private readonly startOuterPosition: ContentPosition<ContentStartOuterPositionType>
 
+	private readonly context: any
 	private contentType: SlotContentType | null = null
-	private content: TemplateResult | TemplateResult[] | Text | null = null
+	private content: Template | Template[] | Text | null = null
 
-	constructor(startOuterPosition: ContentPosition, knownType: SlotContentType | null = null) {
+	constructor(startOuterPosition: ContentPosition<ContentStartOuterPositionType>, context: any, knownType: SlotContentType | null = null) {
 		this.startOuterPosition = startOuterPosition
+		this.content = context
 		this.contentType = knownType
 	}
 
-	/** Get current content. */
-	getContent(): TemplateResult | TemplateResult[] | Text | null {
-		return this.content
+	/** 
+	 * Try to get parent element.
+	 * Can get only when have a slibing slot in the start position,
+	 * which means: either `getLastNodeClosest()` or `getParentElement()` must exist.
+	 */
+	tryGetParentElement(): Element | null {
+		let node = this.getLastNodeClosest()
+		if (node) {
+			return node.parentElement
+		}
+		
+		if (this.startOuterPosition.type === ContentPositionType.AfterSlot) {
+			return (this.startOuterPosition.target as ContentSlot).tryGetParentElement()
+		}
+		else {
+			return null
+		}
 	}
 
-	/** Get last node of the all the contents in current slot. */
-	getLastNode(): Node | null {
+	/** Get last node of the all the contents that inside of current slot. */
+	getLastNode(): ChildNode | null {
 		if (this.contentType === SlotContentType.Template) {
-			return (this.content as TemplateResult).getLastNode()
+			return (this.content as Template).getLastNode()
 		}
 		else if (this.contentType === SlotContentType.TemplateArray) {
-			if ((this.content as TemplateResult[]).length > 0) {
-				let len = (this.content as TemplateResult[]).length
+			if ((this.content as Template[]).length > 0) {
+				let len = (this.content as Template[]).length
 				for (let i = len - 1; i >= 0; i--) {
-					let node = (this.content as TemplateResult[])[i].getLastNode()
+					let node = (this.content as Template[])[i].getLastNode()
 					if (node) {
 						return node
 					}
 				}
 			}
+
+			return null
 		}
 		else {
-			return this.content as Text
+			return this.content as Text | null
+		}
+	}
+
+	/** 
+	 * Try to get last node inside, if miss,
+	 * try to find next node exactly before current slot.
+	 */
+	getLastNodeClosest(): ChildNode | null {
+		let node = this.getLastNode()
+		if (node) {
+			return node
 		}
 
-		return null
+		if (this.startOuterPosition.type === ContentPositionType.After) {
+			return node
+		}
+		else if (this.startOuterPosition.type === ContentPositionType.AfterSlot) {
+			return (this.startOuterPosition.target as ContentSlot).getLastNodeClosest()
+		}
+		else {
+			return null
+		}
 	}
 
 	update(value: unknown) {
@@ -63,11 +101,11 @@ export class ContentSlot {
 
 		switch (newContentType) {
 			case SlotContentType.Template:
-				this.updateTemplate(value as TemplateResult)
+				this.updateTemplate(value as CompiledTemplateResult)
 				break
 
 			case SlotContentType.TemplateArray:
-				this.updateTemplateArray(value as TemplateResult[])
+				this.updateTemplateArray(value as CompiledTemplateResult[])
 				break
 
 			case SlotContentType.Text:
@@ -76,7 +114,7 @@ export class ContentSlot {
 	}
 
 	private recognizeContentType(value: unknown): SlotContentType {
-		if (value instanceof TemplateResult) {
+		if (value instanceof CompiledTemplateResult) {
 			return SlotContentType.Template
 		}
 		else if (Array.isArray(value)) {
@@ -88,99 +126,107 @@ export class ContentSlot {
 	}
 
 	private clearOldContent() {
-		let contentType = this.contentType
+		if (!this.content) {
+			return
+		}
 
-		if (contentType === SlotContentType.Template) {
-			(this.content as TemplateResult).remove()
-		}
-		else if (contentType === SlotContentType.TemplateArray) {
-			for (let template of this.content as TemplateResult[]) {
-				template.remove()
-			}
-		}
-		else if (contentType === SlotContentType.Text) {
-			if (this.content) {
-				(this.content as Text).remove()
+		let lastNode = (this.content as Template).getLastNode()
+		if (lastNode) {
+			for (let node of this.startOuterPosition.walkNodesUntil(lastNode)) {
+				node.remove()
 			}
 		}
 
 		this.content = null
 	}
 
-	updateTemplate(result: TemplateResult) {
-		// One issue when reusing old template - image will keep old appearance until the new image loaded.
-		// We can partly fix this by implementing a binding API `:src`.
-
-		let oldTemplate = this.content as Template | null
-		if (oldTemplate && oldTemplate.canPatchBy(result)) {
-			oldTemplate.patch(result)
+	updateTemplate(tr: CompiledTemplateResult) {
+		let oldT = this.content as Template | null
+		if (oldT && oldT.maker === tr.maker) {
+			oldT.update(tr.values)
 		}
 		else {
-			if (oldTemplate) {
-				oldTemplate.remove()
-			}
+			this.clearOldContent()
 
-			let newTemplate = new Template(result, this.context)
-			this.anchor.insert(newTemplate.extractToFragment())
-			this.content = newTemplate
+			let newT = tr.maker.make(this.context)
+			this.startOuterPosition.insertAfter(...newT.walkNodes())
+			this.content = newT
 		}
 	}
 
-	updateTemplateArray(results: TemplateResult[]) {
-		let templates = this.content as Template[] | null
-		if (!templates) {
-			templates = this.content = []
+	updateTemplateArray(trs: CompiledTemplateResult[]) {
+		let oldTs = this.content as Template[] | null
+		if (!oldTs) {
+			oldTs = this.content = []
 		}
 
-		results = results.filter(result => result instanceof TemplateResult)
+		// Update shared part.
+		for (let i = 0; i < trs.length; i++) {
+			let oldT = i < oldTs.length ? oldTs[i] : null
+			let tr = trs[i]
 
-		// Updates shared part.
-		for (let i = 0; i < results.length; i++) {
-			let oldTemplate = i < templates.length ? templates[i] : null
-			let result = results[i]
-
-			if (oldTemplate?.canPatchBy(result)) {
-				oldTemplate.patch(result)
+			if (oldT && oldT.maker === tr.maker) {
+				oldT.update(tr.values)
 			}
 			else {
-				let newTemplate = new Template(result, this.context)
+				let newT = tr.maker.make(this.context)
+				let nextOldT = i + 1 < oldTs.length ? oldTs[i + 1] : null
 
-				if (oldTemplate) {
-					oldTemplate.replaceWith(newTemplate)
+				if (oldT) {
+					this.clearTemplate(oldT, nextOldT)
 				}
-				else {
-					this.anchor.insert(newTemplate.extractToFragment())
-				}
+	
+				this.insertTemplate(newT, nextOldT)
 
-				templates[i] = newTemplate
+				oldTs[i] = newT
 			}
 		}
 
-		// Removes rest templates.
-		if (results.length < templates.length) {
-			for (let i = templates.length - 1; i >= results.length; i--) {
-				templates.pop()!.remove()
+		// Remove rest part.
+		if (trs.length < oldTs.length) {
+			for (let i = trs.length; i < oldTs.length; i++) {
+				let oldT = oldTs[i]
+				let nextOldT = i + 1 < oldTs.length ? oldTs[i + 1] : null
+
+				this.clearTemplate(oldT, nextOldT)
 			}
 		}
+	}
+
+	private clearTemplate(t: Template, previousT: Template | null) {
+		let lastNode = t.getLastNode()
+		if (!lastNode) {
+			return
+		}
+
+		let position = previousT ? previousT.endInnerPosition : this.startOuterPosition
+		for (let node of position.walkNodesUntil(lastNode)) {
+			node.remove()
+		}
+	}
+
+	private insertTemplate(t: Template, previousT: Template | null) {
+		let position = previousT ? previousT.endInnerPosition : this.startOuterPosition
+		position.insertAfter(...t.walkNodes())
 	}
 
 	updateText(value: unknown) {
-		let textNode = this.content as Text | null
-		let text = value === null || value === undefined ? '' : trim(String(value))
+		let node = this.content as Text | null
+		let text = value === null || value === undefined ? '' : String(value).trim()
 
 		if (text) {
-			if (textNode) {
-				textNode.textContent = text
+			if (node) {
+				node.textContent = text
 			}
 			else {
-				textNode = document.createTextNode(text)
-				this.anchor.insert(textNode)
-				this.content = textNode
+				node = document.createTextNode(text)
+				this.startOuterPosition.insertAfter(node)
+				this.content = node
 			}
 		}
 		else {
-			if (textNode) {
-				textNode.textContent = ''
+			if (node) {
+				node.textContent = ''
 			}
 		}
 	}

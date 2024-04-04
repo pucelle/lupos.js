@@ -1,10 +1,7 @@
 import {DependencyTracker, EventFirer, FrameQueue} from '@pucelle/ff'
 import type {ComponentStyle} from './style'
 import {getComponentFromElement} from './from-element'
-import {TemplateResult} from '../template'
-import {Template} from '../template/template'
-import {ContentSlot} from '../template/content-slot'
-import {ContentPosition, ContentPositionType} from '../template/contant-position'
+import {ContentSlot, ContentPosition, ContentPositionType, TemplateResult, CompiledTemplateResult} from '../template'
 
 
 /** 
@@ -116,7 +113,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> {
 
 		this.el = el
 		Object.assign(this, properties)
-		this.rootContentSlot = new ContentSlot(new ContentPosition(ContentPositionType.BeforeEnd, this.el))
+		this.rootContentSlot = new ContentSlot(new ContentPosition(ContentPositionType.AfterContentBegin, this.el), this)
 
 		ComponentsNotReadySet.add(this)
 		this.onCreated()
@@ -271,10 +268,10 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> {
 		}
 		
 		DependencyTracker.beginTrack(this.enqueueUpdate, this)
-		let result: Template | Template[] | string | null
+		let result: CompiledTemplateResult | CompiledTemplateResult[] | string | null
 
 		try {
-			result = this.render() as Template | Template[] | string | null
+			result = this.render() as typeof result
 		}
 		catch (err) {
 			result = null
@@ -295,7 +292,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> {
 	 * You can choose to not overwrite `render()` to keep it returns `null`,
 	 * when you don't want to render any child nodes.
 	 */
-	protected render(): TemplateResult | Template | Template[] | string | null {
+	protected render(): TemplateResult | TemplateResult[] | CompiledTemplateResult | CompiledTemplateResult[] | string | null {
 		return null
 	}
 }

@@ -1,40 +1,46 @@
-import {ContentPosition, ContentEndPositionType} from './contant-position'
-import {TemplateResult} from './template-result'
+import {ContentPosition, ContentEndInnerPositionType, ContentPositionType} from './content-position'
+import {ContentSlot} from './content-slot'
+import {TemplateMaker, TemplateInitResult} from './template-maker'
 
 
-// Compiler compile a html`<div>...` to new `CompiledTemplate('<div>...', CompiledTemplateInit)`.
-export type TemplateInit = (templateEl: HTMLTemplateElement, context: any) => TemplateInitResult
+const DefaultDestroy = function(){}
 
-export interface TemplateInitResult {
-
-	/** End inner position, indicate the end edge of current content. */
-	endInnerPosition: ContentPosition<ContentEndPositionType>
-
-	update: () => void
-	destroy?: () => void
-}
-
-
-/** Compile from any html`...`. */
+/** Generate after a `TemplateClass` binded with a context. */
 export class Template {
 
-	private templateString: string
-	private templateEl: HTMLTemplateElement | null = null
-	private init: TemplateInit
+	private readonly templateEl: HTMLTemplateElement
+	readonly maker: TemplateMaker
+	readonly endInnerPosition: ContentPosition<ContentEndInnerPositionType>
+	readonly update: (values: any[]) => void
+	readonly destroy: () => void
 
-	constructor(templateString: string, init: TemplateInit) {
-		this.templateString = templateString
-		this.init = init
+	constructor(templateEl: HTMLTemplateElement, maker: TemplateMaker, initResult: TemplateInitResult) {
+		this.templateEl = templateEl
+		this.maker = maker
+
+		this.endInnerPosition = initResult.endInnerPosition
+		this.update = initResult.update
+		this.destroy = initResult.destroy || DefaultDestroy
 	}
 
-	/** Bind with a context to create a `CompiledTemplateResult`. */
-	create(context: any): TemplateResult {
-		if (!this.templateEl) {
-			this.templateEl = document.createElement('template')
-			this.templateEl.innerHTML = this.templateString
+	/** 
+	 * Get last node of the contents in current slot.
+	 * If have no fixed nodes, return last node of previois slot.
+	 */
+	getLastNode(): ChildNode | null {
+		if (this.endInnerPosition.type === ContentPositionType.After) {
+			return this.endInnerPosition.target as ChildNode
 		}
+		else if (this.endInnerPosition.type === ContentPositionType.AfterSlot) {
+			return (this.endInnerPosition.target as ContentSlot).getLastNode()
+		}
+		else {
+			return this.endInnerPosition.target as Element
+		}
+	}
 
-		let templateEl = this.templateEl.cloneNode(true) as HTMLTemplateElement
-		return new TemplateResult(this, templateEl, this.init(templateEl, context))
+	/** Can walk only when nodes exist in current template. */
+	walkNodes(): Iterable<ChildNode> {
+		return this.templateEl.content.childNodes
 	}
 }
