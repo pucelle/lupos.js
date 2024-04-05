@@ -4,11 +4,11 @@ import {ContentSlot} from './content-slot'
 /** Contents that can be included in a `<tag>${...}<.tag>`. */
 export enum ContentPositionType {
 
-	/** Start position collapse with start of container context range. */
+	/** Start position collapse with start of container content range. */
 	AfterContentBegin,
 
-	/** End position collapse with end of container context ranget. */
-	BeforeContextEnd,
+	/** End position collapse with end of container content ranget. */
+	BeforeContentEnd,
 
 	/** Start position collapse with end of sibling node. */
 	After,
@@ -24,7 +24,7 @@ export enum ContentPositionType {
 }
 
 export type ContentStartOuterPositionType = ContentPositionType.After | ContentPositionType.AfterSlot | ContentPositionType.AfterContentBegin
-export type ContentEndInnerPositionType = ContentPositionType.After | ContentPositionType.AfterSlot | ContentPositionType.BeforeContextEnd
+export type ContentEndInnerPositionType = ContentPositionType.After | ContentPositionType.AfterSlot | ContentPositionType.BeforeContentEnd
 
 
 /** Start or end position collapse with container element. */

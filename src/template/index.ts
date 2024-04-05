@@ -1,6 +1,7 @@
 export * from './apis-bridge'
 export * from './content-slot'
 export * from './content-position'
+export * from './dom-events'
 export * from './template'
 export * from './template-maker'
 export * from './template-result'

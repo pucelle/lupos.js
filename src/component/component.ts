@@ -1,5 +1,5 @@
 import {DependencyTracker, EventFirer, FrameQueue} from '@pucelle/ff'
-import {ensureComponentStyle, type ComponentStyle} from './style'
+import {ensureComponentStyle, ComponentStyle} from './style'
 import {getComponentFromElement} from './from-element'
 import {ContentSlot, ContentPosition, ContentPositionType, CompiledTemplateResult} from '../template'
 import {ComponentConstructor, RenderResult} from './types'
@@ -31,14 +31,14 @@ export interface ComponentEvents {
 let IncrementalId = 1
 
 /** Record components that is not ready. */
-const ComponentsNotReadySet: WeakSet<Component> = new WeakSet()
+const ComponentsNotReadySet: WeakSet<object> = new WeakSet()
 
 
 /** 
  * Super class of all the components.
  * - `E`: Event interface in `{eventName: (...args) => void}` format.
  * 
- * Note about it:
+ * Note about:
  * - If instantiate from being part of a template, It **can** be connected or disconnected after it's parent component insert or delete it.
  * - If instantiate from `new`, It **cant** be automatically connected or disconnected along it's element.
  * - If instantiate from custom element, It **can** be automatically connected or disconnected along it's element.
@@ -109,6 +109,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> {
 
 		ensureComponentStyle(this.constructor as ComponentConstructor)
 		ComponentsNotReadySet.add(this)
+
 		this.onCreated()
 	}
 
@@ -235,7 +236,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> {
 		FrameQueue.enqueue(this.update, this, this.incrementalId)
 	}
 	
-	/** Doing update. */
+	/** Doing update synchronously. */
 	update(this: Component) {
 		if (!this.connected) {
 			return

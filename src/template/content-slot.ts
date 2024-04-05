@@ -17,14 +17,19 @@ export class ContentSlot {
 	/** Start outer position, indicate where to put content. */
 	private readonly startOuterPosition: ContentPosition<ContentStartOuterPositionType>
 
-	private readonly context: any
+	private context: any
 	private contentType: SlotContentType | null = null
 	private content: Template | Template[] | Text | null = null
 
 	constructor(startOuterPosition: ContentPosition<ContentStartOuterPositionType>, context: any, knownType: SlotContentType | null = null) {
 		this.startOuterPosition = startOuterPosition
-		this.content = context
+		this.context = context
 		this.contentType = knownType
+	}
+
+	/** Replace context after initialized. */
+	replaceContext(context: any) {
+		this.content = context
 	}
 
 	/** 
@@ -99,17 +104,14 @@ export class ContentSlot {
 
 		this.contentType = newContentType
 
-		switch (newContentType) {
-			case SlotContentType.Template:
-				this.updateTemplate(value as CompiledTemplateResult)
-				break
-
-			case SlotContentType.TemplateArray:
-				this.updateTemplateArray(value as CompiledTemplateResult[])
-				break
-
-			case SlotContentType.Text:
-				this.updateText(value)
+		if (newContentType === SlotContentType.Template) {
+			this.updateTemplate(value as CompiledTemplateResult)
+		}
+		else if (newContentType === SlotContentType.TemplateArray) {
+			this.updateTemplateArray(value as CompiledTemplateResult[])
+		}
+		else if (newContentType === SlotContentType.Text) {
+			this.updateText(value)
 		}
 	}
 
@@ -130,6 +132,18 @@ export class ContentSlot {
 			return
 		}
 
+		if (this.contentType === SlotContentType.Template) {
+			(this.content as Template).remove()
+		}
+		else if (this.contentType === SlotContentType.TemplateArray) {
+			let ts = this.content as Template[]
+
+			for (let i = 0; i < ts.length; i++) {
+				let t = ts[i]
+				t.remove()
+			}
+		}
+
 		let lastNode = (this.content as Template).getLastNode()
 		if (lastNode) {
 			for (let node of this.startOuterPosition.walkNodesUntil(lastNode)) {
@@ -146,7 +160,9 @@ export class ContentSlot {
 			oldT.update(tr.values)
 		}
 		else {
-			this.clearOldContent()
+			if (oldT) {
+				this.removeTemplate(oldT, null)
+			}
 
 			let newT = tr.maker.make(this.context)
 			this.startOuterPosition.insertAfter(...newT.walkNodes())
@@ -173,7 +189,7 @@ export class ContentSlot {
 				let nextOldT = i + 1 < oldTs.length ? oldTs[i + 1] : null
 
 				if (oldT) {
-					this.clearTemplate(oldT, nextOldT)
+					this.removeTemplate(oldT, nextOldT)
 				}
 	
 				this.insertTemplate(newT, nextOldT)
@@ -188,12 +204,14 @@ export class ContentSlot {
 				let oldT = oldTs[i]
 				let nextOldT = i + 1 < oldTs.length ? oldTs[i + 1] : null
 
-				this.clearTemplate(oldT, nextOldT)
+				this.removeTemplate(oldT, nextOldT)
 			}
 		}
 	}
 
-	private clearTemplate(t: Template, previousT: Template | null) {
+	private removeTemplate(t: Template, previousT: Template | null) {
+		t.remove()
+
 		let lastNode = t.getLastNode()
 		if (!lastNode) {
 			return

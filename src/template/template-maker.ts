@@ -10,8 +10,11 @@ export interface TemplateInitResult {
 	/** End inner position, indicate the end edge of current content. */
 	endInnerPosition: ContentPosition<ContentEndInnerPositionType>
 
-	update: (values: any[]) => void
-	destroy?: () => void
+	/** Update and apply new values. */
+	update?: (values: any[]) => void
+
+	/** Remove current template part, Note it would not remove elements. */
+	remove?: () => void
 }
 
 
