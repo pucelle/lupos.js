@@ -7,6 +7,7 @@ import {CompiledTemplateResult} from './template-result-compiled'
 export enum SlotContentType {
 	Template,
 	TemplateArray,
+	Node,
 	Text,
 }
 
@@ -19,7 +20,7 @@ export class ContentSlot {
 
 	private context: any
 	private contentType: SlotContentType | null = null
-	private content: Template | Template[] | Text | null = null
+	private content: Template | Template[] | ChildNode | Text | null = null
 
 	constructor(startOuterPosition: ContentPosition<ContentStartOuterPositionType>, context: any, knownType: SlotContentType | null = null) {
 		this.startOuterPosition = startOuterPosition
@@ -110,6 +111,9 @@ export class ContentSlot {
 		else if (newContentType === SlotContentType.TemplateArray) {
 			this.updateTemplateArray(value as CompiledTemplateResult[])
 		}
+		else if (newContentType === SlotContentType.Node) {
+			this.updateNode(value as ChildNode)
+		}
 		else if (newContentType === SlotContentType.Text) {
 			this.updateText(value)
 		}
@@ -165,6 +169,8 @@ export class ContentSlot {
 			}
 
 			let newT = tr.maker.make(this.context)
+			newT.update(tr.values)
+
 			this.startOuterPosition.insertAfter(...newT.walkNodes())
 			this.content = newT
 		}
@@ -191,7 +197,8 @@ export class ContentSlot {
 				if (oldT) {
 					this.removeTemplate(oldT, nextOldT)
 				}
-	
+				
+				newT.update(tr.values)
 				this.insertTemplate(newT, nextOldT)
 
 				oldTs[i] = newT
@@ -226,6 +233,19 @@ export class ContentSlot {
 	private insertTemplate(t: Template, previousT: Template | null) {
 		let position = previousT ? previousT.endInnerPosition : this.startOuterPosition
 		position.insertAfter(...t.walkNodes())
+	}
+
+	updateNode(node: ChildNode) {
+		let currNode = this.content as ChildNode | null
+
+		if (node !== currNode) {
+			if (currNode) {
+				currNode.remove()
+			}
+
+			this.startOuterPosition.insertAfter(node)
+			this.content = node
+		}
 	}
 
 	updateText(value: unknown) {
