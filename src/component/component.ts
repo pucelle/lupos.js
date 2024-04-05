@@ -30,8 +30,12 @@ export interface ComponentEvents {
 /** Current of `component.incrementalId`. */
 let IncrementalId = 1
 
-/** Record components that is not ready. */
-const ComponentsNotReadySet: WeakSet<object> = new WeakSet()
+/** 
+ * Record components that is not ready.
+ * - 1: Wait for Created
+ * - 2: Wait for Ready
+ */
+const ComponentCreatedReadyStates: WeakMap<object, 1 | 2> = new WeakMap()
 
 
 /** 
@@ -83,10 +87,10 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> {
 	 * Help to identify the create orders of component.
 	 * Only for internal usages.
 	 */
-	readonly incrementalId: number = IncrementalId++
+	protected readonly incrementalId: number = IncrementalId++
 
 	/** The root element of component. */
-	readonly el: Element
+	readonly el: HTMLElement
 
 	/* Whether current component was connected into a document. */
 	protected connected: boolean = false
@@ -95,12 +99,12 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> {
 	protected readonly rootContentSlot: ContentSlot
 
 	/**
-	 * Caches slot elements which is marked as `:slot="slotName"`.
-	 * You should re-define the detailed type like `{name1: Element[], ...}` in derived components.
+	 * Caches slot elements which are marked as `<... slot="slotName">`.
+	 * You should re-define the detailed type like `{name1: Element, ...}` in derived components.
 	 */
-	protected readonly slots: Record<string, Element[]> = {}
+	protected readonly slotElements: Record<string, Element> = {}
 
-	constructor(properties: Record<string, any> = {}, el: Element = document.createElement('div')) {
+	constructor(properties: Record<string, any> = {}, el: HTMLElement = document.createElement('lupos-com')) {
 		super()
 
 		this.el = el
@@ -108,13 +112,11 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> {
 		Object.assign(this, properties)
 
 		ensureComponentStyle(this.constructor as ComponentConstructor)
-		ComponentsNotReadySet.add(this)
-
-		this.onCreated()
+		ComponentCreatedReadyStates.set(this, 1)
 	}
 
 	/**
-	 * Called when component was just created and all properties are assigned.
+	 * Called when component was connected and all properties were assigned.
 	 * All the child nodes are not prepared yet, until `onReady`.
 	 * You may change some data or visit parent nodes, or register some events for self here.
 	 * Fired for only once.
@@ -171,7 +173,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> {
 	 * If is ready already, resolve the promise immediately.
 	 */
 	protected untilReady(this: Component): Promise<void> {
-		if (ComponentsNotReadySet.has(this)) {
+		if (ComponentCreatedReadyStates.has(this)) {
 			return new Promise(resolve => {
 				this.once('updated', resolve)
 			}) as Promise<void>
@@ -181,15 +183,10 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> {
 		}
 	}
 
-	/** Returns a promise which will be resolved after the component is updated next time. */
-	protected async untilNextUpdated(this: Component) {
-		return new Promise(resolve => {
-			this.once('updated', resolve)
-		}) as Promise<void>
-	}
-
 	/** 
 	 * Connect current component to make it responsive.
+	 * Component is connected along with component's element,
+	 * but you can still connect it manually.
 	 * 
 	 * Note if a component is created by custom element, or as a child of parent component,
 	 * current component will be connected automatically.
@@ -197,27 +194,24 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> {
 	 * But if a component is created manually, you should connect it yourself after insert
 	 * it's element into document, or use methods: `appendTo`, `insertBefore`, `insertAfter`.
 	 */
-	connect(this: Component) {
+	connectCallback(this: Component) {
 		if (this.connected) {
 			return
+		}
+
+		if (ComponentCreatedReadyStates.get(this) === 1) {
+			ComponentCreatedReadyStates.set(this, 2)
+			this.onCreated()
 		}
 
 		this.connected = true
 		this.enqueueUpdate()
 		this.onConnected()
 		this.fire('connected')
-
-		if (ComponentsNotReadySet.has(this)) {
-			ComponentsNotReadySet.delete(this)
-
-			this.once('updated', () => {
-				this.onReady()
-			})
-		}
 	}
 
 	/** Called after be disconnected each time. */
-	disconnect(this: Component) {
+	disconnectCallback(this: Component) {
 		if (!this.connected) {
 			return
 		}
@@ -236,7 +230,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> {
 		FrameQueue.enqueue(this.update, this, this.incrementalId)
 	}
 	
-	/** Doing update synchronously. */
+	/** Doing update immediately. */
 	update(this: Component) {
 		if (!this.connected) {
 			return
@@ -259,6 +253,11 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> {
 		this.rootContentSlot!.update(result)
 		this.onUpdated()
 		this.fire('updated')
+
+		if (ComponentCreatedReadyStates.get(this) === 1) {
+			ComponentCreatedReadyStates.delete(this)
+			this.onReady()
+		}
 	}
 
 	/** 
@@ -276,7 +275,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> {
 		container.append(this.el)
 		
 		if (this.el.ownerDocument) {
-			this.connect()
+			this.connectCallback()
 		}
 	}
 
@@ -285,7 +284,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> {
 		sibling.before(this.el)
 
 		if (this.el.ownerDocument) {
-			this.connect()
+			this.connectCallback()
 		}
 	}
 
@@ -294,14 +293,14 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> {
 		sibling.after(this.el)
 
 		if (this.el.ownerDocument) {
-			this.connect()
+			this.connectCallback()
 		}
 	}
 
 	/** Remove element from document, and disconnect. */
 	remove() {
 		this.el.remove()
-		this.disconnect()
+		this.disconnectCallback()
 	}
 }
 

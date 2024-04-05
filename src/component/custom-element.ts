@@ -38,7 +38,7 @@ export function defineCustomElement<T extends ComponentConstructor>(name: string
 
 /** Defines custom element's connect and disconnect actions. */
 function defineCallbacks(name: string) {
-	customElements.define(name, class FlitElement extends HTMLElement {
+	customElements.define(name, class LuposElement extends HTMLElement {
 
 		// Although W3C Spec says connect callback will not be called when inserting an element to a document fragment,
 		// but I still find it is occurred sometimes.
@@ -60,7 +60,7 @@ function onConnected(el: HTMLElement) {
 
 	// Component instance is created.
 	if (com) {
-		com.connect()
+		com.connectCallback()
 	}
 	else {
 		let {Com, propertyMap} = CustomElementConstructorMap.get(el.localName)!
@@ -98,7 +98,44 @@ function makeProperties(el: HTMLElement, propertyMap: PropertyMapOf<any>): Recor
 function onDisconnected(el: HTMLElement) {
 	let com = getComponentFromElement(el)
 	if (com) {
-		com.disconnect()
+		com.disconnectCallback()
 	}
 }
 
+
+/** Defines `<lupos-com>` as default component element. */
+customElements.define('lupos-com', class LuposComElement extends HTMLDivElement {
+
+	connectedCallback() {
+		let com = getComponentFromElement(this)
+		if (com) {
+			com.connectCallback()
+		}
+	}
+
+	disconnectedCallback() {
+		let com = getComponentFromElement(this)
+		if (com) {
+			com.disconnectCallback()
+		}
+	}
+})
+
+
+/** Defines `<lupos-slot>` as default component element. */
+customElements.define('lupos-slot', class LuposSlotElement extends HTMLSlotElement {
+
+	connectedCallback() {
+		let com = getComponentFromElement(this)
+		if (com) {
+			com.connectCallback()
+		}
+	}
+
+	disconnectedCallback() {
+		let com = getComponentFromElement(this)
+		if (com) {
+			com.disconnectCallback()
+		}
+	}
+})

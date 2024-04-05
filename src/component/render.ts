@@ -10,6 +10,8 @@ export type RenderResultRenderer = TemplateResult | CompiledTemplateResult | (()
 /** 
  * Render a static content like html`...` inside a specified `context`,
  * Or render a responsive content like () => html`...` inside a specified `context`.
+ *
+ * E.g., render a popup or contextmenu based on current context after any interaction.
  * 
  * Returns a component like instance which attach to specified context.
  * This component like instance will connect and disconnect follow current context.
@@ -20,16 +22,16 @@ export function render(renderer: RenderResultRenderer, context: any = null): Att
 
 
 /** 
- * Same with Component, except it attachs a context, and render all the things within this context.
- * This component will connect and disconnect follow current context.
+ * Same with Component, except it attachs a context,
+ * and render all the things within this context.
  */
 class AttachedComponent<E = any> extends Component<E> {
 
 	protected renderer: RenderResultRenderer
-	protected context: Component | null
+	protected context: Component<{}> | null
 
 	constructor(renderer: RenderResultRenderer, context: Component | null) {
-		super({}, document.createElement('slot'))
+		super({}, document.createElement('lupos-slot'))
 		
 		this.renderer = renderer
 		this.context = context
@@ -43,13 +45,5 @@ class AttachedComponent<E = any> extends Component<E> {
 		else {
 			return this.renderer
 		}
-	}
-
-	protected onConnected() {
-		this.context?.connect()
-	}
-
-	protected onDisconnected() {
-		this.context?.disconnect()
 	}
 }
