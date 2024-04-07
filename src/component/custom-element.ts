@@ -31,10 +31,9 @@ export function defineCustomElement<T extends ComponentConstructor>(name: string
 		throw new Error(`"${name}" can't be defined as custom element name, which must contain "-"!`)
 	}
 
-	CustomElementConstructorMap.set(name, {Com: Com, propertyMap})
+	CustomElementConstructorMap.set(name, {Com, propertyMap})
 	defineCallbacks(name)
 }
-
 
 /** Defines custom element's connect and disconnect actions. */
 function defineCallbacks(name: string) {
@@ -50,9 +49,8 @@ function defineCallbacks(name: string) {
 		disconnectedCallback() {
 			onDisconnected(this)
 		}
-	})
+	}, {extends: 'div'})
 }
-
 
 /** Enqueue connection for an element. */
 function onConnected(el: HTMLElement) {
@@ -70,7 +68,6 @@ function onConnected(el: HTMLElement) {
 		addElementComponentMap(el, com)
 	}
 }
-
 
 /** Make a property parameter for initializing component. */
 function makeProperties(el: HTMLElement, propertyMap: PropertyMapOf<any>): Record<PropertyKey, any> {
@@ -93,7 +90,6 @@ function makeProperties(el: HTMLElement, propertyMap: PropertyMapOf<any>): Recor
 	return props
 }
 
-
 /** Enqueue disconnection for an element. */
 function onDisconnected(el: HTMLElement) {
 	let com = getComponentFromElement(el)
@@ -103,39 +99,30 @@ function onDisconnected(el: HTMLElement) {
 }
 
 
-/** Defines `<lupos-com>` as default component element. */
-customElements.define('lupos-com', class LuposComElement extends HTMLDivElement {
 
-	connectedCallback() {
-		let com = getComponentFromElement(this)
-		if (com) {
-			com.connectCallback()
+/** Defines few custom element name as default component element. */
+function defineDefaultCustomElement(name: string, extendsName: string) {
+	customElements.define(name, class LuposComElement extends HTMLDivElement {
+
+		connectedCallback() {
+			let com = getComponentFromElement(this)
+			if (com) {
+				com.connectCallback()
+			}
 		}
-	}
 
-	disconnectedCallback() {
-		let com = getComponentFromElement(this)
-		if (com) {
-			com.disconnectCallback()
+		disconnectedCallback() {
+			let com = getComponentFromElement(this)
+			if (com) {
+				com.disconnectCallback()
+			}
 		}
-	}
-})
+	}, {extends: extendsName})
+}
 
-
-/** Defines `<lupos-slot>` as default component element. */
-customElements.define('lupos-slot', class LuposSlotElement extends HTMLSlotElement {
-
-	connectedCallback() {
-		let com = getComponentFromElement(this)
-		if (com) {
-			com.connectCallback()
-		}
-	}
-
-	disconnectedCallback() {
-		let com = getComponentFromElement(this)
-		if (com) {
-			com.disconnectCallback()
-		}
-	}
-})
+/** 
+ * Defines `<lupos-com>` as default component element,
+ * and `<lupos-slot>` as default context container.
+ */
+defineDefaultCustomElement('lupos-com', 'div')
+defineDefaultCustomElement('lupos-slot', 'slot')

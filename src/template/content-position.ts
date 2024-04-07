@@ -4,7 +4,10 @@ import {ContentSlot} from './content-slot'
 /** Contents that can be included in a `<tag>${...}<.tag>`. */
 export enum ContentPositionType {
 
-	/** Start position collapse with start of container content range. */
+	/** 
+	 * Start position collapse with start of container content range.
+	 * If don't know about future parent, will insert a comment at the beginning.
+	 */
 	AfterContentBegin,
 
 	/** End position collapse with end of container content ranget. */

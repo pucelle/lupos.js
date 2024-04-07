@@ -34,8 +34,8 @@ export class ContentSlot {
 	}
 
 	/** 
-	 * Try to get parent element.
-	 * Can get only when have a slibing slot in the start position,
+	 * Try to get parent element of current slot.
+	 * Result is exist only when have a slibing slot in the start position,
 	 * which means: either `getLastNodeClosest()` or `getParentElement()` must exist.
 	 */
 	tryGetParentElement(): Element | null {
@@ -96,6 +96,7 @@ export class ContentSlot {
 		}
 	}
 
+	/** Update by value parameter but don't know it's type. */
 	update(value: unknown) {
 		let newContentType = this.recognizeContentType(value)
 

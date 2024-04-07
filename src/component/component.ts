@@ -205,7 +205,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> {
 		}
 
 		this.connected = true
-		this.enqueueUpdate()
+		this.willUpdate()
 		this.onConnected()
 		this.fire('connected')
 	}
@@ -216,15 +216,15 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> {
 			return
 		}
 
-		DependencyTracker.untrack(this.enqueueUpdate, this)
+		DependencyTracker.untrack(this.willUpdate, this)
 
 		this.connected = false
 		this.onDisconnected()
 		this.fire('disconnected')
 	}
 	
-	/** After any tracked data change, enqueue it. */
-	protected enqueueUpdate() {
+	/** After any tracked data change, enqueue it to update in next animation frame. */
+	protected willUpdate() {
 		
 		// Create earlier, update earlier.
 		FrameQueue.enqueue(this.update, this, this.incrementalId)
@@ -235,8 +235,10 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> {
 		if (!this.connected) {
 			return
 		}
+
+		// May provide an `onBeforeUpdate` here.
 		
-		DependencyTracker.beginTrack(this.enqueueUpdate, this)
+		DependencyTracker.beginTrack(this.willUpdate, this)
 		let result: CompiledTemplateResult | CompiledTemplateResult[] | string | null
 
 		try {

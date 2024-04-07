@@ -13,9 +13,7 @@ export type RenderResultRenderer = TemplateResult | CompiledTemplateResult | (()
  *
  * E.g., render a popup or contextmenu based on current context after any interaction.
  * 
- * Returns a component like instance which attach to specified context.
- * This component like instance will connect and disconnect follow current context.
- */
+ * Returns a component like instance which attach to specified context. */
 export function render(renderer: RenderResultRenderer, context: any = null): AttachedComponent {
 	return new AttachedComponent(renderer, context)
 }
