@@ -1,5 +1,5 @@
-import {ContentPosition, ContentEndInnerPositionType, ContentPositionType} from './content-position'
-import {ContentSlot} from './content-slot'
+import {BlockPosition, BlockEndOuterPositionType, BlockPositionType} from './block-position'
+import {TemplateSlot} from './template-slot'
 import {TemplateMaker, TemplateInitResult} from './template-maker'
 
 
@@ -11,7 +11,7 @@ export class Template implements TemplateInitResult {
 
 	readonly el: HTMLTemplateElement
 	readonly maker: TemplateMaker
-	readonly endInnerPosition: ContentPosition<ContentEndInnerPositionType>
+	readonly endInnerPosition: BlockPosition<BlockEndOuterPositionType>
 	readonly update: (values: any[]) => void
 	readonly remove: () => void
 
@@ -29,12 +29,12 @@ export class Template implements TemplateInitResult {
 	 * If have no fixed nodes, return last node of previois slot.
 	 * Can only get when nodes exist in current template.
 	 */
-	getLastNode(): ChildNode | null {
-		if (this.endInnerPosition.type === ContentPositionType.After) {
+	getFirstNode(): ChildNode | null {
+		if (this.endInnerPosition.type === BlockPositionType.Before) {
 			return this.endInnerPosition.target as ChildNode
 		}
-		else if (this.endInnerPosition.type === ContentPositionType.AfterSlot) {
-			return (this.endInnerPosition.target as ContentSlot).getLastNode()
+		else if (this.endInnerPosition.type === BlockPositionType.BeforeSlot) {
+			return (this.endInnerPosition.target as TemplateSlot).getFirstNode()
 		}
 		else {
 			return this.endInnerPosition.target as Element
@@ -47,5 +47,17 @@ export class Template implements TemplateInitResult {
 	 */
 	walkNodes(): Iterable<ChildNode> {
 		return this.el.content.childNodes
+	}
+
+	/** Recycle nodes back, before an end position. */
+	recycleNodesBefore(position: BlockPosition) {
+		let firstNode = this.getFirstNode()
+		if (!firstNode) {
+			return
+		}
+
+		for (let node of position.walkNodesForwardUntil(firstNode)) {
+			this.el.prepend(node)
+		}
 	}
 }

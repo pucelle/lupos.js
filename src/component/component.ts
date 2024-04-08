@@ -1,7 +1,7 @@
 import {DependencyTracker, EventFirer, FrameQueue} from '@pucelle/ff'
 import {ensureComponentStyle, ComponentStyle} from './style'
 import {getComponentFromElement} from './from-element'
-import {ContentSlot, ContentPosition, ContentPositionType, CompiledTemplateResult} from '../template'
+import {TemplateSlot, BlockPosition, BlockPositionType, CompiledTemplateResult} from '../template'
 import {ComponentConstructor, RenderResult} from './types'
 
 
@@ -96,7 +96,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> {
 	protected connected: boolean = false
 
 	/** Help to patch render result. */
-	protected readonly rootContentSlot: ContentSlot
+	protected readonly rootContentSlot: TemplateSlot
 
 	/**
 	 * Caches slot elements which are marked as `<... slot="slotName">`.
@@ -108,7 +108,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> {
 		super()
 
 		this.el = el
-		this.rootContentSlot = new ContentSlot(new ContentPosition(ContentPositionType.AfterContentBegin, this.el), this)
+		this.rootContentSlot = new TemplateSlot(new BlockPosition(BlockPositionType.AfterContent, this.el), this)
 		Object.assign(this, properties)
 
 		ensureComponentStyle(this.constructor as ComponentConstructor)

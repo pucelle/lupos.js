@@ -159,7 +159,7 @@ export function on<T extends string>(el: EventTarget, type: T, modifiers: EventM
 
 	DOMEvents.on(el, type, wrappedHandler, null, options)
 	
-	return () => {
+	return function() {
 		DOMEvents.off(el, type, wrappedHandler)
 	}
 }

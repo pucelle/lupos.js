@@ -1,4 +1,4 @@
-import {ContentPosition, ContentEndInnerPositionType} from './content-position'
+import {BlockPosition, BlockEndOuterPositionType} from './block-position'
 import {Template} from './template'
 
 
@@ -8,7 +8,7 @@ export type TemplateInit = (templateEl: HTMLTemplateElement, context: any) => Te
 export interface TemplateInitResult {
 
 	/** End inner position, indicate the end edge of current content. */
-	endInnerPosition: ContentPosition<ContentEndInnerPositionType>
+	endInnerPosition: BlockPosition<BlockEndOuterPositionType>
 
 	/** Update and apply new values. */
 	update?: (values: any[]) => void

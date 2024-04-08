@@ -2,7 +2,7 @@ import {Binding, defineNamedBinding} from './define'
 
 
 /** Type of style object. */
-type StyleObject = Record<string, string | number>
+type StyleObject = Record<string, string>
 
 
 /**
