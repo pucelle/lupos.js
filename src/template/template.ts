@@ -1,4 +1,4 @@
-import {BlockPosition, BlockEndOuterPositionType, BlockPositionType} from './block-position'
+import {TemplateSlotPosition, SlotEndOuterPositionType, SlotPositionType} from './template-slot-position'
 import {TemplateSlot} from './template-slot'
 import {TemplateMaker, TemplateInitResult} from './template-maker'
 
@@ -11,7 +11,7 @@ export class Template implements TemplateInitResult {
 
 	readonly el: HTMLTemplateElement
 	readonly maker: TemplateMaker
-	readonly endInnerPosition: BlockPosition<BlockEndOuterPositionType>
+	readonly endInnerPosition: TemplateSlotPosition<SlotEndOuterPositionType>
 	readonly update: (values: any[]) => void
 	readonly remove: () => void
 
@@ -30,10 +30,10 @@ export class Template implements TemplateInitResult {
 	 * Can only get when nodes exist in current template.
 	 */
 	getFirstNode(): ChildNode | null {
-		if (this.endInnerPosition.type === BlockPositionType.Before) {
+		if (this.endInnerPosition.type === SlotPositionType.Before) {
 			return this.endInnerPosition.target as ChildNode
 		}
-		else if (this.endInnerPosition.type === BlockPositionType.BeforeSlot) {
+		else if (this.endInnerPosition.type === SlotPositionType.BeforeSlot) {
 			return (this.endInnerPosition.target as TemplateSlot).getFirstNode()
 		}
 		else {
@@ -50,7 +50,7 @@ export class Template implements TemplateInitResult {
 	}
 
 	/** Recycle nodes back, before an end position. */
-	recycleNodesBefore(position: BlockPosition) {
+	recycleNodesBefore(position: TemplateSlotPosition) {
 		let firstNode = this.getFirstNode()
 		if (!firstNode) {
 			return

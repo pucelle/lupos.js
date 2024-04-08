@@ -2,7 +2,7 @@ import {TemplateSlot} from './template-slot'
 
 
 /** Contents that can be included in a `<tag>${...}<.tag>`. */
-export enum BlockPositionType {
+export enum SlotPositionType {
 
 	/** 
 	 * Start position collapse with start of container range.
@@ -26,16 +26,16 @@ export enum BlockPositionType {
 	BeforeSlot,
 }
 
-export type BlockStartInnerPositionType = BlockPositionType.Before | BlockPositionType.BeforeSlot | BlockPositionType.BeforeContent
-export type BlockEndOuterPositionType = BlockPositionType.Before | BlockPositionType.BeforeSlot | BlockPositionType.AfterContent
+export type SlotStartInnerPositionType = SlotPositionType.Before | SlotPositionType.BeforeSlot | SlotPositionType.BeforeContent
+export type SlotEndOuterPositionType = SlotPositionType.Before | SlotPositionType.BeforeSlot | SlotPositionType.AfterContent
 
 
 /** 
- * A `BlockPosition` indicates where a template slot located.
+ * A `TemplateSlotPosition` indicates where a template slot located.
  * It try to find closest node, container, or slot for reference,
  * And helps to insert or remove contents from this position.
  */
-export class BlockPosition<T = BlockPositionType> {
+export class TemplateSlotPosition<T = SlotPositionType> {
 
 	type: T
 	target: Element | Node | TemplateSlot
@@ -47,11 +47,11 @@ export class BlockPosition<T = BlockPositionType> {
 
 	/** Insert nodes before current position. */
 	insertBefore(...newNodes: ChildNode[]) {
-		if (this.type === BlockPositionType.Before) {
+		if (this.type === SlotPositionType.Before) {
 			let node = this.target as ChildNode
 			node.before(...newNodes)
 		}
-		else if (this.type === BlockPositionType.BeforeSlot) {
+		else if (this.type === SlotPositionType.BeforeSlot) {
 			let slot = this.target as TemplateSlot
 			let node = slot.getFirstNodeClosest()
 			
@@ -71,7 +71,7 @@ export class BlockPosition<T = BlockPositionType> {
 
 	/** Walk nodes backward before current position, until specified node or end. */
 	*walkNodesForwardUntil(until: ChildNode | null): Iterable<ChildNode> {
-		if (this.type === BlockPositionType.Before) {
+		if (this.type === SlotPositionType.Before) {
 			let node = (this.target as ChildNode).previousSibling
 
 			while (node) {
@@ -87,7 +87,7 @@ export class BlockPosition<T = BlockPositionType> {
 				node = prevNode
 			}
 		}
-		else if (this.type === BlockPositionType.BeforeSlot) {
+		else if (this.type === SlotPositionType.BeforeSlot) {
 			let node = (this.target as TemplateSlot).getFirstNodeClosest()?.previousSibling
 			
 			while (node) {

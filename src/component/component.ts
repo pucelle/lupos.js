@@ -1,7 +1,7 @@
 import {DependencyTracker, EventFirer, FrameQueue} from '@pucelle/ff'
 import {ensureComponentStyle, ComponentStyle} from './style'
 import {getComponentFromElement} from './from-element'
-import {TemplateSlot, BlockPosition, BlockPositionType, CompiledTemplateResult} from '../template'
+import {TemplateSlot, TemplateSlotPosition, SlotPositionType, CompiledTemplateResult} from '../template'
 import {ComponentConstructor, RenderResult} from './types'
 
 
@@ -108,7 +108,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> {
 		super()
 
 		this.el = el
-		this.rootContentSlot = new TemplateSlot(new BlockPosition(BlockPositionType.AfterContent, this.el), this)
+		this.rootContentSlot = new TemplateSlot(new TemplateSlotPosition(SlotPositionType.AfterContent, this.el), this)
 		Object.assign(this, properties)
 
 		ensureComponentStyle(this.constructor as ComponentConstructor)

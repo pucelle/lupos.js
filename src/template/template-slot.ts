@@ -1,4 +1,4 @@
-import {BlockPosition, BlockPositionType, BlockEndOuterPositionType} from './block-position'
+import {TemplateSlotPosition, SlotPositionType, SlotEndOuterPositionType} from './template-slot-position'
 import {Template} from './template'
 import {CompiledTemplateResult} from './template-result-compiled'
 
@@ -19,13 +19,13 @@ export enum SlotContentType {
 export class TemplateSlot {
 
 	/** Start outer position, indicate where to put content. */
-	readonly endOuterPosition: BlockPosition<BlockEndOuterPositionType>
+	readonly endOuterPosition: TemplateSlotPosition<SlotEndOuterPositionType>
 
 	private context: any
 	private contentType: SlotContentType | null = null
 	private content: Template | Template[] | ChildNode | Text | null = null
 
-	constructor(endOuterPosition: BlockPosition<BlockEndOuterPositionType>, context: any, knownType: SlotContentType | null = null) {
+	constructor(endOuterPosition: TemplateSlotPosition<SlotEndOuterPositionType>, context: any, knownType: SlotContentType | null = null) {
 		this.endOuterPosition = endOuterPosition
 		this.context = context
 		this.contentType = knownType
@@ -47,7 +47,7 @@ export class TemplateSlot {
 			return node.parentElement
 		}
 		
-		if (this.endOuterPosition.type === BlockPositionType.BeforeSlot) {
+		if (this.endOuterPosition.type === SlotPositionType.BeforeSlot) {
 			return (this.endOuterPosition.target as TemplateSlot).tryGetParentElement()
 		}
 		else {
@@ -88,10 +88,10 @@ export class TemplateSlot {
 			return node
 		}
 
-		if (this.endOuterPosition.type === BlockPositionType.Before) {
+		if (this.endOuterPosition.type === SlotPositionType.Before) {
 			return node
 		}
-		else if (this.endOuterPosition.type === BlockPositionType.BeforeSlot) {
+		else if (this.endOuterPosition.type === SlotPositionType.BeforeSlot) {
 			return (this.endOuterPosition.target as TemplateSlot).getFirstNodeClosest()
 		}
 		else {

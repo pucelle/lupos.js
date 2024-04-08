@@ -1,4 +1,4 @@
-import {BlockPosition, BlockEndOuterPositionType} from './block-position'
+import {TemplateSlotPosition, SlotEndOuterPositionType} from './template-slot-position'
 import {Template} from './template'
 
 
@@ -8,13 +8,13 @@ export type TemplateInit = (templateEl: HTMLTemplateElement, context: any) => Te
 export interface TemplateInitResult {
 
 	/** End inner position, indicate the end edge of current content. */
-	endInnerPosition: BlockPosition<BlockEndOuterPositionType>
+	endInnerPosition: TemplateSlotPosition<SlotEndOuterPositionType>
 
 	/** Update and apply new values. */
-	update?: (values: any[]) => void
+	update: (values: any[]) => void
 
 	/** Remove current template part, Note it would not remove elements. */
-	remove?: () => void
+	remove: () => void
 }
 
 

@@ -1,5 +1,5 @@
 export {Component} from './component'
 export {defineCustomElement} from './custom-element'
+export {render, RenderResultRenderer} from './render'
 export {addGlobalStyle} from './style'
 export {RenderResult} from './types'
-export {render, RenderResultRenderer} from './render'
