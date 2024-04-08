@@ -1,0 +1,72 @@
+import {Binding, defineNamedBinding} from './define'
+
+
+/** Object used for `:class=${{class1: value1, class2: value2}}` */
+type ClassObject = Record<string, string | number>
+
+
+/**
+ * `:class` binding will add class names to current element.
+ * - `:class="class1 class2"` - Just like class name strings.
+ * - `:class.className=${value}` - Add class name if `value` is `true` like. Support by compiler.
+ * - `:class=${[class1, class2]}` - Add multiply class names from array.
+ * - `:class=${{class1: value1, class2: value2}}` - Add multiply class names, whether add or remove depending on mapped values.
+ */
+export class ClassBinding implements Binding {
+
+	private readonly el: Element
+	private lastClassNames: string[] = []
+
+	constructor(el: Element) {
+		this.el = el
+	}
+
+	update(value: string | string[] | ClassObject) {
+		if (Array.isArray(value)) {
+			this.updateList(value)
+		}
+		else if (value && typeof value === 'object') {
+			this.updateObject(value)
+		}
+		else if (typeof value === 'string') {
+			this.updateString(value)
+		}
+	}
+
+	updateString(value: string) {
+		let names = value.split(/\s+/)
+		this.updateList(names)
+	}
+
+	updateObject(value: ClassObject) {
+		let names: string[] = []
+
+			for (let key of Object.keys(value as any)) {
+				if ((value as any)[key]) {
+					names.push(key)
+				}
+			}
+
+			this.updateList(names)
+	}
+
+	updateList(value: string[]) {
+		for (let name of this.lastClassNames) {
+			if (!value.includes(name)) {
+				this.el.classList.remove(name)
+			}
+		}
+
+		for (let name of value) {
+			if (!this.lastClassNames.includes(name)) {
+				this.el.classList.add(name)
+			}
+		}
+		
+		this.lastClassNames = value
+	}
+
+	remove() {}
+}
+
+defineNamedBinding('class', ClassBinding)

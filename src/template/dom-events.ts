@@ -1,4 +1,5 @@
-import {DOMEvents} from "@pucelle/ff"
+import {DOMEvents} from '@pucelle/ff'
+
 
 /** Event handler type. */
 type EventHandler = (e: Event) => void

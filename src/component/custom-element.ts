@@ -122,7 +122,7 @@ function defineDefaultCustomElement(name: string, extendsName: string) {
 
 /** 
  * Defines `<lupos-com>` as default component element,
- * and `<lupos-slot>` as default context container.
+ * and `<lupos-slot>` as default contural container.
  */
 defineDefaultCustomElement('lupos-com', 'div')
 defineDefaultCustomElement('lupos-slot', 'slot')

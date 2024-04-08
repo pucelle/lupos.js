@@ -4,17 +4,15 @@ import {RenderResult} from './types'
 
 
 /** Render result, or a function to return it. */
-export type RenderResultRenderer = TemplateResult | CompiledTemplateResult | (() => TemplateResult | CompiledTemplateResult)
+export type RenderResultRenderer<T = any> = TemplateResult | CompiledTemplateResult | ((this: T) => TemplateResult | CompiledTemplateResult)
 
 
 /** 
  * Render a static content like html`...` inside a specified `context`,
  * Or render a responsive content like () => html`...` inside a specified `context`.
- *
  * E.g., render a popup or contextmenu based on current context after any interaction.
- * 
  * Returns a component like instance which attach to specified context. */
-export function render(renderer: RenderResultRenderer, context: any = null): AttachedComponent {
+export function render<T = any>(renderer: RenderResultRenderer<T>, context: T = null as T): AttachedComponent {
 	return new AttachedComponent(renderer, context)
 }
 
@@ -26,9 +24,9 @@ export function render(renderer: RenderResultRenderer, context: any = null): Att
 class AttachedComponent<E = any> extends Component<E> {
 
 	protected renderer: RenderResultRenderer
-	protected context: Component<{}> | null
+	protected context: any
 
-	constructor(renderer: RenderResultRenderer, context: Component | null) {
+	constructor(renderer: RenderResultRenderer, context: any) {
 		super({}, document.createElement('lupos-slot'))
 		
 		this.renderer = renderer

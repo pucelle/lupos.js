@@ -20,7 +20,7 @@ This library imports a utility library `@pucelle/ff`, which contains many indepe
 
 ## More
 
-**lupos.js** is inspired by [lit-html](https://lit-html.polymer-project.org/).
+**lupos.js** is inspired by [lit-html](https://lit-html.polymer-project.org/) and [svelte](https://svelte.dev/).
 
 
 ## License
