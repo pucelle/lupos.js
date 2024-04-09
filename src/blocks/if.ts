@@ -1,7 +1,7 @@
 import {Template, TemplateMaker, TemplateSlot} from '../template'
 
 
-/** Type of compiling all the statement like `<if>...`, `<switch>...`. */
+/** Type of compiling statements like `<if>...`, `<switch>...`. */
 export type IfBlockStatement = (slot: TemplateSlot, context: any) => (values: any[]) => void
 
 

@@ -2,7 +2,7 @@ import {EditType, getEditRecord} from '@pucelle/ff'
 import {CompiledTemplateResult, Template, TemplateSlot} from '../template'
 
 
-/** Type of compiling all the statement like `<for of=${...}>...`. */
+/** Type of compiling statements like `<for of=${...}>...`. */
 type ForBlockStatement = (slot: TemplateSlot, context: any) => (values: any[]) => void
 
 /** To render each item. */
@@ -28,6 +28,7 @@ export function make_for_statement(renderFn: ForRenderFn): ForBlockStatement {
 }
 
 
+/** Help to update for data items. */
 class ForUpdator<T> {
 
 	private readonly slot: TemplateSlot
