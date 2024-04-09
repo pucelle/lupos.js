@@ -239,14 +239,12 @@ export class TemplateSlot {
 	}
 
 	private removeTemplate(t: Template, nextT: Template | null) {
-		let position = nextT ? nextT.endInnerPosition : this.endOuterPosition
-
-		t.remove()
+		let position = nextT?.startInnerPosition || this.endOuterPosition
 		t.recycleNodesBefore(position)
 	}
 
 	private insertTemplate(t: Template, nextT: Template | null) {
-		let position = nextT ? nextT.endInnerPosition : this.endOuterPosition
+		let position = nextT?.startInnerPosition || this.endOuterPosition
 		position.insertBefore(...t.walkNodes())
 	}
 

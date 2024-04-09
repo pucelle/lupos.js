@@ -1,4 +1,4 @@
-import {TemplateSlotPosition, SlotEndOuterPositionType, SlotPositionType} from './template-slot-position'
+import {TemplateSlotPosition, SlotStartInnerPositionType, SlotPositionType} from './template-slot-position'
 import {TemplateSlot} from './template-slot'
 import {TemplateMaker, TemplateInitResult} from './template-maker'
 
@@ -11,17 +11,15 @@ export class Template implements TemplateInitResult {
 
 	readonly el: HTMLTemplateElement
 	readonly maker: TemplateMaker
-	readonly endInnerPosition: TemplateSlotPosition<SlotEndOuterPositionType>
+	readonly startInnerPosition: TemplateSlotPosition<SlotStartInnerPositionType>
 	readonly update: (values: any[]) => void
-	readonly remove: () => void
 
 	constructor(el: HTMLTemplateElement, maker: TemplateMaker, initResult: TemplateInitResult) {
 		this.el = el
 		this.maker = maker
 
-		this.endInnerPosition = initResult.endInnerPosition
+		this.startInnerPosition = initResult.startInnerPosition
 		this.update = initResult.update || EmptyFn
-		this.remove = initResult.remove || EmptyFn
 	}
 
 	/** 
@@ -30,14 +28,14 @@ export class Template implements TemplateInitResult {
 	 * Can only get when nodes exist in current template.
 	 */
 	getFirstNode(): ChildNode | null {
-		if (this.endInnerPosition.type === SlotPositionType.Before) {
-			return this.endInnerPosition.target as ChildNode
+		if (this.startInnerPosition.type === SlotPositionType.Before) {
+			return this.startInnerPosition.target as ChildNode
 		}
-		else if (this.endInnerPosition.type === SlotPositionType.BeforeSlot) {
-			return (this.endInnerPosition.target as TemplateSlot).getFirstNode()
+		else if (this.startInnerPosition.type === SlotPositionType.BeforeSlot) {
+			return (this.startInnerPosition.target as TemplateSlot).getFirstNode()
 		}
 		else {
-			return this.endInnerPosition.target as Element
+			return this.startInnerPosition.target as Element
 		}
 	}
 
@@ -49,7 +47,7 @@ export class Template implements TemplateInitResult {
 		return this.el.content.childNodes
 	}
 
-	/** Recycle nodes back, before an end position. */
+	/** Recycle nodes backword, before an end position. */
 	recycleNodesBefore(position: TemplateSlotPosition) {
 		let firstNode = this.getFirstNode()
 		if (!firstNode) {
