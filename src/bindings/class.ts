@@ -11,11 +11,13 @@ type ClassObject = Record<string, string | number>
  * - `:class.className=${value}` - Add class name if `value` is `true` like. Support by compiler.
  * - `:class=${[class1, class2]}` - Add multiply class names from array.
  * - `:class=${{class1: value1, class2: value2}}` - Add multiply class names, whether add or remove depending on mapped values.
+ * 
+ * Note: compiler may replace this binding to equivalent codes.
  */
 export class ClassBinding implements Binding {
 
 	private readonly el: Element
-	private lastClassNames: string[] = []
+	private classNames: string[] = []
 
 	constructor(el: Element) {
 		this.el = el
@@ -33,11 +35,21 @@ export class ClassBinding implements Binding {
 		}
 	}
 
+	/** 
+	 * For compiling:
+	 * - `:class="abc"`.
+	 * - `:class=${value}` and `value` is inferred as object type.
+	 */
 	updateString(value: string) {
 		let names = value.split(/\s+/)
 		this.updateList(names)
 	}
 
+	/** 
+	 * For compiling:
+	 * - `:class.className=${booleanLike}`.
+	 * - `:class=${value}` and `value` is inferred as array type.
+	 */
 	updateObject(value: ClassObject) {
 		let names: string[] = []
 
@@ -50,20 +62,24 @@ export class ClassBinding implements Binding {
 			this.updateList(names)
 	}
 
+	/** 
+	 * For compiling:
+	 * - `:class=${value}` and `value` is inferred as array type.
+	 */
 	updateList(value: string[]) {
-		for (let name of this.lastClassNames) {
+		for (let name of this.classNames) {
 			if (!value.includes(name)) {
 				this.el.classList.remove(name)
 			}
 		}
 
 		for (let name of value) {
-			if (!this.lastClassNames.includes(name)) {
+			if (!this.classNames.includes(name)) {
 				this.el.classList.add(name)
 			}
 		}
 		
-		this.lastClassNames = value
+		this.classNames = value
 	}
 
 	remove() {}

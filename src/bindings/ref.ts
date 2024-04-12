@@ -26,6 +26,17 @@ export class RefBinding implements Binding {
 		}
 	}
 
+	/** If compiler knows that will reference a component. */
+	updateComponent(refFn: (value: Component) => void) {
+		let com = Component.from(this.el)!
+		refFn(com)
+	}
+
+	/** If compiler knows that will reference an element. */
+	updateElement(refFn: (value: Element) => void) {
+		refFn(this.el)
+	}
+
 	remove() {}
 }
 
