@@ -3,7 +3,9 @@ import {CompiledTemplateResult, Template, TemplateSlot} from '../template'
 
 
 /** Type of compiling statements like `<for of=${...}>...`. */
-type ForBlockStatement = (slot: TemplateSlot, context: any) => (values: any[]) => void
+type ForBlockStatement = (slot: TemplateSlot, context: any) => {
+	u(values: any[]): void
+}
 
 /** To render each item. */
 type ForRenderFn = (item: any, index: number) => CompiledTemplateResult
@@ -21,8 +23,10 @@ export function make_for_statement(renderFn: ForRenderFn): ForBlockStatement {
 	return function(slot: TemplateSlot, context: any) {
 		let updator = new ForUpdator(slot, context, renderFn)
 	
-		return function(items: any[]) {
-			updator.update(items)
+		return {
+			u(items: any[]) {
+				updator.update(items)
+			}
 		}
 	}
 }
@@ -97,6 +101,7 @@ class ForUpdator<T> {
 
 		this.insertTemplateBefore(t, nextOldT)
 
+		t.connect()
 		t.update(result.values)
 		this.templates.push(t)
 	}

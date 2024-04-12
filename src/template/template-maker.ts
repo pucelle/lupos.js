@@ -8,10 +8,13 @@ export type TemplateInit = (templateEl: HTMLTemplateElement, context: any) => Te
 export interface TemplateInitResult {
 
 	/** End inner position, indicate the end edge of current content. */
-	startInnerPosition: TemplateSlotPosition<SlotStartInnerPositionType>
+	p: TemplateSlotPosition<SlotStartInnerPositionType>
+
+	/** After template connected into context, do something. */
+	c: () => void
 
 	/** Update and apply new values. */
-	update: (values: any[]) => void
+	u: (values: any[]) => void
 }
 
 

@@ -175,6 +175,7 @@ export class TemplateSlot {
 
 		if (t) {
 			this.endOuterPosition.insertBefore(...t.walkNodes())
+			t.connect()
 		}
 
 		this.content = t
@@ -192,6 +193,7 @@ export class TemplateSlot {
 
 			let newT = tr.maker.make(this.context)
 			this.endOuterPosition.insertBefore(...newT.walkNodes())
+			newT.connect()
 			newT.update(tr.values)
 			
 			this.content = newT
@@ -221,6 +223,7 @@ export class TemplateSlot {
 				}
 				
 				this.insertTemplate(newT, nextOldT)
+				newT.connect()
 				newT.update(tr.values)
 
 				oldTs[i] = newT

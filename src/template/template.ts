@@ -3,23 +3,22 @@ import {TemplateSlot} from './template-slot'
 import {TemplateMaker, TemplateInitResult} from './template-maker'
 
 
-const EmptyFn = function(){}
-
-
 /** Generate after a `TemplateClass` binded with a context. */
-export class Template implements TemplateInitResult {
+export class Template {
 
 	readonly el: HTMLTemplateElement
 	readonly maker: TemplateMaker
 	readonly startInnerPosition: TemplateSlotPosition<SlotStartInnerPositionType>
+	readonly connect: () => void
 	readonly update: (values: any[]) => void
 
 	constructor(el: HTMLTemplateElement, maker: TemplateMaker, initResult: TemplateInitResult) {
 		this.el = el
 		this.maker = maker
 
-		this.startInnerPosition = initResult.startInnerPosition
-		this.update = initResult.update || EmptyFn
+		this.startInnerPosition = initResult.p
+		this.connect = initResult.c
+		this.update = initResult.u
 	}
 
 	/** 

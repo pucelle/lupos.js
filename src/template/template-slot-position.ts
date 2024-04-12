@@ -1,29 +1,32 @@
 import {TemplateSlot} from './template-slot'
 
 
-/** Contents that can be included in a `<tag>${...}<.tag>`. */
+/** 
+ * Contents that can be included in a `<tag>${...}<.tag>`.
+ * **Do not** change the numeric values of each enum item.
+ */
 export enum SlotPositionType {
 
 	/** 
 	 * Start position collapse with start of container range.
 	 * If don't know about future parent, will insert a comment at the beginning.
 	 */
-	BeforeContent,
+	BeforeContent = 0,
 
 	/** End position collapse with end of container ranget. */
-	AfterContent,
+	AfterContent = 1,
+
+	/** End position collapse with start of sibling node. */
+	Before = 2,
 
 	/** Start position collapse with end of sibling node. */
 	// After,
 
-	/** End position collapse with start of sibling node. */
-	Before,
+	/** End position collapse with start of slot. */
+	BeforeSlot = 4,
 
 	/** Start position collapse with end of slot. */
 	// AfterSlot,
-
-	/** End position collapse with start of slot. */
-	BeforeSlot,
 }
 
 export type SlotStartInnerPositionType = SlotPositionType.Before | SlotPositionType.BeforeSlot | SlotPositionType.BeforeContent

@@ -1,4 +1,4 @@
-import {DependencyTracker, EventFirer, FrameQueue} from '@pucelle/ff'
+import {DependencyTracker, EventFirer, UpdateQueue} from '@pucelle/ff'
 import {ensureComponentStyle, ComponentStyle} from './style'
 import {getComponentFromElement} from './from-element'
 import {TemplateSlot, TemplateSlotPosition, SlotPositionType, CompiledTemplateResult} from '../template'
@@ -183,6 +183,11 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> {
 		}
 	}
 
+	/** For `:slot=slotName` binding apply slot elements. */
+	applySlotElement(slotName: string, el: Element) {
+		this.slotElements[slotName] = el
+	}
+
 	/** 
 	 * Connect current component to make it responsive.
 	 * Component is connected along with component's element,
@@ -227,7 +232,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> {
 	protected willUpdate() {
 		
 		// Create earlier, update earlier.
-		FrameQueue.enqueue(this.update, this, this.incrementalId)
+		UpdateQueue.enqueue(this.update, this, this.incrementalId)
 	}
 	
 	/** Doing update immediately. */
