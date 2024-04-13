@@ -36,8 +36,6 @@ export class RefBinding implements Binding {
 	updateElement(refFn: (value: Element) => void) {
 		refFn(this.el)
 	}
-
-	remove() {}
 }
 
 defineNamedBinding('ref', RefBinding)

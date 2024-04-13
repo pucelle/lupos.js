@@ -81,8 +81,6 @@ export class ClassBinding implements Binding {
 		
 		this.classNames = value
 	}
-
-	remove() {}
 }
 
 defineNamedBinding('class', ClassBinding)

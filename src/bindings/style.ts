@@ -53,8 +53,6 @@ export class StyleBinding implements Binding {
 			(this.el.style as any)[k] = v
 		}
 	}
-
-	remove() {}
 }
 
 defineNamedBinding('style', StyleBinding)

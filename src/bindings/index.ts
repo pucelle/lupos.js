@@ -1,4 +1,4 @@
-export {defineNamedBinding, defineBinding as defineFuncBinding, Binding, BindingResult} from './define'
+export {defineNamedBinding, Binding} from './define'
 import './class'
 import './html'
 import './ref'

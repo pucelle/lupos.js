@@ -27,8 +27,6 @@ export class SlotBinding implements Binding {
 	updateComSlot(slotName: string, com: Component) {
 		com.applySlotElement(slotName, this.el)
 	}
-
-	remove() {}
 }
 
 defineNamedBinding('slot', SlotBinding)

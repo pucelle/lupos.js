@@ -20,6 +20,8 @@ enum MixedTransitionType {
  * - `enter-ended`: After enter transition ended.
  * - `leave-started`: After leave transition started.
  * - `leave-ended`: After leave transition ended.
+ * 
+ * `:transition` is not a named binding, you must import it to make it work.
  */
 export class TransitionBinding implements Binding {
 
@@ -37,7 +39,16 @@ export class TransitionBinding implements Binding {
 
 		// Cancel transition immediately if transition value becomes `null`.
 		if (!this.result) {
-			this.remove()
+			this.clearTransition()
+		}
+	}
+
+	private clearTransition() {
+		this.mixedTransitionType = null
+
+		if (this.mixedTransition) {
+			this.mixedTransition.cancel()
+			this.mixedTransition = null
 		}
 	}
 
@@ -145,16 +156,6 @@ export class TransitionBinding implements Binding {
 			return MixedTransitionType.Web
 		}
 	}
-
-	remove() {
-		this.mixedTransitionType = null
-
-		if (this.mixedTransition) {
-			this.mixedTransition.cancel()
-			this.mixedTransition = null
-		}
-	}
 }
-
 
 defineNamedBinding('transition', TransitionBinding)
