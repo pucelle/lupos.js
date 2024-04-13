@@ -1,10 +1,11 @@
+import {HTMLUtils} from '@pucelle/ff'
 import {Binding, defineNamedBinding} from './define'
 
 
 /**
- * `:html` binding will update `innerHTML` of current element.
- * This binding will not validate html content, so be creaful html content may be unsafe.
- * - `:html=${UnsafeHTMLCodes}`
+ * `:html` binding will update `innerHTML` property of current element
+ * to processed to become safe html codes.
+ * - `:html=${HTMLCodes}`
  */
 export class HTMLBinding implements Binding {
 
@@ -14,8 +15,9 @@ export class HTMLBinding implements Binding {
 		this.el = el as HTMLElement
 	}
 
-	update(value: string) {
-		this.el.innerHTML = value === null || value === undefined ? '' :  String(value)
+	update(value: string | number | null | undefined) {
+		this.el.innerHTML = value === null || value === undefined ? ''
+			: HTMLUtils.cleanUnsafeHTML(String(value))
 	}
 
 	remove() {}
