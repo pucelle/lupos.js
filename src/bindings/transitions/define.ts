@@ -19,10 +19,16 @@ export type TransitionDirection = 'enter' | 'leave' | 'both' | 'none'
 
 export interface WebTransitionProperties extends TransitionOptions {
 
-	/** Start frame, specifies the start state of enter or end state of leave. */
+	/** 
+	 * Start frame, specifies the start state of enter or end state of leave.
+	 * It's normally a "zero" state.
+	 */
 	startFrame: WebTransitionKeyFrame
 
-	/** End frame, specifies the end state of enter or start state of leave. */
+	/** 
+	 * End frame, specifies the end state of enter or start state of leave.
+	 * It's normally a "100%" state.
+	 */
 	endFrame: WebTransitionKeyFrame
 }
 
@@ -47,10 +53,12 @@ export type TransitionProperties = WebTransitionProperties | PerFrameTransitionP
  * it accepts target element and options for this transition getter,
  * and return transition properties.
  * 
+ * Can either return a transition properties, null, or a promise resolved by these.
+ * 
  * Normally you should choose returning `startFrame` and `endFrame` to use web transition.
  */
 export type TransitionPropertiesGetter<E extends Element, O extends TransitionOptions | undefined>
-	= (el: E, options: O, phase: 'enter' | 'leave') => Promise<TransitionProperties | null>
+	= (el: E, options: O, phase: 'enter' | 'leave') => TransitionProperties | null | Promise<TransitionProperties | null>
 
 
 /** 

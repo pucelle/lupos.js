@@ -1,3 +1,4 @@
+import {logger} from '@pucelle/ff'
 import {addElementComponentMap, getComponentFromElement} from './from-element'
 import {ComponentConstructor} from './types'
 
@@ -58,7 +59,7 @@ function onConnected(el: HTMLElement) {
 
 	// Component instance is created.
 	if (com) {
-		com.connectCallback()
+		com.afterConnectCallback()
 	}
 	else {
 		let {Com, propertyMap} = CustomElementConstructorMap.get(el.localName)!
@@ -93,36 +94,8 @@ function makeProperties(el: HTMLElement, propertyMap: PropertyMapOf<any>): Recor
 /** Enqueue disconnection for an element. */
 function onDisconnected(el: HTMLElement) {
 	let com = getComponentFromElement(el)
-	if (com) {
-		com.disconnectCallback()
+	if (com && com.connected) {
+		com.beforeDisconnectCallback()
+		logger.logOnce(`Suggest you DON'T remove custom element directly, which will cause disconnection action cant work normally! We suggest you to remove component instead.`, 'CustomElementDisconnectActionWarning')
 	}
 }
-
-
-
-/** Defines few custom element name as default component element. */
-function defineDefaultCustomElement(name: string, extendsName: string) {
-	customElements.define(name, class LuposComElement extends HTMLDivElement {
-
-		connectedCallback() {
-			let com = getComponentFromElement(this)
-			if (com) {
-				com.connectCallback()
-			}
-		}
-
-		disconnectedCallback() {
-			let com = getComponentFromElement(this)
-			if (com) {
-				com.disconnectCallback()
-			}
-		}
-	}, {extends: extendsName})
-}
-
-/** 
- * Defines `<lupos-com>` as default component element,
- * and `<lupos-slot>` as default contural container.
- */
-defineDefaultCustomElement('lupos-com', 'div')
-defineDefaultCustomElement('lupos-slot', 'slot')

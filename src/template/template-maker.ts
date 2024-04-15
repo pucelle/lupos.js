@@ -2,19 +2,23 @@ import {TemplateSlotPosition, SlotStartInnerPositionType} from './template-slot-
 import {Template} from './template'
 
 
-// Compiler compile a html`<div>...` to new `CompiledTemplate('<div>...', CompiledTemplateInit)`.
+/** Compiler compile a html`<div>...` to new `CompiledTemplate('<div>...', CompiledTemplateInit)`. */
 export type TemplateInit = (templateEl: HTMLTemplateElement, context: any) => TemplateInitResult
 
+/** Part of contents compiled from a template literal. */
 export interface TemplateInitResult {
 
 	/** End inner position, indicate the end edge of current content. */
 	p: TemplateSlotPosition<SlotStartInnerPositionType>
 
-	/** After template connected into context, do something. */
-	c: () => void
-
 	/** Update and apply new values. */
-	u: (values: any[]) => void
+	u?: (values: any[]) => void
+
+	/** 
+	 * List of all parts inside.
+	 * `0 | 1` represents whether part in the first level (under root) of template.
+	 */
+	l?: [Part, 0 | 1][]
 }
 
 

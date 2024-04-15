@@ -7,7 +7,6 @@ import {CompiledTemplateResult} from './template-result-compiled'
 export enum SlotContentType {
 	TemplateResult,
 	TemplateResultArray,
-	Node,
 	Text,
 }
 
@@ -16,9 +15,9 @@ export enum SlotContentType {
  * A `TemplateSlot` indicates a `>${...}<` inside a template,
  * helps to update content of the slot.
  */
-export class TemplateSlot {
+export class TemplateSlot implements Part {
 
-	/** Start outer position, indicate where to put content. */
+	/** End outer position, indicate where to put content. */
 	readonly endOuterPosition: TemplateSlotPosition<SlotEndOuterPositionType>
 
 	private context: any
@@ -29,6 +28,39 @@ export class TemplateSlot {
 		this.endOuterPosition = endOuterPosition
 		this.context = context
 		this.contentType = knownType
+	}
+
+	afterConnectCallback(directly: 0 | 1) {
+		// No need to check whether `endOuterPosition` is `SlotPositionType.AfterContent`.
+		// Because when component use this position, `directly` parameter is always be `0`.
+		// When a template should use this position, it always be `0`, and add a comment instead.
+
+		if (this.contentType === SlotContentType.TemplateResult) {
+			(this.content as Template).afterConnectCallback(directly)
+		}
+		else if (this.contentType === SlotContentType.TemplateResultArray) {
+			for (let t of this.content as Template[]) {
+				t.afterConnectCallback(directly)
+			}
+		}
+	}
+
+	async beforeDisconnectCallback(directly: 0 | 1): Promise<void> {
+		if (this.contentType === SlotContentType.TemplateResult) {
+			return (this.content as Template).beforeDisconnectCallback(directly)
+		}
+		else if (this.contentType === SlotContentType.TemplateResultArray) {
+			let promises: Promise<void>[] = []
+			
+			for (let t of this.content as Template[]) {
+				let p = t.beforeDisconnectCallback(directly)
+				if (p) {
+					promises.push(p)
+				}
+			}
+
+			return Promise.all(promises) as Promise<any>
+		}
 	}
 
 	/** Replace context after initialized. */
@@ -115,9 +147,6 @@ export class TemplateSlot {
 		else if (newContentType === SlotContentType.TemplateResultArray) {
 			this.updateTemplateResultArray(value as CompiledTemplateResult[])
 		}
-		else if (newContentType === SlotContentType.Node) {
-			this.updateNode(value as ChildNode)
-		}
 		else if (newContentType === SlotContentType.Text) {
 			this.updateText(value)
 		}
@@ -174,8 +203,7 @@ export class TemplateSlot {
 		}
 
 		if (t) {
-			this.endOuterPosition.insertBefore(...t.walkNodes())
-			t.connect()
+			t.insertNodesBefore(this.endOuterPosition)
 		}
 
 		this.content = t
@@ -192,8 +220,7 @@ export class TemplateSlot {
 			}
 
 			let newT = tr.maker.make(this.context)
-			this.endOuterPosition.insertBefore(...newT.walkNodes())
-			newT.connect()
+			newT.insertNodesBefore(this.endOuterPosition)
 			newT.update(tr.values)
 			
 			this.content = newT
@@ -223,7 +250,6 @@ export class TemplateSlot {
 				}
 				
 				this.insertTemplate(newT, nextOldT)
-				newT.connect()
 				newT.update(tr.values)
 
 				oldTs[i] = newT
@@ -248,20 +274,7 @@ export class TemplateSlot {
 
 	private insertTemplate(t: Template, nextT: Template | null) {
 		let position = nextT?.startInnerPosition || this.endOuterPosition
-		position.insertBefore(...t.walkNodes())
-	}
-
-	updateNode(node: ChildNode) {
-		let currNode = this.content as ChildNode | null
-
-		if (node !== currNode) {
-			if (currNode) {
-				currNode.remove()
-			}
-
-			this.endOuterPosition.insertBefore(node)
-			this.content = node
-		}
+		t.insertNodesBefore(position)
 	}
 
 	updateText(value: unknown) {

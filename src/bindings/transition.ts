@@ -14,24 +14,38 @@ enum MixedTransitionType {
  * `:transition` binding can play transition animation after element connected or before disconnect.
  * - `<el :transition=${fade({duration, ...})}>`
  * - `<el ${transition(fade({duration, ...}))}>`
+ * - `<el :transition.local=${...}>`: play transition only when element itself is added or removed. `.local` can omit.
+ * - `<el :transition.global=${...}>`: play transition when element or any ancestral element is added or removed.
  * 
  * `:transition` binding can dispatch for events on the target element:
  * - `enter-started`: After enter transition started.
  * - `enter-ended`: After enter transition ended.
  * - `leave-started`: After leave transition started.
  * - `leave-ended`: After leave transition ended.
- * 
- * `:transition` is not a named binding, you must import it to make it work.
  */
 export class TransitionBinding implements Binding {
 
 	private readonly el: Element
+	private readonly global: boolean
 	private result: TransitionResult | null = null
 	private mixedTransitionType: MixedTransitionType | null = null
 	private mixedTransition: PerFrameTransition | WebTransition | null = null
 
-	constructor(el: Element) {
+	constructor(el: Element, _context: any, modifiers: string[] | undefined) {
 		this.el = el
+		this.global = modifiers ? modifiers.includes('global') : false
+	}
+
+	afterConnectCallback(directly: 0 | 1) {
+		if (this.global || directly === 1) {
+			this.enter()
+		}
+	}
+
+	async beforeDisconnectCallback(directly: 0 | 1): Promise<void> {
+		if (this.global || directly === 1) {
+			return this.leave()
+		}
 	}
 
 	update(result: TransitionResult | null) {
@@ -126,6 +140,10 @@ export class TransitionBinding implements Binding {
 		let type = this.getMixedTransitionType(props)
 
 		if (this.mixedTransitionType !== type) {
+			if (this.mixedTransition) {
+				this.mixedTransition.finish()
+			}
+
 			this.mixedTransition = null
 			this.mixedTransitionType = type
 		}

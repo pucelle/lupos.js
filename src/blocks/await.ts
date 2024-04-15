@@ -3,7 +3,7 @@ import {Template, TemplateMaker, TemplateSlot} from '../template'
 
 /** Type of compiling statements like `<await>...`. */
 export type AwaitBlockStatement = (slot: TemplateSlot, context: any) => {
-	u(promise: Promise<any>, values: any[]): void
+	update(promise: Promise<any>, values: any[]): void
 }
 
 
@@ -28,7 +28,7 @@ export function make_await_statement(makers: (TemplateMaker | null)[]): AwaitBlo
 		}
 	
 		return {
-			u(p: Promise<any>, vs: any[]) {
+			update(p: Promise<any>, vs: any[]) {
 				values = vs
 
 				if (p !== promise) {

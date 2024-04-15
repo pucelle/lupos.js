@@ -3,7 +3,7 @@ import {Template, TemplateMaker, TemplateSlot} from '../template'
 
 /** Type of compiling statements like `<if>...`, `<switch>...`. */
 export type IfBlockStatement = (slot: TemplateSlot, context: any) => {
-	u(values: any[]): void
+	update(values: any[]): void
 }
 
 
@@ -18,13 +18,14 @@ export type IfBlockStatement = (slot: TemplateSlot, context: any) => {
 export function make_if_statement(
 	indexFn: (values: any[]) => number,
 	makers: (TemplateMaker | null)[]
-): IfBlockStatement {
+): IfBlockStatement
+{
 	return function(slot: TemplateSlot, context: any) {
 		let index = -1
 		let template: Template | null = null
 	
 		return {
-			u(values: any[]) {
+			update(values: any[]) {
 				let newIndex = indexFn(values)
 
 				if (newIndex !== index) {
@@ -54,13 +55,14 @@ export function make_if_statement(
 export function make_if_statement_cacheable(
 	indexFn: (values: any[]) => number,
 	makers: (TemplateMaker | null)[]
-): IfBlockStatement {
+): IfBlockStatement
+{
 	return function(slot: TemplateSlot, context: any) {
 		let index = -1
 		let templates: Map<number, Template | null> = new Map()
 	
 		return {
-			u(values: any[]) {
+			update(values: any[]) {
 				let newIndex = indexFn(values)
 				let template: Template | null = null
 

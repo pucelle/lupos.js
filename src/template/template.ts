@@ -1,24 +1,44 @@
 import {TemplateSlotPosition, SlotStartInnerPositionType, SlotPositionType} from './template-slot-position'
 import {TemplateSlot} from './template-slot'
 import {TemplateMaker, TemplateInitResult} from './template-maker'
+import {noop} from '@pucelle/ff'
 
 
 /** Generate after a `TemplateClass` binded with a context. */
-export class Template {
+export class Template implements Part {
 
 	readonly el: HTMLTemplateElement
 	readonly maker: TemplateMaker
 	readonly startInnerPosition: TemplateSlotPosition<SlotStartInnerPositionType>
-	readonly connect: () => void
 	readonly update: (values: any[]) => void
+	private readonly listOfParts: [Part, 0 | 1][]
 
 	constructor(el: HTMLTemplateElement, maker: TemplateMaker, initResult: TemplateInitResult) {
 		this.el = el
 		this.maker = maker
 
 		this.startInnerPosition = initResult.p
-		this.connect = initResult.c
-		this.update = initResult.u
+		this.listOfParts = initResult.l || []
+		this.update = initResult.u || noop
+	}
+
+	afterConnectCallback(directly: 0 | 1) {
+		for (let [part, topLevel] of this.listOfParts) {
+			part.afterConnectCallback((directly & topLevel) as 0 | 1)
+		}
+	}
+
+	beforeDisconnectCallback(directly: 0 | 1): Promise<void> {
+		let promises: Promise<void>[] = []
+
+		for (let [part, topLevel] of this.listOfParts) {
+			let p = part.beforeDisconnectCallback((directly & topLevel) as 0 | 1)
+			if (p) {
+				promises.push(p)
+			}
+		}
+
+		return Promise.all(promises) as Promise<any>
 	}
 
 	/** 
@@ -38,16 +58,16 @@ export class Template {
 		}
 	}
 
-	/** 
-	 * Walk for child nodes in the template.
-	 * Can only walk when nodes exist in current template.
-	 */
-	walkNodes(): Iterable<ChildNode> {
-		return this.el.content.childNodes
+	/** Insert nodes before an end position. */
+	insertNodesBefore(position: TemplateSlotPosition) {
+		position.insertBefore(...this.el.content.childNodes)
+		this.afterConnectCallback(1)
 	}
 
-	/** Recycle nodes backword, before an end position. */
-	recycleNodesBefore(position: TemplateSlotPosition) {
+	/** Recycle nodes before an end position. */
+	async recycleNodesBefore(position: TemplateSlotPosition) {
+		await this.beforeDisconnectCallback(1)
+
 		let firstNode = this.getFirstNode()
 		if (!firstNode) {
 			return

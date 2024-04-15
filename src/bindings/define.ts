@@ -1,13 +1,21 @@
 /** Constructor of all Binding class. */
 export interface BindingConstructor {
+
+	/** 
+	 * When defining a binding, we suggest to declare type of `modifiers`
+	 * to the enum of each modifer string, like `('mod1' | 'mod2')[]`.
+	 */
 	new (el: Element, context?: any, modifiers?: string[]): Binding
 }
 
 /** Binding interface, all binding class should implement it. */
-export interface Binding {
+export interface Binding extends Partial<Part> {
 
-	/** Update binding parameters. */
-	update(value: any, ...args: any[]): void
+	/** 
+	 * Update binding parameters.
+	 * If not provide, means no need to update.
+	 */
+	update?: (value: any, ...args: any[]) => void
 }
 
 
@@ -24,7 +32,9 @@ const DefinedNamedBindingMap: Map<string, BindingConstructor> = new Map()
  * or for avoiding variable name conflicts like `:class`.
  * Named binding works globally, no need to import to local.
  * 
- * Compiler will compile `:class` to importing `ClassBinding` directly.
+ * Compiler will compile `:class` to import `ClassBinding` directly,
+ * so this will be removed by tree-shaking.
+ * That's why it is not been exported.
  */
 export function defineNamedBinding(name: string, Binding: BindingConstructor) {
 	if (DefinedNamedBindingMap.has(name)) {
@@ -32,10 +42,4 @@ export function defineNamedBinding(name: string, Binding: BindingConstructor) {
 	}
 
 	DefinedNamedBindingMap.set(name, Binding)
-}
-
-
-/** Get defined binding class by name. */
-export function getNamedBinding(name: string): BindingConstructor {
-	return DefinedNamedBindingMap.get(name)!
 }

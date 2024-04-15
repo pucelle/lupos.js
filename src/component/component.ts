@@ -47,7 +47,7 @@ const ComponentCreatedReadyStates: WeakMap<object, 1 | 2> = new WeakMap()
  * - If instantiate from `new`, It **cant** be automatically connected or disconnected along it's element.
  * - If instantiate from custom element, It **can** be automatically connected or disconnected along it's element.
  */
-export class Component<E = any> extends EventFirer<E & ComponentEvents> {
+export class Component<E = any> extends EventFirer<E & ComponentEvents> implements Part {
 
 	/** 
 	 * Get component instance from an element.
@@ -92,8 +92,11 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> {
 	/** The root element of component. */
 	readonly el: HTMLElement
 
-	/* Whether current component was connected into a document. */
-	protected connected: boolean = false
+	/**
+	 * Whether current component was connected into a document.
+	 * Readonly outside.
+	 */
+	connected: boolean = false
 
 	/** Help to patch render result. */
 	protected readonly rootContentSlot: TemplateSlot
@@ -102,9 +105,9 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> {
 	 * Caches slot elements which are marked as `<... slot="slotName">`.
 	 * You should re-define the detailed type like `{name1: Element, ...}` in derived components.
 	 */
-	protected readonly slotElements: Record<string, Element> = {}
+	protected readonly slotElements: Record<string, Element | null> = {}
 
-	constructor(properties: Record<string, any> = {}, el: HTMLElement = document.createElement('lupos-com')) {
+	constructor(properties: Record<string, any> = {}, el: HTMLElement = document.createElement('div')) {
 		super()
 
 		this.el = el
@@ -183,23 +186,15 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> {
 		}
 	}
 
-	/** For `:slot=slotName` binding apply slot elements. */
-	applySlotElement(slotName: string, el: Element) {
+	/** 
+	 * For `:slot=slotName` binding apply slot elements.
+	 * For inner usage only.
+	 */
+	__applySlotElement(slotName: string, el: Element | null) {
 		this.slotElements[slotName] = el
 	}
 
-	/** 
-	 * Connect current component to make it responsive.
-	 * Component is connected along with component's element,
-	 * but you can still connect it manually.
-	 * 
-	 * Note if a component is created by custom element, or as a child of parent component,
-	 * current component will be connected automatically.
-	 * 
-	 * But if a component is created manually, you should connect it yourself after insert
-	 * it's element into document, or use methods: `appendTo`, `insertBefore`, `insertAfter`.
-	 */
-	connectCallback(this: Component) {
+	afterConnectCallback(this: Component) {
 		if (this.connected) {
 			return
 		}
@@ -213,10 +208,11 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> {
 		this.willUpdate()
 		this.onConnected()
 		this.fire('connected')
+
+		this.rootContentSlot.afterConnectCallback(0)
 	}
 
-	/** Called after be disconnected each time. */
-	disconnectCallback(this: Component) {
+	async beforeDisconnectCallback(this: Component): Promise<void> {
 		if (!this.connected) {
 			return
 		}
@@ -226,8 +222,10 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> {
 		this.connected = false
 		this.onDisconnected()
 		this.fire('disconnected')
+
+		return this.rootContentSlot.beforeDisconnectCallback(0)
 	}
-	
+
 	/** After any tracked data change, enqueue it to update in next animation frame. */
 	protected willUpdate() {
 		
@@ -282,7 +280,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> {
 		container.append(this.el)
 		
 		if (this.el.ownerDocument) {
-			this.connectCallback()
+			this.afterConnectCallback()
 		}
 	}
 
@@ -291,7 +289,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> {
 		sibling.before(this.el)
 
 		if (this.el.ownerDocument) {
-			this.connectCallback()
+			this.afterConnectCallback()
 		}
 	}
 
@@ -300,14 +298,16 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> {
 		sibling.after(this.el)
 
 		if (this.el.ownerDocument) {
-			this.connectCallback()
+			this.afterConnectCallback()
 		}
 	}
 
 	/** Remove element from document, and disconnect. */
 	remove() {
+		// Not wait for leave transition.
+		this.beforeDisconnectCallback()
+		
 		this.el.remove()
-		this.disconnectCallback()
 	}
 }
 

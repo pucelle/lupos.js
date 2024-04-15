@@ -17,7 +17,7 @@ export interface DrawTransitionOptions extends TransitionOptions {
  * When enter, draw the line or path from start to end.
  * When leave, erase the line or path from end to start.
  */
-export const draw = defineTransition(async function(el: SVGGeometryElement, options: DrawTransitionOptions = {}) {
+export const draw = defineTransition(function(el: SVGGeometryElement, options: DrawTransitionOptions = {}) {
 	let {duration, speed} = options
 	let length = el.getTotalLength()
 

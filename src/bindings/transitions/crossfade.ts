@@ -25,6 +25,7 @@ const CrossFadeElementMatchMap: DoubleKeysMap<string | number, 'enter' | 'leave'
  */
 const CrossFadeTransitionBarrierQueue = new BarrierQueue()
 
+
 /** 
  * When enter, transform from the leave element to current state.
  * When leave, transform from current state to the leave element.

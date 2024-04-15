@@ -4,7 +4,7 @@ import {CompiledTemplateResult, Template, TemplateSlot} from '../template'
 
 /** Type of compiling statements like `<for of=${...}>...`. */
 type ForBlockStatement = (slot: TemplateSlot, context: any) => {
-	u(values: any[]): void
+	update(values: any[]): void
 }
 
 /** To render each item. */
@@ -24,7 +24,7 @@ export function make_for_statement(renderFn: ForRenderFn): ForBlockStatement {
 		let updator = new ForUpdator(slot, context, renderFn)
 	
 		return {
-			u(items: any[]) {
+			update(items: any[]) {
 				updator.update(items)
 			}
 		}
@@ -100,8 +100,6 @@ class ForUpdator<T> {
 		let t = result.maker.make(this.context)
 
 		this.insertTemplateBefore(t, nextOldT)
-
-		t.connect()
 		t.update(result.values)
 		this.templates.push(t)
 	}
@@ -120,6 +118,6 @@ class ForUpdator<T> {
 
 	private insertTemplateBefore(t: Template, nextOldT: Template | null) {
 		let position = nextOldT?.startInnerPosition || this.slot.endOuterPosition
-		position.insertBefore(...t.walkNodes())
+		t.insertNodesBefore(position)
 	}
 }

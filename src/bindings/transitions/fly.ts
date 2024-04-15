@@ -31,7 +31,7 @@ export interface FlyTransitionOptions extends TransitionOptions {
  * When enter, translate from specified values to none.
  * When leave, translate from none to specified values.
  */
-export const fly = defineTransition(async function(el: Element, options: FlyTransitionOptions = {}) {
+export const fly = defineTransition(function(el: Element, options: FlyTransitionOptions = {}) {
 	let x = options.x || 0
 	let y = options.y || 0
 	let transform = new DOMMatrix(getComputedStyle(el).transform)

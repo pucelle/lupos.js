@@ -23,7 +23,7 @@ export interface BlurTransitionOptions extends TransitionOptions {
  * When enter, do blur filter from with radius from specified to 0.
  * When leave, do blur filter from with radius from 0 to specified.
  */
-export const blur = defineTransition(async function(el: Element, options: BlurTransitionOptions = {radius: 5}) {
+export const blur = defineTransition(function(el: Element, options: BlurTransitionOptions = {radius: 5}) {
 	let blurValue = typeof options.radius === 'number' ? options.radius + 'px' : options.radius
 
 	let o: TransitionProperties = {

@@ -27,7 +27,7 @@ class AttachedComponent<E = any> extends Component<E> {
 	protected context: any
 
 	constructor(renderer: RenderResultRenderer, context: any) {
-		super({}, document.createElement('lupos-slot'))
+		super({}, document.createElement('slot'))
 		
 		this.renderer = renderer
 		this.context = context

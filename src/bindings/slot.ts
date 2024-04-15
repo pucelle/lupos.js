@@ -11,6 +11,8 @@ import {Binding, defineNamedBinding} from './define'
 export class SlotBinding implements Binding {
 
 	private readonly el: Element
+	private com: Component | null = null
+	private slotName: string | null = null
 
 	constructor(el: Element) {
 		this.el = el
@@ -25,7 +27,15 @@ export class SlotBinding implements Binding {
 
 	/** For compiler knows about closest component. */
 	updateComSlot(slotName: string, com: Component) {
-		com.applySlotElement(slotName, this.el)
+		this.slotName = slotName
+		this.com = com
+		com.__applySlotElement(slotName, this.el)
+	}
+
+	removeCallback() {
+		if (this.com) {
+			this.com.__applySlotElement(this.slotName!, null)
+		}
 	}
 }
 
