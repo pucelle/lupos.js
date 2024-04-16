@@ -25,6 +25,11 @@ export function make_await_statement(makers: (TemplateMaker | null)[]): AwaitBlo
 			let maker = makers[index]
 			template = maker ? maker.make(context) : null
 			slot.updateTemplate(template)
+
+			if (template) {
+				template.update(values!)
+				template.callConnectCallback()
+			}
 		}
 	
 		return {

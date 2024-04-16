@@ -1,13 +1,10 @@
-/** 
- * Values of Part Callback Parameter.
- * Never change the numeric values here.
- */
+/** Values of Part Callback Parameter. */
 export enum PartCallbackParameter {
 
-	/** If nodes of current part is been appended or removed in current context, this value is available. */
+	/** If nodes of current part is been inserted or removed within current context, this value is unioned. */
 	HappenInCurrentContext = 1,
 
-	/** If nodes of current part is been directly appended or removed, this value is available. */
+	/** If nodes of current part is been directly inserted or removed, this value is unioned. */
 	DirectlyMoveNodes = 2,
 }
 

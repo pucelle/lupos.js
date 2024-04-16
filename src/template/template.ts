@@ -5,7 +5,10 @@ import {noop} from '@pucelle/ff'
 import {Part, PartCallbackParameter} from '../types'
 
 
-/** Generate after a `TemplateClass` binded with a context. */
+/** 
+ * Represents a template make from a html`...`
+ * Be generated after a `TemplateMaker` binded with a context.
+ */
 export class Template implements Part {
 
 	readonly el: HTMLTemplateElement
@@ -62,6 +65,10 @@ export class Template implements Part {
 	/** Insert nodes before an end position. */
 	insertNodesBefore(position: TemplateSlotPosition) {
 		position.insertBefore(...this.el.content.childNodes)
+	}
+
+	/** After nodes inserted and template updated, call connect callback. */
+	callConnectCallback() {
 		this.afterConnectCallback(PartCallbackParameter.HappenInCurrentContext | PartCallbackParameter.DirectlyMoveNodes)
 	}
 

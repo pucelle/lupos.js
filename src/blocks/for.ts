@@ -101,6 +101,7 @@ class ForUpdator<T> {
 
 		this.insertTemplateBefore(t, nextOldT)
 		t.update(result.values)
+		t.callConnectCallback()
 		this.templates.push(t)
 	}
 
@@ -108,6 +109,7 @@ class ForUpdator<T> {
 		let result = this.renderFn(item, index)
 
 		t.update(result.values)
+		t.callConnectCallback()
 		this.templates.push(t)
 	}
 

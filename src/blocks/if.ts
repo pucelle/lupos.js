@@ -37,6 +37,7 @@ export function make_if_statement(
 
 				if (template) {
 					template.update(values)
+					template.callConnectCallback()
 				}
 			}
 		}
@@ -81,6 +82,7 @@ export function make_if_statement_cacheable(
 
 				if (template) {
 					template.update(values)
+					template.callConnectCallback()
 				}
 			}
 		}

@@ -27,6 +27,7 @@ export function make_keyed_statement(maker: TemplateMaker | null): KeyedBlockSta
 
 				if (template) {
 					template.update(values)
+					template.callConnectCallback()
 				}
 			}
 		}

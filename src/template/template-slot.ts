@@ -223,6 +223,7 @@ export class TemplateSlot implements Part {
 			let newT = tr.maker.make(this.context)
 			newT.insertNodesBefore(this.endOuterPosition)
 			newT.update(tr.values)
+			newT.callConnectCallback()
 			
 			this.content = newT
 		}
@@ -252,6 +253,7 @@ export class TemplateSlot implements Part {
 				
 				this.insertTemplate(newT, nextOldT)
 				newT.update(tr.values)
+				newT.callConnectCallback()
 
 				oldTs[i] = newT
 			}
