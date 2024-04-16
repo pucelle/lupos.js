@@ -3,6 +3,7 @@ import {ensureComponentStyle, ComponentStyle} from './style'
 import {getComponentFromElement} from './from-element'
 import {TemplateSlot, TemplateSlotPosition, SlotPositionType, CompiledTemplateResult} from '../template'
 import {ComponentConstructor, RenderResult} from './types'
+import {Part} from '../types'
 
 
 export interface ComponentEvents {
@@ -194,7 +195,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		this.slotElements[slotName] = el
 	}
 
-	afterConnectCallback(this: Component) {
+	afterConnectCallback(this: Component, _param: number) {
 		if (this.connected) {
 			return
 		}
@@ -212,7 +213,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		this.rootContentSlot.afterConnectCallback(0)
 	}
 
-	async beforeDisconnectCallback(this: Component): Promise<void> {
+	async beforeDisconnectCallback(this: Component, _param: number): Promise<void> {
 		if (!this.connected) {
 			return
 		}
@@ -280,7 +281,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		container.append(this.el)
 		
 		if (this.el.ownerDocument) {
-			this.afterConnectCallback()
+			this.afterConnectCallback(0)
 		}
 	}
 
@@ -289,7 +290,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		sibling.before(this.el)
 
 		if (this.el.ownerDocument) {
-			this.afterConnectCallback()
+			this.afterConnectCallback(0)
 		}
 	}
 
@@ -298,14 +299,14 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		sibling.after(this.el)
 
 		if (this.el.ownerDocument) {
-			this.afterConnectCallback()
+			this.afterConnectCallback(0)
 		}
 	}
 
 	/** Remove element from document, and disconnect. */
 	remove() {
 		// Not wait for leave transition.
-		this.beforeDisconnectCallback()
+		this.beforeDisconnectCallback(0)
 		
 		this.el.remove()
 	}

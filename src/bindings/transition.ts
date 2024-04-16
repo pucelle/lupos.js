@@ -1,6 +1,7 @@
 import {PerFrameTransition, WebTransition, WebTransitionOptions} from '@pucelle/ff'
 import {Binding, defineNamedBinding} from './define'
 import {PerFrameTransitionProperties, TransitionProperties, TransitionResult, WebTransitionProperties} from './transitions'
+import {Part, PartCallbackParameter} from '../types'
 
 
 /** Transition type, enum of two. */
@@ -23,7 +24,7 @@ enum MixedTransitionType {
  * - `leave-started`: After leave transition started.
  * - `leave-ended`: After leave transition ended.
  */
-export class TransitionBinding implements Binding {
+export class TransitionBinding implements Binding, Part {
 
 	private readonly el: Element
 	private readonly global: boolean
@@ -36,14 +37,14 @@ export class TransitionBinding implements Binding {
 		this.global = modifiers ? modifiers.includes('global') : false
 	}
 
-	afterConnectCallback(directly: 0 | 1) {
-		if (this.global || directly === 1) {
+	afterConnectCallback(param: number) {
+		if (this.global || param & PartCallbackParameter.DirectlyMoveNodes) {
 			this.enter()
 		}
 	}
 
-	async beforeDisconnectCallback(directly: 0 | 1): Promise<void> {
-		if (this.global || directly === 1) {
+	async beforeDisconnectCallback(param: number): Promise<void> {
+		if (this.global || param & PartCallbackParameter.DirectlyMoveNodes) {
 			return this.leave()
 		}
 	}

@@ -1,6 +1,7 @@
 import {TemplateSlotPosition, SlotPositionType, SlotEndOuterPositionType} from './template-slot-position'
 import {Template} from './template'
 import {CompiledTemplateResult} from './template-result-compiled'
+import {Part} from '../types'
 
 
 /** Contents that can be included in a `<tag>${...}<.tag>`. */
@@ -30,30 +31,30 @@ export class TemplateSlot implements Part {
 		this.contentType = knownType
 	}
 
-	afterConnectCallback(directly: 0 | 1) {
+	afterConnectCallback(param: number) {
 		// No need to check whether `endOuterPosition` is `SlotPositionType.AfterContent`.
 		// Because when component use this position, `directly` parameter is always be `0`.
 		// When a template should use this position, it always be `0`, and add a comment instead.
 
 		if (this.contentType === SlotContentType.TemplateResult) {
-			(this.content as Template).afterConnectCallback(directly)
+			(this.content as Template).afterConnectCallback(param)
 		}
 		else if (this.contentType === SlotContentType.TemplateResultArray) {
 			for (let t of this.content as Template[]) {
-				t.afterConnectCallback(directly)
+				t.afterConnectCallback(param)
 			}
 		}
 	}
 
-	async beforeDisconnectCallback(directly: 0 | 1): Promise<void> {
+	async beforeDisconnectCallback(param: number): Promise<void> {
 		if (this.contentType === SlotContentType.TemplateResult) {
-			return (this.content as Template).beforeDisconnectCallback(directly)
+			return (this.content as Template).beforeDisconnectCallback(param)
 		}
 		else if (this.contentType === SlotContentType.TemplateResultArray) {
 			let promises: Promise<void>[] = []
 			
 			for (let t of this.content as Template[]) {
-				let p = t.beforeDisconnectCallback(directly)
+				let p = t.beforeDisconnectCallback(param)
 				if (p) {
 					promises.push(p)
 				}

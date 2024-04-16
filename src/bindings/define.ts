@@ -9,7 +9,7 @@ export interface BindingConstructor {
 }
 
 /** Binding interface, all binding class should implement it. */
-export interface Binding extends Partial<Part> {
+export interface Binding {
 
 	/** 
 	 * Update binding parameters.

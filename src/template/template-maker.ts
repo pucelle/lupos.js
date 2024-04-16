@@ -1,5 +1,6 @@
 import {TemplateSlotPosition, SlotStartInnerPositionType} from './template-slot-position'
 import {Template} from './template'
+import {Part} from '../types'
 
 
 /** Compiler compile a html`<div>...` to new `CompiledTemplate('<div>...', CompiledTemplateInit)`. */
@@ -16,9 +17,10 @@ export interface TemplateInitResult {
 
 	/** 
 	 * List of all parts inside.
-	 * `0 | 1` represents whether part in the first level (under root) of template.
+	 * Second value is the AND of each `PartCallbackParameter`, can be `1` or `3`,
+	 * it represents whether part in the first level (under root) of template,
 	 */
-	l?: [Part, 0 | 1][]
+	l?: [Part, number][]
 }
 
 
