@@ -11,6 +11,10 @@ enum MixedTransitionType {
 }
 
 
+const TransitionBindingNotConnectedForFirstTime: WeakSet<TransitionBinding> = new WeakSet()
+
+
+
 /**
  * `:transition` binding can play transition animation after element connected or before disconnect.
  * - `<el :transition=${fade({duration, ...})}>`
@@ -27,17 +31,41 @@ enum MixedTransitionType {
 export class TransitionBinding implements Binding, Part {
 
 	private readonly el: Element
-	private readonly global: boolean
+
+	/** 
+	 * A `local` transition as default action,
+	 * can only play when attached elements been directly inserted or removed.
+	 * A `global` transition can play when any level of ancestral elements get inserted or removed.
+	 * Normally `global` property can only set by compiler.
+	 */
+	global: boolean = false
+
+	/** 
+	 * By default, transition cant play when get initialized.
+	 * But set `immediate` can make it play.
+	 * Normally `immediate` property can only set by compiler.
+	 */
+	immediate: boolean = false
+
 	private result: TransitionResult | null = null
 	private mixedTransitionType: MixedTransitionType | null = null
 	private mixedTransition: PerFrameTransition | WebTransition | null = null
 
-	constructor(el: Element, _context: any, modifiers: string[] | undefined) {
+	constructor(el: Element) {
 		this.el = el
-		this.global = modifiers ? modifiers.includes('global') : false
+		TransitionBindingNotConnectedForFirstTime.add(this)
 	}
 
 	afterConnectCallback(param: number) {
+		if (TransitionBindingNotConnectedForFirstTime.has(this)) {
+			TransitionBindingNotConnectedForFirstTime.delete(this)
+
+			// Prevent first time enter transition playing if not `immediate`.
+			if (!this.immediate) {
+				return
+			}
+		}
+
 		if (this.global || param & PartCallbackParameter.DirectlyMoveNodes) {
 			this.enter()
 		}

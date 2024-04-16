@@ -2,20 +2,24 @@
 export interface BindingConstructor {
 
 	/** 
-	 * When defining a binding, we suggest to declare type of `modifiers`
-	 * to the enum of each modifer string, like `('mod1' | 'mod2')[]`.
+	 * When defining a binding class, we suggest to declare type of `modifiers`
+	 * to the enum of each modifier string, like `('mod1' | 'mod2')[]`.
 	 */
 	new (el: Element, context?: any, modifiers?: string[]): Binding
 }
 
-/** Binding interface, all binding class should implement it. */
+/** 
+ * Binding interface, all binding class should implement it.
+ * If binding class need to implement `Part` to program connect and disconnect callback,
+ * it must implement both methods of `Part`.
+ */
 export interface Binding {
 
 	/** 
 	 * Update binding parameters.
 	 * If not provide, means no need to update.
 	 */
-	update?: (value: any, ...args: any[]) => void
+	update?: (value: any) => void
 }
 
 

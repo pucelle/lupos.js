@@ -1,4 +1,5 @@
 import {Component} from '../component'
+import {Part, PartCallbackParameter} from '../types'
 import {Binding, defineNamedBinding} from './define'
 
 
@@ -8,33 +9,52 @@ import {Binding, defineNamedBinding} from './define'
  * - `<com :ref=${this.prop}>`- Reference target component as a property of current component.
  * - `<com :ref.el=${this.prop}>`- Reference element of target component as a property of current component.
  */
-export class RefBinding implements Binding {
+export class RefBinding implements Binding, Part {
 
 	private readonly el: Element
+	
+	/** 
+	 * Whether reference only element, not component.
+	 * For `:ref.el`, compiler will set this property to `true`.
+	 */
+	refElement: boolean = false
+
+	private refFn: ((value: any) => void) | null = null
 
 	constructor(el: Element) {
 		this.el = el
 	}
 
-	update(refFn: (value: Component | Element) => void) {
-		let com = Component.from(this.el)
-		if (com) {
-			refFn(com)
+	update(refFn: (value: Component | Element | null) => void) {
+		this.refFn = refFn
+		this.doReference()
+	}
+
+	private doReference() {
+		if (this.refElement) {
+			this.refFn!(this.el)
 		}
 		else {
-			refFn(this.el)
+			let com = Component.from(this.el)
+			if (com) {
+				this.refFn!(com)
+			}
+			else {
+				this.refFn!(this.el)
+			}
 		}
 	}
 
-	/** If compiler knows that will reference a component. */
-	updateComponent(refFn: (value: Component) => void) {
-		let com = Component.from(this.el)!
-		refFn(com)
+	afterConnectCallback(param: number) {
+		if (this.refFn && param & PartCallbackParameter.HappenInCurrentContext) {
+			this.refFn(null)
+		}
 	}
 
-	/** If compiler knows that will reference an element. */
-	updateElement(refFn: (value: Element) => void) {
-		refFn(this.el)
+	async beforeDisconnectCallback(param: number) {
+		if (this.refFn && param & PartCallbackParameter.HappenInCurrentContext) {
+			this.doReference()
+		}
 	}
 }
 
