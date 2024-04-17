@@ -242,6 +242,18 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 
 		// May provide an `onBeforeUpdate` here.
 		
+		this.updateRendering()
+		this.onUpdated()
+		this.fire('updated')
+
+		if (ComponentCreatedReadyStates.get(this) === 1) {
+			ComponentCreatedReadyStates.delete(this)
+			this.onReady()
+		}
+	}
+
+	/** Update rendering contents. */
+	protected updateRendering() {
 		DependencyTracker.beginTrack(this.willUpdate, this)
 		let result: CompiledTemplateResult | CompiledTemplateResult[] | string | null
 
@@ -257,13 +269,6 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		}
 
 		this.rootContentSlot!.update(result)
-		this.onUpdated()
-		this.fire('updated')
-
-		if (ComponentCreatedReadyStates.get(this) === 1) {
-			ComponentCreatedReadyStates.delete(this)
-			this.onReady()
-		}
 	}
 
 	/** 
