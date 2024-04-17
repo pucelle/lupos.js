@@ -81,7 +81,7 @@ class ForUpdator<T> {
 				this.createTemplate(newItem!, toIndex, nextOldT!)
 			}
 			else if (type === EditType.Delete) {
-				this.removeTemplate(fromT!, nextOldT)
+				this.removeTemplate(fromT!)
 			}
 		}
 	}
@@ -113,9 +113,8 @@ class ForUpdator<T> {
 		this.templates.push(t)
 	}
 
-	private removeTemplate(t: Template, nextOldT: Template | null) {
-		let position = nextOldT?.startInnerPosition || this.slot.endOuterPosition
-		t.recycleNodesBefore(position)
+	private removeTemplate(t: Template) {
+		t.recycleNodes()
 	}
 
 	private insertTemplateBefore(t: Template, nextOldT: Template | null) {

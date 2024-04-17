@@ -3,6 +3,11 @@ import {TemplateSlot} from './template-slot'
 import {TemplateMaker, TemplateInitResult} from './template-maker'
 import {noop} from '@pucelle/ff'
 import {Part, PartCallbackParameter} from '../types'
+import {TemplateSlotPositionMap} from './template-slot-position-map'
+
+
+/** Help to cache template insert position. */
+const PositionMap = new TemplateSlotPositionMap()
 
 
 /** 
@@ -62,9 +67,13 @@ export class Template implements Part {
 		}
 	}
 
-	/** Insert nodes before an end position. */
+	/** 
+	 * Insert nodes before an end position.
+	 * Note it will not call connect callback, you should do it manually after updated current template.
+	 */
 	insertNodesBefore(position: TemplateSlotPosition) {
 		position.insertBefore(...this.el.content.childNodes)
+		PositionMap.addPosition(this, position)
 	}
 
 	/** After nodes inserted and template updated, call connect callback. */
@@ -72,17 +81,22 @@ export class Template implements Part {
 		this.afterConnectCallback(PartCallbackParameter.HappenInCurrentContext | PartCallbackParameter.DirectlyMoveNodes)
 	}
 
-	/** Recycle nodes before an end position. */
-	async recycleNodesBefore(position: TemplateSlotPosition) {
+	/** 
+	 * Recycle nodes that was first created in current template.
+	 * Will also call disconnect callback before recycling nodes.
+	 */
+	async recycleNodes() {
 		await this.beforeDisconnectCallback(PartCallbackParameter.HappenInCurrentContext | PartCallbackParameter.DirectlyMoveNodes)
 
+		let position = PositionMap.getPosition(this)!
+
 		let firstNode = this.getFirstNode()
-		if (!firstNode) {
-			return
+		if (firstNode) {
+			for (let node of position.walkNodesForwardUntil(firstNode)) {
+				this.el.prepend(node)
+			}
 		}
 
-		for (let node of position.walkNodesForwardUntil(firstNode)) {
-			this.el.prepend(node)
-		}
+		PositionMap.deletePosition(this, position)
 	}
 }

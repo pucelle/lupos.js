@@ -11,8 +11,8 @@ enum MixedTransitionType {
 }
 
 
-const TransitionBindingNotConnectedForFirstTime: WeakSet<TransitionBinding> = new WeakSet()
-
+/** Cache those bindings that havn't trigger connect callback yet. */
+const NotConnectCallbackForFirstTime: WeakSet<TransitionBinding> = new WeakSet()
 
 
 /**
@@ -36,14 +36,14 @@ export class TransitionBinding implements Binding, Part {
 	 * A `local` transition as default action,
 	 * can only play when attached elements been directly inserted or removed.
 	 * A `global` transition can play when any level of ancestral elements get inserted or removed.
-	 * Normally `global` property can only set by compiler.
+	 * Normally `global` property can only be set by compiler.
 	 */
 	global: boolean = false
 
 	/** 
 	 * By default, transition cant play when get initialized.
 	 * But set `immediate` can make it play.
-	 * Normally `immediate` property can only set by compiler.
+	 * Normally `immediate` property can only be set by compiler.
 	 */
 	immediate: boolean = false
 
@@ -53,12 +53,12 @@ export class TransitionBinding implements Binding, Part {
 
 	constructor(el: Element) {
 		this.el = el
-		TransitionBindingNotConnectedForFirstTime.add(this)
+		NotConnectCallbackForFirstTime.add(this)
 	}
 
 	afterConnectCallback(param: number) {
-		if (TransitionBindingNotConnectedForFirstTime.has(this)) {
-			TransitionBindingNotConnectedForFirstTime.delete(this)
+		if (NotConnectCallbackForFirstTime.has(this)) {
+			NotConnectCallbackForFirstTime.delete(this)
 
 			// Prevent first time enter transition playing if not `immediate`.
 			if (!this.immediate) {
@@ -72,6 +72,12 @@ export class TransitionBinding implements Binding, Part {
 	}
 
 	async beforeDisconnectCallback(param: number): Promise<void> {
+
+		// Ancestral element has been removed immediately, no need to play transition.
+		if (param & PartCallbackParameter.RemoveImmediately) {
+			return
+		}
+
 		if (this.global || param & PartCallbackParameter.DirectlyMoveNodes) {
 			return this.leave()
 		}

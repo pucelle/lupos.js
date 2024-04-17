@@ -55,7 +55,7 @@ function getStyleContent(style: ComponentStyle): string {
 
 /** 
  * Add a global style. compare to normal style codes, it can use variables and can be updated dynamically.
- * - `style`: A string, css`...`, or a function return preceding.
+ * - `style`: A string, or a template in css`...` format, or a function return these two.
  */
 export function addGlobalStyle(style: ComponentStyle) {
 	createStyleElement(style, 'global')

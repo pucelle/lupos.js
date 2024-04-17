@@ -41,9 +41,5 @@ const DefinedNamedBindingMap: Map<string, BindingConstructor> = new Map()
  * That's why it is not been exported.
  */
 export function defineNamedBinding(name: string, Binding: BindingConstructor) {
-	if (DefinedNamedBindingMap.has(name)) {
-		console.warn(`You are trying to overwrite binding definition "${name}"`)
-	}
-
 	DefinedNamedBindingMap.set(name, Binding)
 }

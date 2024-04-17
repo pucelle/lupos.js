@@ -1,6 +1,7 @@
 import {logger} from '@pucelle/ff'
 import {addElementComponentMap, getComponentFromElement} from './from-element'
 import {ComponentConstructor} from './types'
+import {PartCallbackParameter} from '../types'
 
 
 /** Map custom element property to component property. */
@@ -59,7 +60,7 @@ function onConnected(el: HTMLElement) {
 
 	// Component instance is created.
 	if (com) {
-		com.afterConnectCallback()
+		com.afterConnectCallback(0)
 	}
 	else {
 		let {Com, propertyMap} = CustomElementConstructorMap.get(el.localName)!
@@ -95,7 +96,7 @@ function makeProperties(el: HTMLElement, propertyMap: PropertyMapOf<any>): Recor
 function onDisconnected(el: HTMLElement) {
 	let com = getComponentFromElement(el)
 	if (com && com.connected) {
-		com.beforeDisconnectCallback()
+		com.beforeDisconnectCallback(PartCallbackParameter.RemoveImmediately)
 		logger.logOnce(`Suggest you DON'T remove custom element directly, which will cause disconnection action cant work normally! We suggest you to remove component instead.`, 'CustomElementDisconnectActionWarning')
 	}
 }

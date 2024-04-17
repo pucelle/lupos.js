@@ -3,7 +3,7 @@ import {ensureComponentStyle, ComponentStyle} from './style'
 import {getComponentFromElement} from './from-element'
 import {TemplateSlot, TemplateSlotPosition, SlotPositionType, CompiledTemplateResult} from '../template'
 import {ComponentConstructor, RenderResult} from './types'
-import {Part} from '../types'
+import {Part, PartCallbackParameter} from '../types'
 
 
 export interface ComponentEvents {
@@ -213,7 +213,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		this.rootContentSlot.afterConnectCallback(0)
 	}
 
-	async beforeDisconnectCallback(this: Component, _param: number): Promise<void> {
+	async beforeDisconnectCallback(this: Component, param: number): Promise<void> {
 		if (!this.connected) {
 			return
 		}
@@ -224,7 +224,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		this.onDisconnected()
 		this.fire('disconnected')
 
-		return this.rootContentSlot.beforeDisconnectCallback(0)
+		return this.rootContentSlot.beforeDisconnectCallback(param & PartCallbackParameter.RemoveImmediately)
 	}
 
 	/** After any tracked data change, enqueue it to update in next animation frame. */
@@ -306,7 +306,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	/** Remove element from document, and disconnect. */
 	remove() {
 		// Not wait for leave transition.
-		this.beforeDisconnectCallback(0)
+		this.beforeDisconnectCallback(PartCallbackParameter.RemoveImmediately)
 		
 		this.el.remove()
 	}

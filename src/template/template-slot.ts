@@ -171,16 +171,14 @@ export class TemplateSlot implements Part {
 		}
 
 		if (this.contentType === SlotContentType.TemplateResult) {
-			this.removeTemplate(this.content as Template, null)
+			this.removeTemplate(this.content as Template)
 		}
 		else if (this.contentType === SlotContentType.TemplateResultArray) {
 			let ts = this.content as Template[]
 
 			for (let i = 0; i < ts.length; i++) {
 				let t = ts[i]
-				let prevT = i > 0 ? ts[i - 1] : null
-
-				this.removeTemplate(t, prevT)
+				this.removeTemplate(t)
 			}
 		}
 
@@ -200,7 +198,7 @@ export class TemplateSlot implements Part {
 		}
 
 		if (oldT) {
-			this.removeTemplate(oldT, null)
+			this.removeTemplate(oldT)
 		}
 
 		if (t) {
@@ -210,6 +208,7 @@ export class TemplateSlot implements Part {
 		this.content = t
 	}
 
+	/** Update template when knowing it's a result type. */
 	updateTemplateResult(tr: CompiledTemplateResult) {
 		let oldT = this.content as Template | null
 		if (oldT && oldT.maker === tr.maker) {
@@ -217,7 +216,7 @@ export class TemplateSlot implements Part {
 		}
 		else {
 			if (oldT) {
-				this.removeTemplate(oldT, null)
+				this.removeTemplate(oldT)
 			}
 
 			let newT = tr.maker.make(this.context)
@@ -229,6 +228,7 @@ export class TemplateSlot implements Part {
 		}
 	}
 
+	/** Update template when knowing it's a result list type. */
 	updateTemplateResultArray(trs: CompiledTemplateResult[]) {
 		let oldTs = this.content as Template[] | null
 		if (!oldTs) {
@@ -248,7 +248,7 @@ export class TemplateSlot implements Part {
 				let nextOldT = i < oldTs.length - 1 ? oldTs[i + 1] : null
 
 				if (oldT) {
-					this.removeTemplate(oldT, nextOldT)
+					this.removeTemplate(oldT)
 				}
 				
 				this.insertTemplate(newT, nextOldT)
@@ -263,23 +263,12 @@ export class TemplateSlot implements Part {
 		if (trs.length < oldTs.length) {
 			for (let i = trs.length; i < oldTs.length; i++) {
 				let oldT = oldTs[i]
-				let nextOldT = i + 1 < oldTs.length ? oldTs[i + 1] : null
-
-				this.removeTemplate(oldT, nextOldT)
+				this.removeTemplate(oldT)
 			}
 		}
 	}
 
-	private removeTemplate(t: Template, nextT: Template | null) {
-		let position = nextT?.startInnerPosition || this.endOuterPosition
-		t.recycleNodesBefore(position)
-	}
-
-	private insertTemplate(t: Template, nextT: Template | null) {
-		let position = nextT?.startInnerPosition || this.endOuterPosition
-		t.insertNodesBefore(position)
-	}
-
+	/** Update template when knowing it's a text type. */
 	updateText(value: unknown) {
 		let node = this.content as Text | null
 		let text = value === null || value === undefined ? '' : String(value).trim()
@@ -299,5 +288,16 @@ export class TemplateSlot implements Part {
 				node.textContent = ''
 			}
 		}
+	}
+
+	/** Insert a template before another. */
+	private insertTemplate(t: Template, nextT: Template | null) {
+		let position = nextT?.startInnerPosition || this.endOuterPosition
+		t.insertNodesBefore(position)
+	}
+
+	/** Remove a template. */
+	private removeTemplate(t: Template) {
+		t.recycleNodes()
 	}
 }

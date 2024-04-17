@@ -1,11 +1,17 @@
 /** Values of Part Callback Parameter. */
 export enum PartCallbackParameter {
 
-	/** If nodes of current part is been inserted or removed within current context, this value is unioned. */
+	/** If nodes of current part has been inserted or removed within current context, this value is unioned. */
 	HappenInCurrentContext = 1,
 
-	/** If nodes of current part is been directly inserted or removed, this value is unioned. */
+	/** If nodes of current part will be directly inserted or removed, this value is unioned. */
 	DirectlyMoveNodes = 2,
+
+	/** 
+	 * If nodes of current part has been removed immediately, no need to play transition any more.
+	 * Only use it for disconnect callback.
+	 */
+	RemoveImmediately = 4,
 }
 
 
