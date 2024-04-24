@@ -31,7 +31,6 @@ export class SlotBinding implements Binding, Part {
 	updateComSlot(slotName: string, com: Component) {
 		this.slotName = slotName
 		this.com = com
-		com.__applySlotElement(slotName, this.el)
 	}
 
 	afterConnectCallback(param: number) {

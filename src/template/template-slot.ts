@@ -188,7 +188,7 @@ export class TemplateSlot implements Part {
 	/** 
 	 * Update template directly and manually without checking maker equality.
 	 * `Template` type is not a auto-recognized content type, so you cant call `update()` with it.
-	 * If template is managed and cached outside, update template here.
+	 * Use this when template is managed and cached outside, update template here.
 	 */
 	updateTemplate(t: Template | null) { 
 		let oldT = this.content as Template | null

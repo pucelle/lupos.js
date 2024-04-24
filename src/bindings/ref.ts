@@ -27,7 +27,6 @@ export class RefBinding implements Binding, Part {
 
 	update(refFn: (value: Component | Element | null) => void) {
 		this.refFn = refFn
-		this.doReference()
 	}
 
 	private doReference() {
@@ -47,13 +46,13 @@ export class RefBinding implements Binding, Part {
 
 	afterConnectCallback(param: number) {
 		if (this.refFn && param & PartCallbackParameter.HappenInCurrentContext) {
-			this.refFn(null)
+			this.doReference()
 		}
 	}
 
 	async beforeDisconnectCallback(param: number) {
 		if (this.refFn && param & PartCallbackParameter.HappenInCurrentContext) {
-			this.doReference()
+			this.refFn(null)
 		}
 	}
 }

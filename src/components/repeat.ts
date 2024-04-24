@@ -1,23 +1,23 @@
 import {Component} from '../component'
-import {DOMScroll, DependencyTracker, EditType, TransitionEasingName, getEditRecord} from '@pucelle/ff'
+import {DOMScroll, DependencyTracker, EditType, TransitionEasingName, UpdateQueue, getEditRecord, input} from '@pucelle/ff'
 import {CompiledTemplateResult, Template} from '../template'
 
 
 /** To render each item. */
-type RepeatRenderFn<T> = (item: T, index: number) => CompiledTemplateResult
+export type RepeatRenderFn<T> = (item: T, index: number) => CompiledTemplateResult
 
 
 /** 
  * `<Repeat>` creates repetitive contents by a `renderFn` and an iterable data.
  * it works just like a `<for>...` block, but gives more controlable based on component.
  */
-export class Repeat<E = any, T = any> extends Component<E> {
+export class Repeat<T = any, E = any> extends Component<E> {
 
 	/** Current data list to repeat. */
-	data: T[] = []
+	@input data: T[] = []
 
 	/** Render function to generate template result by each item. */
-	renderFn!: RepeatRenderFn<T>
+	@input renderFn!: RepeatRenderFn<T>
 
 	/** Old data last rendering used. */
 	protected oldData: T[] = []
@@ -29,7 +29,7 @@ export class Repeat<E = any, T = any> extends Component<E> {
 		DependencyTracker.beginTrack(this.willUpdate, this)
 
 		try {
-			this.updateData()
+			this.doUpdateRendering()
 		}
 		catch (err) {
 			console.warn(err)
@@ -37,16 +37,20 @@ export class Repeat<E = any, T = any> extends Component<E> {
 		finally {
 			DependencyTracker.endTrack()
 		}
-
-		this.oldData = this.data
 	}
 
-	protected updateData() {
+	/** Update all the things here, can be overwritten. */
+	protected doUpdateRendering() {
+		this.updateData(this.data)
+	}
+
+	/** Update to new data items. */
+	protected updateData(newData: T[]) {
 		let oldData = this.oldData
-		let newData = this.data
 		let oldTs = this.templates
 		let editRecord = getEditRecord(oldData, newData, true)
-
+		
+		this.oldData = newData
 		this.templates = []
 
 		for (let record of editRecord) {
@@ -115,13 +119,29 @@ export class Repeat<E = any, T = any> extends Component<E> {
 	}
 
 	/** 
-	 * Make rendered item in the specified index becomes fully visible by scrolling minimum distance in X/Y direction.
-	 * - `gap`: Reserve a little distance from the element's edge away from view area edge.
-	 * 
-	 * Adjust immediately, so you will need to ensure elements get rendered.
-	 * Returns `true` if scrolled.
+	 * Set the start index of current rendered items,
+	 * the item at this index will be scrolled to the top of scroll viewport.
+	 * Returns a promise, which will be resolved by whether scrolled.
 	 */
-	scrollIndexToView(index: number, gap?: number, duration?: number, easing?: TransitionEasingName): boolean {
+	async setStartIndex(index: number): Promise<boolean> {
+		await UpdateQueue.untilComplete()
+
+		let scroller = this.el.parentElement!
+		if (!scroller) {
+			return false
+		}
+
+		return this.scrollIndexToStart(index)
+	}
+
+	/** 
+	 * Make rendered item at the specified index becomes fully visible by scrolling minimum distance in X/Y direction.
+	 * - `gap`: Reserve a little distance from the element's edge away from scroll viewport edge.
+	 * 
+	 * Adjust immediately, so you will need to ensure elements have been rendered.
+	 * Returns a promise, which will be resolved by whether scrolled.
+	 */
+	async scrollIndexToView(index: number, gap?: number, duration?: number, easing?: TransitionEasingName): Promise<boolean> {
 		let el = this.templates[index]?.getFirstNode() as Node | null
 		if (!el || el.nodeType !== 1) {
 			return false
@@ -131,34 +151,18 @@ export class Repeat<E = any, T = any> extends Component<E> {
 	}
 
 	/** 
-	 * Make rendered item in the specified index visible at the top edge of scroller.
-	 * - `gap`: Reserve a little distance from the element's edge away from view area edge.
+	 * Make rendered item at the specified index located in the topest or left most of scroll viewport.
+	 * - `gap`: Reserve a little distance from the element's edge away from scroll viewport edge.
 	 * 
-	 * Adjust immediately, so you will need to ensure elements get rendered.
-	 * Returns `true` if scrolled.
+	 * Adjust immediately, so you will need to ensure elements have been rendered.
+	 * Returns a promise, which will be resolved by whether scrolled.
 	 */
-	scrollIndexToTop(index: number, gap?: number, duration?: number, easing?: TransitionEasingName): boolean {
+	async scrollIndexToStart(index: number, gap?: number, duration?: number, easing?: TransitionEasingName): Promise<boolean> {
 		let el = this.templates[index]?.getFirstNode() as Node | null
 		if (!el || el.nodeType !== 1) {
 			return false
 		}
 
-		return DOMScroll.scrollToTop(el as HTMLElement, gap, duration, easing)
-	}
-
-	/** 
-	 * Make rendered item in the specified index visible at the top edge of scroller.
-	 * - `gap`: Reserve a little distance from the element's edge away from view area edge.
-	 * 
-	 * Adjust immediately, so you will need to ensure elements get rendered.
-	 * Returns `true` if scrolled.
-	 */
-	scrollIndexToLeft(index: number, gap?: number, duration?: number, easing?: TransitionEasingName): boolean {
-		let el = this.templates[index]?.getFirstNode() as Node | null
-		if (!el || el.nodeType !== 1) {
-			return false
-		}
-
-		return DOMScroll.scrollToLeft(el as HTMLElement, gap, duration, easing)
+		return DOMScroll.scrollToStart(el as HTMLElement, gap, duration, easing)
 	}
 }

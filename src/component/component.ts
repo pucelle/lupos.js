@@ -1,4 +1,4 @@
-import {DependencyTracker, EventFirer, UpdateQueue} from '@pucelle/ff'
+import {DependencyTracker, EventFirer, UpdateQueue, observable} from '@pucelle/ff'
 import {ensureComponentStyle, ComponentStyle} from './style'
 import {getComponentFromElement} from './from-element'
 import {TemplateSlot, TemplateSlotPosition, SlotPositionType, CompiledTemplateResult} from '../template'
@@ -48,6 +48,7 @@ const ComponentCreatedReadyStates: WeakMap<object, 1 | 2> = new WeakMap()
  * - If instantiate from `new`, It **cant** be automatically connected or disconnected along it's element.
  * - If instantiate from custom element, It **can** be automatically connected or disconnected along it's element.
  */
+@observable
 export class Component<E = any> extends EventFirer<E & ComponentEvents> implements Part {
 
 	/** 
@@ -93,10 +94,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	/** The root element of component. */
 	readonly el: HTMLElement
 
-	/**
-	 * Whether current component was connected into a document.
-	 * Readonly outside.
-	 */
+	/** Whether current component was connected into a document. */
 	connected: boolean = false
 
 	/** Help to patch render result. */
@@ -152,7 +150,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * If choose to overwrite `onConnected`, Never forget to call `super.onConnected()`.
 	 */
 	protected onConnected() {
-		// After compiled with ts-transformer:
+		// After compiled by `@pucelle/lupos.compiler`:
 		// - Will track all the `@computed` values here.
 		// - Will start `@watch` properties here.
 	}
@@ -167,7 +165,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * If choose to overwrite `onDisconnected`, Never forget to call `super.onDisconnected()`.
 	 */
 	protected onDisconnected() {
-		// After compiled with ts-transformer:
+		// After compiled by `@pucelle/lupos.compiler`:
 		// - Will clear and untrack all the `@computed` values here.
 		// - Will stop `@watch` properties here.
 	}
@@ -196,10 +194,6 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	}
 
 	afterConnectCallback(this: Component, _param: number) {
-		if (this.connected) {
-			return
-		}
-
 		if (ComponentCreatedReadyStates.get(this) === 1) {
 			ComponentCreatedReadyStates.set(this, 2)
 			this.onCreated()
@@ -214,16 +208,13 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	}
 
 	async beforeDisconnectCallback(this: Component, param: number): Promise<void> {
-		if (!this.connected) {
-			return
-		}
-
 		DependencyTracker.untrack(this.willUpdate, this)
 
 		this.connected = false
 		this.onDisconnected()
 		this.fire('disconnected')
 
+		// Only transfer `RemoveImmediately` parameter.
 		return this.rootContentSlot.beforeDisconnectCallback(param & PartCallbackParameter.RemoveImmediately)
 	}
 
@@ -252,7 +243,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		}
 	}
 
-	/** Update rendering contents. */
+	/** Tracke and update rendering contents. */
 	protected updateRendering() {
 		DependencyTracker.beginTrack(this.willUpdate, this)
 		let result: CompiledTemplateResult | CompiledTemplateResult[] | string | null

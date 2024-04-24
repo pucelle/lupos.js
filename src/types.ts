@@ -24,14 +24,15 @@ export interface Part {
 	/** 
 	 * After nodes or any ancestral nodes of current part were inserted into a context.
 	 * Will also broadcast calling recursively for all descendant parts.
-	 * - `param`: AND byte operate of whether `HappenInCurrentContext` and whether `DirectlyMoveNodes`.
+	 * For bindings, it should be completely updated right now.
+	 * - `param`: AND byte operate of `PartCallbackParameter`.
 	 */
 	afterConnectCallback(param: number): void
 
 	/** 
 	 * Before nodes or any ancestral nodes of current part are going to be removed from a context.
 	 * Will also broadcast calling recursively for all descendant parts.
-	 * - `param`: AND byte operate of whether `HappenInCurrentContext` and whether `DirectlyMoveNodes`.
+	 * - `param`: AND byte operate of `PartCallbackParameter`.
 	 */
 	beforeDisconnectCallback(param: number): Promise<void>
 }
