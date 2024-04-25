@@ -1,14 +1,18 @@
 import {DOMScroll, UpdateQueue} from '@pucelle/ff'
-import {locateLastVisibleIndex, locateFirstVisibleIndex, getRect, Rect} from './utils'
+import {locateVisibleIndex} from './visible-index-locator'
 import {PartialRendererSizeStat} from './partial-renderer-size-stat'
+import {DirectionalAccessor} from './directional-accessor'
 
 
 /** Function for doing updating, resolved after render complete and can check computed styles. */
-type UpdateDataCallback = (startIndex: number, endIndex: number, scrollDirection: 'up' | 'down' | null) => void
+type UpdateDataCallback = (startIndex: number, endIndex: number, scrollDirection: 'start' | 'end' | null) => void
 
 
 /** Latest render state, values keep change after each time rendering. */
 interface RenderState {
+
+	/** Whether in rendering. */
+	rendering: boolean
 
 	/** Latest scroller size. */
 	scrollerSize: number
@@ -66,8 +70,27 @@ export class PartialRenderer {
 	/** Do rendered item size statistic, guess item size. */
 	private readonly ss: PartialRendererSizeStat = new PartialRendererSizeStat()
 
+	/** Help to get and set based on overflow direction. */
+	private readonly da: DirectionalAccessor
+
+	/** 
+	 * The start index of the first item in the whole data.
+	 * Readonly outside.
+	 */
+	private startIndex: number = 0
+
+	/**
+	 * The end index of next position of last item in the whole data.
+	 * Readonly outside.
+	 */
+	private endIndex: number = 0
+
+	/** Current total data count. */
+	private dataCount: number = 0
+	
 	/** Cache render state values, and use them for later rendering. */
 	private readonly state: RenderState = {
+		rendering: false,
 		scrollerSize: 0,
 		maxEndIndexForPlaceholder: 0,
 		scrollDirection: null,
@@ -75,22 +98,6 @@ export class PartialRenderer {
 		sliderEndPosition: 0,
 		needToApplyStartIndex: true,
 	}
-
-	/** 
-	 * The start index of the first item in the whole data.
-	 * Readonly outside.
-	 */
-	startIndex: number = 0
-
-	/**
-	 * The end index of next position of last item in the whole data.
-	 * Readonly outside.
-	 */
-	endIndex: number = 0
-
-	/** Current total data count. */
-	private dataCount: number = 0
-	
 
 	constructor(scroller: HTMLElement,
 		slider: HTMLElement,
@@ -103,6 +110,7 @@ export class PartialRenderer {
 		this.palceholder = palceholder
 		this.overflowDirection = overflowDirection
 		this.updateDataCallback = updateDataCallback
+		this.da = new DirectionalAccessor(overflowDirection)
 		
 		// Avoid it cause reflow.
 		UpdateQueue.onComplete(() => {
@@ -136,13 +144,17 @@ export class PartialRenderer {
 			}
 		}
 		else {
-			this.overflowDirection = DOMScroll.getScrollDirection(this.scroller)
+			this.overflowDirection = DOMScroll.getCSSOverflowDirection(this.scroller)
+			this.da.setDirection(this.overflowDirection)
 		}
 	}
 
 	/** Set `renderCountRate` property. */
 	setRenderCountRate(renderCountRate: number) {
-		this.renderCountRate = renderCountRate
+		if (renderCountRate !== this.renderCountRate) {
+			this.renderCountRate = renderCountRate
+			this.state.maxEndIndexForPlaceholder = 0
+		}
 	}
 
 	/** Will make the rendered item at this index been located at the top/left of scroll viewport. */
@@ -158,6 +170,14 @@ export class PartialRenderer {
 
 	/** Update from applying start index or updating data. */
 	async updateRendering() {
+		if (this.state.rendering) {
+			return
+		}
+
+
+		//// Can only write dom properties below.
+		this.state.rendering = true
+
 		// Adjust scroll position to specified index.
 		if (this.state.needToApplyStartIndex) {
 			this.updateWithNewStartIndex()
@@ -169,14 +189,18 @@ export class PartialRenderer {
 			this.updatePersistIndicesAndPosition()
 		}
 
-		this.updateStatePre(null)
-		this.updatePlaceholderSizePre()
+		this.updatePlaceholderSize()
+
+
+		//// Can only read dom properties below.
 
 		await UpdateQueue.untilComplete()
-		this.updateStatePost()
-		this.updatePlaceholderSizePost()
+		this.updateState()
+		this.state.rendering = false
 
-		this.updateRenderingContinuously()
+
+		// Re-check coverage.
+		// this.updateCoverage()
 	}
 
 	/** Update when start index specified and need to apply. */
@@ -202,37 +226,26 @@ export class PartialRenderer {
 
 	/** Reset scroll position by current start index. */
 	private resetSliderPosition() {
-		let countBeforeStart = this.startIndex
-		let newTop = this.ss.getAverageSize() * countBeforeStart
+		let newPosition = this.ss.getAverageSize() * this.startIndex
 		
-		this.setSliderPosition('start', newTop)
+		this.setSliderPosition('start', newPosition)
 		this.resetScrollPosition()
 	}
 
 	/** Update slider position after set new indices. */
-	private setSliderPosition(where: 'start' | 'end', position: number) {
-		if (where === 'start') {
-			if (this.overflowDirection === 'vertical') {
-				this.slider.style.top = position + 'px'
-				this.slider.style.bottom = 'auto'
-			}
-			else if (this.overflowDirection === 'horizontal') {
-				this.slider.style.left = position + 'px'
-				this.slider.style.right = 'auto'
-			}
+	private setSliderPosition(direction: 'start' | 'end', position: number) {
+		if (direction === 'start') {
+			this.da.setStartPosition(this.slider, position + 'px')
+			this.da.setEndPosition(this.slider, 'auto')
 		}
 		else {
-			if (this.overflowDirection === 'vertical') {
-				this.slider.style.bottom = position + 'px'
-				this.slider.style.top = 'auto'
-			}
-			else if (this.overflowDirection === 'horizontal') {
-				this.slider.style.right = position + 'px'
-				this.slider.style.left = 'auto'
-			}
+			this.da.setStartPosition(this.slider, 'auto')
+			this.da.setEndPosition(this.slider, this.state.scrollerSize - position + 'px')
 		}
 
-		if (where === 'start') {
+		this.state.scrollDirection = direction
+
+		if (direction === 'start') {
 			this.state.sliderStartPosition = position
 		}
 		else {
@@ -242,12 +255,7 @@ export class PartialRenderer {
 
 	/** Update scroll position of `scroller` after set new slider position. */
 	private resetScrollPosition() {
-		if (this.overflowDirection === 'vertical') {
-			this.scroller.scrollTop = this.state.sliderStartPosition
-		}
-		else if (this.overflowDirection === 'horizontal') {
-			this.scroller.scrollLeft = this.state.sliderStartPosition
-		}
+		this.da.setScrollPosition(this.scroller, this.state.sliderStartPosition)
 	}
 
 	/** Update data normally, and try to keep indices and scroll position. */
@@ -274,11 +282,28 @@ export class PartialRenderer {
 	/** 
 	 * Update height/width of placeholder progressive.
 	 * When scrolling down, and rendered more items at the end, update size.
+	 * After reached scroll end position, not update placeholder size strictly.
 	 * No need to update when scrolling up.
 	 */
-	private updatePlaceholderSizePre() {
+	private updatePlaceholderSize() {
 		let scrollingDown = this.endIndex > this.state.maxEndIndexForPlaceholder
-		if (scrollingDown) {
+		let scrolledToEnd = this.endIndex === this.dataCount
+
+		// If scrolled to end, placeholder only expand start part.
+		if (scrolledToEnd) {
+			let scrollSize: number
+
+			if (this.state.scrollDirection === 'end') {
+				scrollSize = this.state.sliderEndPosition
+			}
+			else {
+				scrollSize = this.state.sliderStartPosition
+			}
+
+			this.da.setSize(this.palceholder, scrollSize)
+			this.state.maxEndIndexForPlaceholder = this.endIndex
+		}
+		else if (scrollingDown) {
 			let scrollSize: number
 			let averageSize = this.ss.getAverageSize()
 			
@@ -289,51 +314,15 @@ export class PartialRenderer {
 				scrollSize = averageSize * (this.dataCount - this.startIndex) + this.state.sliderStartPosition
 			}
 
-			if (this.overflowDirection === 'vertical') {
-				this.palceholder.style.height = scrollSize + 'px'
-			}
-			else {
-				this.palceholder.style.width = scrollSize + 'px'
-			}
-
-			this.state.maxEndIndexForPlaceholder = this.endIndex
-		}
-	}
-
-	/** 
-	 * After rendered and reach scroll end position,
-	 * Update height/width of placeholder to a strict size.
-	 */
-	private updatePlaceholderSizePost() {
-		let scrolledToEnd = this.endIndex === this.dataCount
-		if (scrolledToEnd) {
-			let scrollSize = this.state.sliderEndPosition
-
-			if (this.overflowDirection === 'vertical') {
-				this.palceholder.style.height = scrollSize + 'px'
-			}
-			else {
-				this.palceholder.style.width = scrollSize + 'px'
-			}
-
+			this.da.setSize(this.palceholder, scrollSize)
 			this.state.maxEndIndexForPlaceholder = this.endIndex
 		}
 	}
 
 	/** Every time after render complete, update state data.  */
-	private updateStatePre(scrollDirection: 'start' | 'end' | null) {
-		this.state.scrollDirection = scrollDirection
-	}
-
-	/** Every time after render complete, update state data.  */
-	private updateStatePost() {
-		let sliderSize = this.overflowDirection === 'vertical'
-			? this.slider.offsetHeight
-			: this.slider.offsetWidth
-
-		let scrollerSize = this.overflowDirection === 'vertical'
-			? this.scroller.clientHeight
-			: this.scroller.clientWidth
+	private updateState() {
+		let sliderSize = this.da.getOffsetSize(this.slider)
+		let scrollerSize = this.da.getClientSize(this.scroller)
 
 		if (this.state.scrollDirection === 'end') {
 			this.state.sliderStartPosition = this.state.sliderEndPosition - sliderSize
@@ -347,230 +336,169 @@ export class PartialRenderer {
 	}
 
 	/** 
-	 * Update only when current rendering can't cover scroller, and will keep continuous scroll position.
-	 * Note it must call `this.updateIndicesCallback` synchronously since it may be in a updating queue.
-	 * Returns whether updated.
+	 * Check whether rendered result can cover scroll viewport,
+	 * and update if can't, and will also persist content continuous if possible.
 	 */
-	updateRenderingContinuously() {
-		
-		// Reach start or end edge.
+	async updateCoverage() {
+		if (this.state.rendering) {
+			return
+		}
+
+		// Reach start and end edge.
 		if (this.startIndex === 0 && this.endIndex === this.dataCount) {
-			return false
+			return
 		}
 
-		let updatePromise = this.updateFromCoverage()
-		if (updatePromise) {
-			this.lockUpdatingByPromise(updatePromise.then(() => {
-				this.updatePlaceholderSizePre()
-			}))
 
-			return true
-		}
+		//// Can only read dom properties below.
 
-		else {
-			return false
-		}
-	}
-
-	/** 
-	 * Validate if slider fully covers scroller and update indices if not.
-	 * Returns whether updated indices.
-	 */
-	 private updateFromCoverage() {
-		let scrollerRect = this.getScrollerClientRect()
-		let sliderRect = this.slider.getBoundingClientRect()
-		let renderCount = this.renderCount * this.renderGroupCount
-		let unexpectedScrollEnd = this.scroller.scrollTop + this.scroller.clientHeight === this.scroller.scrollHeight && this.endIndex < this.dataCount
-		let unexpectedScrollStart = this.scroller.scrollTop === 0 && this.startIndex > 0
-		let promise: Promise<void>
-
-		// No intersection, reset slider position from current slider scroll offset.
-		let hasNoIntersection = sliderRect.bottom < scrollerRect.top || sliderRect.top > scrollerRect.bottom
-		if (hasNoIntersection) {
-			this.updateFromCurrentScrollPosition()
-			promise = untilRenderComplete()
-		}
-
-		// Scroll down and can't cover at bottom direction.
-		// Otherwise will still load more when touch bottom scrolling edge and still more data exist.
-		else if (sliderRect.bottom < scrollerRect.bottom || unexpectedScrollEnd) {
-			let roughFirstVisibleIndex = locateFirstVisibleIndex(this.scroller, this.slider.children, 0)
-			let oldStartIndex = this.startIndex
-			let newStartIndex = this.startIndex + roughFirstVisibleIndex
+		this.state.rendering = true
+		
+		let direction = this.getCoverDirection()
+		let scrollerSize = this.da.getClientSize(this.scroller)
+		let scrolled = this.da.getScrollPosition(this.scroller)
+		let position: number | null = null
 	
-			this.updateIndices(newStartIndex)
-			promise = this.updateWithSliderPositionStable('down', oldStartIndex, scrollerRect)
+		if (direction === 'end' || direction === 'start') {
+			let visibleIndex = locateVisibleIndex(
+				this.slider.children as ArrayLike<Element> as ArrayLike<HTMLElement>,
+				this.da,
+				scrollerSize,
+				scrolled,
+				direction === 'end' ? 1 : -1
+			)
+
+			if (direction === 'end') {
+				let oldStartIndex = this.startIndex
+				let newStartIndex = this.startIndex + visibleIndex
+		
+				this.updateIndices(newStartIndex)
+
+				// Locate to the start position of the first element of next rendering.
+				let elIndex = this.startIndex - oldStartIndex
+				let el = this.slider.children[elIndex] as HTMLElement
+				position = this.state.sliderStartPosition + this.da.getOffset(el)
+			}
+			else {
+				let oldStartIndex = this.startIndex
+				let newEndIndex = this.startIndex + visibleIndex
+				let newStartIndex = this.startIndex - this.endIndex + newEndIndex
+
+				this.updateIndices(newStartIndex)
+
+				// Ensure the `newEndIndex` is included.
+				if (this.endIndex < newEndIndex) {
+					this.endIndex = newEndIndex
+				}
+
+				// Locate to the end position of the last element of next rendering.
+				let elIndex = this.endIndex - oldStartIndex - 1
+				let el = this.slider.children[elIndex] as HTMLElement
+				position = this.state.sliderStartPosition + this.da.getOffset(el) + this.da.getScrollSize(el)
+			}
+		}
+	
+
+		//// Can only write dom properties below.
+		
+		// No intersection, reset indices by current scroll position.
+		if (direction === 'break') {
+			this.updatePersistScrollPosition()
 		}
 
-		// Scroll up and can't cover at top direction.
-		// Keeps last visible index as endIndex.
-		// Otherwise will still load more when touch top scrolling edge and still more data exist.
-		else if (sliderRect.top > scrollerRect.top || unexpectedScrollStart) {
-			let roughLastVisibleIndex = locateLastVisibleIndex(this.scroller, this.slider.children, 0)
-			let oldStartIndex = this.startIndex
-			let newEndIndex = this.startIndex + roughLastVisibleIndex + 1
-			let newStartIndex = newEndIndex - renderCount
-
-			this.updateIndices(newStartIndex)
-			promise = this.updateWithSliderPositionStable('up', oldStartIndex, scrollerRect)
+		// Can't cover and need to render more items.
+		else if (direction === 'end' || direction === 'start') {
+			this.updateWithPosition(direction, position!)
 		}
+
+		this.updatePlaceholderSize()
+
+
+		//// Can only read dom properties below.
+
+		await UpdateQueue.untilComplete()
+		this.updateState()
+		this.checkEdgeCases()
+		this.state.rendering = false
+	}
+
+	/** Check cover direction and then decide where to render more contents. */
+	private getCoverDirection(): 'start' | 'end' | 'break' | null {
+		let scrollerSize = this.da.getClientSize(this.scroller)
+		let scrolled = this.da.getScrollPosition(this.scroller)
+		let sliderStart = this.da.getOffset(this.slider) - scrolled
+		let sliderEnd = sliderStart + this.da.getOffsetSize(this.slider)
+		let unexpectedScrollStart = scrolled === 0 && this.startIndex > 0
+
+		let unexpectedScrollEnd = scrolled + this.da.getClientSize(this.scroller) === this.da.getScrollSize(this.scroller)
+			&& this.endIndex < this.dataCount
+
+		// No intersection, reset indices by current scroll position.
+		let hasNoIntersection = sliderEnd < 0 || sliderStart > scrollerSize
+		if (hasNoIntersection) {
+			return 'break'
+		}
+
+		// Can't cover and need to render more items at bottom/right.
+		else if (sliderEnd < scrollerSize || unexpectedScrollEnd) {
+			return 'end'
+		}
+
+		// Can't cover and need to render more items at top/left.
+		else if (sliderStart > 0 || unexpectedScrollStart) {
+			return 'start'
+		}
+
+		// No need to render more.
 		else {
-			promise = Promise.resolve()
+			return null
 		}
-
-		// Very small rate updating failed, especially when CPU is very busy.
-		promise.catch(() => {
-			this.updateFromCurrentScrollPosition()
-			promise = untilRenderComplete()
-		})
-
-		return promise!
 	}
 
-	/** Re-generate indices from current scroll offset. */
-	private updateFromCurrentScrollPosition() {
+	/** Reset indices by current scroll position. */
+	private updatePersistScrollPosition() {
 		this.resetIndices()
-		this.resetSliderPosition()
-
 		this.updateDataCallback(this.startIndex, this.endIndex, null)
+		this.resetSliderPosition()
 	}
 
-	/** Reset indices from current scroll offset. */
+	/** Reset indices by current scroll position. */
 	private resetIndices() {
-		let newStartIndex = this.averageItemSize > 0 ? Math.floor(this.scroller.scrollTop / this.averageItemSize) : 0
+		let itemSize = this.ss.getAverageSize()
+		let scrolled = this.da.getScrollPosition(this.scroller)
+		let newStartIndex = itemSize > 0 ? Math.floor(scrolled / itemSize) : 0
+
 		this.updateIndices(newStartIndex)
 	}
 
-	/** Update slider position to keep it in a stable position after updating data items. */
-	protected async updateWithSliderPositionStable(scrollDirection: 'up' | 'down', oldStartIndex: number, scrollerRect: Rect, ) {
-		let visibleIndex = scrollDirection === 'down' ? this.startIndex - oldStartIndex : this.endIndex - 1 - oldStartIndex
-		let visibleElement = this.slider.children[visibleIndex]
-		let updateData = () => {this.updateDataCallback(this.startIndex, this.endIndex, scrollDirection)}
+	/** Update with specified position. */
+	private updateWithPosition(direction: 'start' | 'end', position: number) {
+		this.updateDataCallback(this.startIndex, this.endIndex, null)
+		this.setSliderPosition(direction, position)
+	}
 
-		if (!visibleElement) {
-			throw new Error(`Wrongly rendered: can't found expected element in specified index!`)
-		}
-
+	/** After render complete, do more check for edge cases. */
+	protected async checkEdgeCases() {
+		
 		// When reach start index but may not reach scroll start.
 		if (this.startIndex === 0) {
-			await this.updateWhenReachStartIndex(visibleElement, updateData)
-		}
-
-		// When reach end index but may not reach scroll end.
-		else if (this.endIndex === this.dataCount) {
-			await this.updateWhenReachEndIndex(visibleElement, updateData)
+			if (this.state.sliderStartPosition > 0) {
+				this.scroller.scrollTop -= this.state.sliderStartPosition
+				this.setSliderPosition('start', 0)
+			}
 		}
 
 		// When reach start index but not scroll index.
-		else if (this.startIndex > 0 && this.scroller.scrollTop === 0) {
-			await this.updateWhenReachScrollStart(visibleElement, scrollerRect, updateData)
+		else if (this.startIndex > 0) {
+			if (this.state.sliderStartPosition <= 0) {
+				let newPosition = this.ss.getAverageSize() * this.startIndex
+
+				this.scroller.scrollTop -= this.state.sliderStartPosition - newPosition
+				this.setSliderPosition('start', newPosition)
+			}
 		}
 
-		// When reach scroll end but not end index.
-		else if (this.endIndex < this.dataCount && this.scroller.scrollTop + this.scroller.clientHeight === this.scroller.scrollHeight) {
-			await this.updateWhenReachScrollEnd(visibleElement, scrollerRect, updateData)
-		}
-
-		// Keeps visible element in the same scroll position.
-		else if (scrollDirection === 'down') {
-			await this.updateNormallyWhenScrollingDown(visibleElement, scrollerRect, updateData)
-		}
-
-		// Keeps visible element in the same scroll position.
-		else {
-			await this.updateNormallyWhenScrollingUp(visibleElement, scrollerRect, updateData)
-		}
-	}
-
-	/** When reach start index but may not reach scroll start, reset scroll top. */
-	protected async updateWhenReachStartIndex(lastVisibleElement: Element) {
-		let visibleIndex = this.endIndex - 1 - this.startIndex
-		let oldTop = lastVisibleElement.getBoundingClientRect().top
-
-		this.setSliderPosition('top', 0)
-
-		// Render to locate first item.
-		updateData()
-		
-		await untilRenderComplete()
-
-		// Should keep the visible element stable.
-		let newVisibleElement = this.slider.children[visibleIndex]
-		let newTop = newVisibleElement.getBoundingClientRect().top
-		let translate = newTop - oldTop
-
-		// Set scroll top to restore it's translate, `scrollTop` property is opposite with translation, so here it's `+`.
-		this.scroller.scrollTop = this.scroller.scrollTop + translate
-	}
-
-	/** When reach end index but may not reach scroll end, reset scroll top. */
-	protected async updateWhenReachEndIndex(firstVisibleElement: Element) {
-		let visibleIndex = 0
-		let oldBottom = firstVisibleElement.getBoundingClientRect().bottom
-
-		// Render to locate last item.
-		updateData()
-
-		await untilRenderComplete()
-
-		// Get element translated.
-		let newVisibleElement = this.slider.children[visibleIndex]
-		let newBottom = newVisibleElement.getBoundingClientRect().bottom
-		let translate = newBottom - oldBottom
-
-		// Get new position.
-		let scrollerRect = this.getScrollerClientRect()
-		let sliderRect = this.slider.getBoundingClientRect()
-
-		// should minus translate normally, but bottom property is opposite with translation, so here it's `+`.
-		let position = scrollerRect.bottom - sliderRect.bottom + translate
-		position -= this.scroller.scrollTop
-		this.setSliderPosition('bottom', position)
-	}
-
-	/** When reach scroll start but not reach start index, provide more scroll space. */
-	protected async updateWhenReachScrollStart(lastVisibleElement: Element, scrollerRect: Rect) {
-		// Provide more spaces at start.
-		let extendedScrollSpace = this.averageItemSize * this.startIndex
-
-		// Translate position from the spaces.
-		let position = scrollerRect.bottom - lastVisibleElement.getBoundingClientRect().bottom
-		position -= extendedScrollSpace
-		this.setSliderPosition('bottom', position)
-		updateData()
-
-		this.scroller.scrollTop = extendedScrollSpace
-		await untilRenderComplete()
-	}
-
-	/** When reach scroll end but not reach end index, provide more scroll space. */
-	protected async updateWhenReachScrollEnd(firstVisibleElement: Element, scrollerRect: Rect) {
-		// Update normally.
-		let position = firstVisibleElement.getBoundingClientRect().top - scrollerRect.top
-		position += this.scroller.scrollTop
-		this.setSliderPosition('top', position)
-
-		updateData()
-		await untilRenderComplete()
-	}
-
-	/** Render more items when scrolling down, not reset scroll position. */
-	protected async updateNormallyWhenScrollingDown(firstVisibleElement: Element, scrollerRect: Rect) {
-		let position = firstVisibleElement.getBoundingClientRect().top - scrollerRect.top
-		position += this.scroller.scrollTop
-		this.setSliderPosition('top', position)
-
-		updateData()
-		await untilRenderComplete()
-	}
-
-	/** Render more items when scrolling up, not reset scroll position. */
-	protected async updateNormallyWhenScrollingUp(lastVisibleElement: Element, scrollerRect: Rect) {
-		let position = scrollerRect.bottom - lastVisibleElement.getBoundingClientRect().bottom
-		position -= this.scroller.scrollTop
-		this.setSliderPosition('bottom', position)
-
-		updateData()
-		await untilRenderComplete()
+		// No need to check end index and scroll end.
+		// Because placeholder will help to maintain it.
 	}
 }

@@ -1,4 +1,4 @@
-import {locateFirstVisibleIndex, locateLastVisibleIndex} from './helpers/utils'
+import {locateStartVisibleIndex, locateEndVisibleIndex} from './helpers/visible-index-locator'
 import {Repeat, RepeatRenderFn} from './repeat'
 import {PartialRenderer} from './helpers/partial-renderer'
 import {DOMEvents, LayoutWatcher, effect, input} from '@pucelle/ff'
@@ -138,7 +138,7 @@ export class LiveRepeat<T = any, E = any> extends Repeat<T, E & LiveRepeatEvents
 
 	/** Check whether current rendering can cover scroll viewport. */
 	protected checkCoverage() {
-		this.renderer.updateRenderingContinuously()
+		this.renderer.updateCoverage()
 	}
 
 	protected doUpdateRendering() {
@@ -177,7 +177,7 @@ export class LiveRepeat<T = any, E = any> extends Repeat<T, E & LiveRepeatEvents
 	 * May cause page reflow.
 	 */
 	getFirstVisibleIndex() {
-		return Math.max(0, locateFirstVisibleIndex(this.scroller, this.sliderChildren.getChildren())) + this.startIndex
+		return Math.max(0, locateStartVisibleIndex(this.scroller, this.sliderChildren.getChildren())) + this.startIndex
 	}
 
 	/** 
@@ -185,7 +185,7 @@ export class LiveRepeat<T = any, E = any> extends Repeat<T, E & LiveRepeatEvents
 	 * May cause page reflow.
 	 */
 	getLastVisibleIndex() {
-		return Math.max(0, locateLastVisibleIndex(this.scroller, this.sliderChildren.getChildren()))
+		return Math.max(0, locateEndVisibleIndex(this.scroller, this.sliderChildren.getChildren()))
 	}
 
 	/** 
