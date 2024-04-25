@@ -1,7 +1,6 @@
-import {locateStartVisibleIndex, locateEndVisibleIndex} from './helpers/visible-index-locator'
 import {Repeat, RepeatRenderFn} from './repeat'
 import {PartialRenderer} from './helpers/partial-renderer'
-import {DOMEvents, LayoutWatcher, effect, input} from '@pucelle/ff'
+import {DOMEvents, LayoutWatcher, UpdateQueue, effect, input} from '@pucelle/ff'
 
 
 export interface LiveRepeatEvents {
@@ -69,9 +68,8 @@ export class LiveRepeat<T = any, E = any> extends Repeat<T, E & LiveRepeatEvents
 	 */
 	declare renderFn: RepeatRenderFn<T>
 
-
 	/** The start index of the first item in the whole data. */
-	private startIndex: number = 0
+	startIndex: number = 0
 
 	/** The end index of next position of the last item in the whole data. */
 	endIndex: number = 0
@@ -122,7 +120,7 @@ export class LiveRepeat<T = any, E = any> extends Repeat<T, E & LiveRepeatEvents
 		
 		this.scroller = scroller
 		this.initPlaceholder()
-		this.renderer = new PartialRenderer(scroller, this.el, this.palceholder, this.updateIndices.bind(this), this.overflowDirection)
+		this.renderer = new PartialRenderer(scroller, this.el, this.palceholder, this.updateByIndices.bind(this), this.overflowDirection)
 	}
 
 	protected initPlaceholder() {
@@ -145,7 +143,8 @@ export class LiveRepeat<T = any, E = any> extends Repeat<T, E & LiveRepeatEvents
 		this.renderer.updateRendering()
 	}
 
-	protected updateIndices(startIndex: number, endIndex: number, scrollDirection: 'up' | 'down' | null) {
+	/** Update data by new indices. */
+	protected updateByIndices(startIndex: number, endIndex: number, scrollDirection: 'start' | 'end' | null) {
 		this.startIndex = startIndex
 		this.endIndex = endIndex
 		this.updateData(this.data.slice(startIndex, endIndex))
@@ -156,127 +155,58 @@ export class LiveRepeat<T = any, E = any> extends Repeat<T, E & LiveRepeatEvents
 	async setStartIndex(index: number): Promise<boolean> {
 		this.renderer.setStartIndex(index)
 		this.willUpdate()
+		await UpdateQueue.untilComplete()
 
 		return true
 	}
 
-	async scrollIndexToView(): Promise<boolean> {
-		throw new Error(`"<LiveRepeat>" doesn't support scrolling to position!`)
-	}
-
-	async scrollIndexToStart(): Promise<boolean> {
-		throw new Error(`"<LiveRepeat>" doesn't support scrolling to position!`)
-	}
-
-	async scrollIndexToLeft(): Promise<boolean> {
-		throw new Error(`"<LiveRepeat>" doesn't support scrolling to position!`)
-	}
-
 	/** 
-	 * Get the index of the first visible element, which can be used to restore scrolling position by `setFirstVisibleIndex`.
+	 * Get the index of the first visible element in scroll viewport,
+	 * which can be used to restore scrolling position by `setStartIndex`.
 	 * May cause page reflow.
 	 */
-	getFirstVisibleIndex() {
-		return Math.max(0, locateStartVisibleIndex(this.scroller, this.sliderChildren.getChildren())) + this.startIndex
+	getFirstVisibleIndex(): number {
+		return this.renderer.locateVisibleIndex('start')
 	}
 
 	/** 
-	 * Get the index of the last visible element.
+	 * Get the index of the last visible element in scroll viewport.
 	 * May cause page reflow.
 	 */
-	getLastVisibleIndex() {
-		return Math.max(0, locateEndVisibleIndex(this.scroller, this.sliderChildren.getChildren()))
+	getLastVisibleIndex(): number {
+		return this.renderer.locateVisibleIndex('end')
 	}
 
 	/** 
-	 * Make item in the specified index becomes visible by scrolling minimum pixels.
-	 * Try to adjust immediately, so you will need to ensure elements rendered.
-	 * Will re-render if the element in specified index is not rendered.
+	 * Make rendered item at the specified index becomes fully visible by scrolling minimum distance in X/Y direction.
+	 * Adjust immediately, so you will need to ensure elements have been rendered.
+	 * Returns a promise, which will be resolved by whether scrolled.
 	 */
-	async makeIndexVisible(index: number): Promise<boolean> {
+	async scrollIndexToView(index: number): Promise<boolean> {
 		if (this.isIndexRendered(index)) {
-			return this.scrollToViewRenderedIndex(index)
+			return super.scrollIndexToView(index - this.startIndex)
 		}
 		else {
-			this.setStartIndex(index)
-			await this.untilDataUpdatedAndRendered()
-			return this.scrollToViewRenderedIndex(index)
+			return this.setStartIndex(index)
 		}
-	}
-
-	/** Returns a promise which will be resolved after data updated and renderer. */
-	protected untilDataUpdatedAndRendered(this: LiveRepeat<T>) {
-		return new Promise(resolve => {
-			this.once('liveDataRendered', resolve)
-		})
 	}
 
 	/** Get if item with specified index is rendered. */
 	protected isIndexRendered(index: number) {
-		return index >= this.startIndex && index < this.startIndex + this.liveData.length
-	}
-
-	/** After item in index rendered, make it visible. */
-	protected scrollToViewRenderedIndex(index: number): boolean {
-		let el = this.sliderChildren.childAt(index - this.startIndex)
-		if (!el) {
-			return false
-		}
-
-		let scrollerRect = this.scroller.getBoundingClientRect()
-		let elRect = el.getBoundingClientRect()
-
-		// Below it, need to scroll up.
-		if (elRect.bottom > scrollerRect.bottom) {
-			this.scroller.scrollTop = this.scroller.scrollTop + (elRect.bottom - scrollerRect.bottom)
-		}
-
-		// Above it, need to scroll down.
-		else if (elRect.top < scrollerRect.top) {
-			this.scroller.scrollTop = this.scroller.scrollTop + (scrollerRect.top - elRect.top)
-		}
-
-		return true
+		return index >= this.startIndex && index < this.endIndex
 	}
 
 	/** 
-	 * Make item in the specified index visible at the top edge of scroller.
-	 * Try to adjust immediately, so you will need to ensure elements rendered.
-	 * Will re-render if the element in specified index is not rendered.
+	 * Make rendered item at the specified index located in the topest or left most of scroll viewport.
+	 * Adjust immediately, so you will need to ensure elements have been rendered.
+	 * Returns a promise, which will be resolved by whether scrolled.
 	 */
-	async makeIndexVisibleAtTop(index: number): Promise<boolean> {
+	async scrollIndexToStart(index: number): Promise<boolean> {
 		if (this.isIndexRendered(index)) {
-			return this.scrollToMakeRenderedIndexAtTop(index)
+			return super.scrollIndexToStart(index - this.startIndex)
 		}
 		else {
-			this.setStartIndex(index)
-			await this.untilDataUpdatedAndRendered()
-			return this.scrollToMakeRenderedIndexAtTop(index)
+			return this.setStartIndex(index)
 		}
-	}
-
-	/** 
-	 * Make item in the specified index becomes visible at the top scroll position.
-	 * If needs to update, will update firstly and then set index.
-	 */
-	async setFirstVisibleIndex(index: number): Promise<boolean> {
-		this.setStartIndex(index)
-		await this.untilDataUpdatedAndRendered()
-		return this.scrollToMakeRenderedIndexAtTop(index)
-	}
-
-	/** After item in index rendered, make it becomes visible at the top scroll position. */
-	protected scrollToMakeRenderedIndexAtTop(index: number): boolean {
-		let el = this.sliderChildren.childAt(index - this.startIndex)
-		if (!el) {
-			return false
-		}
-
-		let scrollerRect = this.scroller.getBoundingClientRect()
-		let elRect = el.getBoundingClientRect()
-
-		this.scroller.scrollTop = this.scroller.scrollTop + (elRect.top - scrollerRect.top)
-
-		return true
 	}
 }
