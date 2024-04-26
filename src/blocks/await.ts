@@ -2,7 +2,7 @@ import {Template, TemplateMaker, TemplateSlot} from '../template'
 
 
 /** Type of compiling statements like `<await>...`. */
-export type AwaitBlockStatement = (slot: TemplateSlot, context: any) => {
+type AwaitBlockStatement = (slot: TemplateSlot, context: any) => {
 	update(promise: Promise<any>, values: any[]): void
 }
 

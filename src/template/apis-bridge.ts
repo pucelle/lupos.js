@@ -1,4 +1,4 @@
-import {DependencyTracker} from '@pucelle/ff'
+import {DOMEvents, DependencyTracker} from '@pucelle/ff'
 export {noop} from '@pucelle/ff'
 
 
@@ -7,5 +7,5 @@ export const onGet = DependencyTracker.onGet
 export const onSet = DependencyTracker.onSet
 export const onGetBunched = DependencyTracker.onGetBunched
 export const onSetBunched = DependencyTracker.onSetBunched
-export const trackExecutionOf = DependencyTracker.trackExecutionOf
-export const untrack = DependencyTracker.untrack
+export const bindEvent = DOMEvents.on
+export const unbindEvent = DOMEvents.off

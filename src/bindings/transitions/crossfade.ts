@@ -1,4 +1,4 @@
-import {BarrierQueue, DoubleKeysMap, Matrix, ObjectUtils} from '@pucelle/ff'
+import {BarrierQueue, DoubleKeysMap, ObjectUtils} from '@pucelle/ff'
 import {TransitionOptions, TransitionProperties, TransitionResult, defineTransition} from './define'
 
 
@@ -54,7 +54,7 @@ export const crossfade = defineTransition(async function(el: Element, options: C
 	let boxOp = oppositeEl.getBoundingClientRect()
 
 	// Transform box of current element to box of opposite element.
-	let transform = Matrix.fromBoxPair(boxEl, boxOp)
+	let transform = matrixFromBoxPair(boxEl, boxOp)
 
 	let o: TransitionProperties = {
 		startFrame: {
@@ -69,3 +69,22 @@ export const crossfade = defineTransition(async function(el: Element, options: C
 
 	return ObjectUtils.assignExclude(o, options, ['key', 'fallback'])
 })
+
+
+/** 
+ * Make a transform matrix, which will convert `fromBox` to `toBox`.
+ * Not use `Matrix` at `@pucelle/ff` because it imports additional `10kb` zipped codes.
+ */
+function matrixFromBoxPair(fromBox: BoxLike, toBox: BoxLike): DOMMatrix {
+	let fromX = fromBox.x + fromBox.width / 2
+	let fromY = fromBox.y + fromBox.height / 2
+	let toX = toBox.x + toBox.width / 2
+	let toY = toBox.y + toBox.height / 2
+
+	let matrix = new DOMMatrix()
+		.translateSelf(-fromX, -fromY)
+		.scaleSelf(toBox.width / fromBox.width, toBox.height / fromBox.height)
+		.translateSelf(toX, toY)
+
+	return matrix
+}

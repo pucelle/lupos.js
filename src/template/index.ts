@@ -1,6 +1,5 @@
 export * from './apis-bridge'
 export * from './template-slot-position'
-export * from './dom-events'
 export * from './template'
 export * from './template-maker'
 export * from './template-slot'
