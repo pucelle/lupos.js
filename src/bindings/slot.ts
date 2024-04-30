@@ -13,29 +13,30 @@ import {Binding, defineNamedBinding} from './define'
 export class SlotBinding implements Binding, Part {
 
 	private readonly el: Element
-	private com: Component | null = null
 	private slotName: string | null = null
+	private com: Component | null = null
 
 	constructor(el: Element) {
 		this.el = el
 	}
 
 	update(slotName: string) {
-		let com = Component.fromClosest(this.el)
-		if (com) {
-			this.updateComSlot(slotName, com!)
-		}
+		this.slotName = slotName
 	}
 
 	/** For compiler knows about closest component. */
-	updateComSlot(slotName: string, com: Component) {
-		this.slotName = slotName
+	updateCom(com: Component) {
 		this.com = com
 	}
 
 	afterConnectCallback(param: number) {
-		if (this.com && param & PartCallbackParameter.HappenInCurrentContext) {
-			this.com.__applySlotElement(this.slotName!, this.el)
+		let com = Component.fromClosest(this.el)
+		if (com) {
+			this.updateCom(com)
+		}
+
+		if (com && param & PartCallbackParameter.HappenInCurrentContext) {
+			com.__applySlotElement(this.slotName!, this.el)
 		}
 	}
 

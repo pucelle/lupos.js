@@ -9,6 +9,7 @@
 		"type": "git",
 		"url": "https://github.com/pucelle/lupos.js.git"
 	},
+	"type": "module",
 	"main": "out/index.js",
 	"types": "out/index.d.ts",
 	"sideEffects": false,
@@ -16,7 +17,7 @@
 		"build": "tsc -b",
 		"watch": "tsc -b -w",
 		"prepublish": "tsc -b",
-		"test": "jest"
+		"test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
 	},
 	"dependencies": {
 		"@pucelle/ff": "^2.0.0"

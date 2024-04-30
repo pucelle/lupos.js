@@ -1,4 +1,4 @@
-import {TemplateSlotPosition, SlotStartInnerPositionType, SlotPositionType} from './template-slot-position'
+import {TemplateSlotPosition, TemplateSlotStartInnerPositionType, TemplateSlotPositionType} from './template-slot-position'
 import {TemplateSlot} from './template-slot'
 import {TemplateMaker, TemplateInitResult} from './template-maker'
 import {noop} from '@pucelle/ff'
@@ -16,23 +16,23 @@ const PositionMap = new TemplateSlotPositionMap()
  */
 export class Template implements Part {
 
-	readonly el: HTMLTemplateElement
+	readonly el: HTMLTemplateElement | null
 	readonly maker: TemplateMaker
-	readonly startInnerPosition: TemplateSlotPosition<SlotStartInnerPositionType>
+	readonly startInnerPosition: TemplateSlotPosition<TemplateSlotStartInnerPositionType>
 	readonly update: (values: any[]) => void
-	private readonly partList: [Part, number][]
+	private readonly parts: [Part, number][]
 
-	constructor(el: HTMLTemplateElement, maker: TemplateMaker, initResult: TemplateInitResult) {
-		this.el = el
+	constructor(maker: TemplateMaker, initResult: TemplateInitResult) {
 		this.maker = maker
 
-		this.startInnerPosition = initResult.p
-		this.partList = initResult.l || []
-		this.update = initResult.u || noop
+		this.el = initResult.el || null
+		this.startInnerPosition = initResult.position
+		this.parts = initResult.parts || []
+		this.update = initResult.update || noop
 	}
 
 	afterConnectCallback(param: number) {
-		for (let [part, topLevel] of this.partList) {
+		for (let [part, topLevel] of this.parts) {
 			part.afterConnectCallback(param & topLevel)
 		}
 	}
@@ -40,7 +40,7 @@ export class Template implements Part {
 	beforeDisconnectCallback(param: number): Promise<void> {
 		let promises: Promise<void>[] = []
 
-		for (let [part, topLevel] of this.partList) {
+		for (let [part, topLevel] of this.parts) {
 			let p = part.beforeDisconnectCallback(param & topLevel)
 			if (p) {
 				promises.push(p)
@@ -56,10 +56,10 @@ export class Template implements Part {
 	 * Can only get when nodes exist in current template.
 	 */
 	getFirstNode(): ChildNode | null {
-		if (this.startInnerPosition.type === SlotPositionType.Before) {
+		if (this.startInnerPosition.type === TemplateSlotPositionType.Before) {
 			return this.startInnerPosition.target as ChildNode
 		}
-		else if (this.startInnerPosition.type === SlotPositionType.BeforeSlot) {
+		else if (this.startInnerPosition.type === TemplateSlotPositionType.BeforeSlot) {
 			return (this.startInnerPosition.target as TemplateSlot).getFirstNode()
 		}
 		else {
@@ -72,13 +72,19 @@ export class Template implements Part {
 	 * Note it will not call connect callback, you should do it manually after updated current template.
 	 */
 	insertNodesBefore(position: TemplateSlotPosition) {
-		position.insertBefore(...this.el.content.childNodes)
+		if (this.el) {
+			position.insertBefore(...this.el.content.childNodes)
+		}
+
 		PositionMap.addPosition(this, position)
 	}
 
 	/** After nodes inserted and template updated, call connect callback. */
 	callConnectCallback() {
-		this.afterConnectCallback(PartCallbackParameter.HappenInCurrentContext | PartCallbackParameter.DirectlyMoveNodes)
+		this.afterConnectCallback(
+			PartCallbackParameter.HappenInCurrentContext
+			| PartCallbackParameter.DirectNodeToMove
+		)
 	}
 
 	/** 
@@ -86,14 +92,19 @@ export class Template implements Part {
 	 * Will also call disconnect callback before recycling nodes.
 	 */
 	async recycleNodes() {
-		await this.beforeDisconnectCallback(PartCallbackParameter.HappenInCurrentContext | PartCallbackParameter.DirectlyMoveNodes)
-
 		let position = PositionMap.getPosition(this)!
 
-		let firstNode = this.getFirstNode()
-		if (firstNode) {
-			for (let node of position.walkNodesForwardUntil(firstNode)) {
-				this.el.prepend(node)
+		if (this.el) {
+			await this.beforeDisconnectCallback(
+				PartCallbackParameter.HappenInCurrentContext
+				| PartCallbackParameter.DirectNodeToMove
+			)
+
+			let firstNode = this.getFirstNode()
+			if (firstNode) {
+				for (let node of position.walkNodesForwardUntil(firstNode)) {
+					this.el.prepend(node)
+				}
 			}
 		}
 

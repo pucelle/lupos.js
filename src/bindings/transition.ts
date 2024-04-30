@@ -66,7 +66,7 @@ export class TransitionBinding implements Binding, Part {
 			}
 		}
 
-		if (this.global || param & PartCallbackParameter.DirectlyMoveNodes) {
+		if (this.global || param & PartCallbackParameter.DirectNodeToMove) {
 			this.enter()
 		}
 	}
@@ -78,7 +78,7 @@ export class TransitionBinding implements Binding, Part {
 			return
 		}
 
-		if (this.global || param & PartCallbackParameter.DirectlyMoveNodes) {
+		if (this.global || param & PartCallbackParameter.DirectNodeToMove) {
 			return this.leave()
 		}
 	}

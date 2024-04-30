@@ -1,4 +1,4 @@
-import {TemplateSlotPosition, SlotPositionType, SlotEndOuterPositionType} from './template-slot-position'
+import {TemplateSlotPosition, TemplateSlotPositionType, TemplateSlotEndOuterPositionType} from './template-slot-position'
 import {Template} from './template'
 import {CompiledTemplateResult} from './template-result-compiled'
 import {Part} from '../types'
@@ -9,6 +9,7 @@ export enum SlotContentType {
 	TemplateResult,
 	TemplateResultArray,
 	Text,
+	Node,
 }
 
 
@@ -18,14 +19,14 @@ export enum SlotContentType {
  */
 export class TemplateSlot implements Part {
 
-	/** End outer position, indicate where to put content. */
-	readonly endOuterPosition: TemplateSlotPosition<SlotEndOuterPositionType>
+	/** End outer position, indicate where to put new content. */
+	readonly endOuterPosition: TemplateSlotPosition<TemplateSlotEndOuterPositionType>
 
 	private context: any
 	private contentType: SlotContentType | null = null
 	private content: Template | Template[] | ChildNode | Text | null = null
 
-	constructor(endOuterPosition: TemplateSlotPosition<SlotEndOuterPositionType>, context: any, knownType: SlotContentType | null = null) {
+	constructor(endOuterPosition: TemplateSlotPosition<TemplateSlotEndOuterPositionType>, context: any, knownType: SlotContentType | null = null) {
 		this.endOuterPosition = endOuterPosition
 		this.context = context
 		this.contentType = knownType
@@ -80,7 +81,7 @@ export class TemplateSlot implements Part {
 			return node.parentElement
 		}
 		
-		if (this.endOuterPosition.type === SlotPositionType.BeforeSlot) {
+		if (this.endOuterPosition.type === TemplateSlotPositionType.BeforeSlot) {
 			return (this.endOuterPosition.target as TemplateSlot).tryGetParentElement()
 		}
 		else {
@@ -121,10 +122,10 @@ export class TemplateSlot implements Part {
 			return node
 		}
 
-		if (this.endOuterPosition.type === SlotPositionType.Before) {
+		if (this.endOuterPosition.type === TemplateSlotPositionType.Before) {
 			return node
 		}
-		else if (this.endOuterPosition.type === SlotPositionType.BeforeSlot) {
+		else if (this.endOuterPosition.type === TemplateSlotPositionType.BeforeSlot) {
 			return (this.endOuterPosition.target as TemplateSlot).getFirstNodeClosest()
 		}
 		else {
@@ -151,6 +152,9 @@ export class TemplateSlot implements Part {
 		else if (newContentType === SlotContentType.Text) {
 			this.updateText(value)
 		}
+		else if (newContentType === SlotContentType.Node) {
+			this.updateNode(value as ChildNode)
+		}
 	}
 
 	private recognizeContentType(value: unknown): SlotContentType {
@@ -159,6 +163,9 @@ export class TemplateSlot implements Part {
 		}
 		else if (Array.isArray(value)) {
 			return SlotContentType.TemplateResultArray
+		}
+		else if (value instanceof Node) {
+			return SlotContentType.Node
 		}
 		else {
 			return SlotContentType.Text
@@ -287,6 +294,26 @@ export class TemplateSlot implements Part {
 			if (node) {
 				node.textContent = ''
 			}
+		}
+	}
+
+	/** 
+	 * Update content to a node.
+	 * Normally for only internal usage, like insert slot elements.
+	 */
+	updateNode(node: ChildNode | null) {
+		let currNode = this.content as ChildNode | null
+
+		if (node !== currNode) {
+			if (currNode) {
+				currNode.remove()
+			}
+
+			if (node) {
+				this.endOuterPosition.insertBefore(node)
+			}
+			
+			this.content = node
 		}
 	}
 

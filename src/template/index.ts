@@ -1,4 +1,5 @@
 export * from './apis-bridge'
+export * from './html-template-fn'
 export * from './template-slot-position'
 export * from './template'
 export * from './template-maker'

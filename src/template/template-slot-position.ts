@@ -5,7 +5,7 @@ import {TemplateSlot} from './template-slot'
  * Contents that can be included in a `<tag>${...}<.tag>`.
  * **Do not** change the numeric values of each enum item.
  */
-export enum SlotPositionType {
+export enum TemplateSlotPositionType {
 
 	/** 
 	 * Start position collapse with start of container range.
@@ -29,8 +29,8 @@ export enum SlotPositionType {
 	// AfterSlot,
 }
 
-export type SlotStartInnerPositionType = SlotPositionType.Before | SlotPositionType.BeforeSlot | SlotPositionType.BeforeContent
-export type SlotEndOuterPositionType = SlotPositionType.Before | SlotPositionType.BeforeSlot | SlotPositionType.AfterContent
+export type TemplateSlotStartInnerPositionType = TemplateSlotPositionType.Before | TemplateSlotPositionType.BeforeSlot | TemplateSlotPositionType.BeforeContent
+export type TemplateSlotEndOuterPositionType = TemplateSlotPositionType.Before | TemplateSlotPositionType.BeforeSlot | TemplateSlotPositionType.AfterContent
 
 
 /** 
@@ -38,7 +38,7 @@ export type SlotEndOuterPositionType = SlotPositionType.Before | SlotPositionTyp
  * It try to find closest node, container, or slot for reference,
  * And helps to insert or remove contents from this position.
  */
-export class TemplateSlotPosition<T = SlotPositionType> {
+export class TemplateSlotPosition<T = TemplateSlotPositionType> {
 
 	type: T
 	target: Element | Node | TemplateSlot
@@ -50,11 +50,11 @@ export class TemplateSlotPosition<T = SlotPositionType> {
 
 	/** Insert nodes before current position. */
 	insertBefore(...newNodes: ChildNode[]) {
-		if (this.type === SlotPositionType.Before) {
+		if (this.type === TemplateSlotPositionType.Before) {
 			let node = this.target as ChildNode
 			node.before(...newNodes)
 		}
-		else if (this.type === SlotPositionType.BeforeSlot) {
+		else if (this.type === TemplateSlotPositionType.BeforeSlot) {
 			let slot = this.target as TemplateSlot
 			let node = slot.getFirstNodeClosest()
 			
@@ -74,7 +74,7 @@ export class TemplateSlotPosition<T = SlotPositionType> {
 
 	/** Walk nodes backward before current position, until specified node or end. */
 	*walkNodesForwardUntil(until: ChildNode | null): Iterable<ChildNode> {
-		if (this.type === SlotPositionType.Before) {
+		if (this.type === TemplateSlotPositionType.Before) {
 			let node = (this.target as ChildNode).previousSibling
 
 			while (node) {
@@ -90,7 +90,7 @@ export class TemplateSlotPosition<T = SlotPositionType> {
 				node = prevNode
 			}
 		}
-		else if (this.type === SlotPositionType.BeforeSlot) {
+		else if (this.type === TemplateSlotPositionType.BeforeSlot) {
 			let node = (this.target as TemplateSlot).getFirstNodeClosest()?.previousSibling
 			
 			while (node) {

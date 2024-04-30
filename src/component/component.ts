@@ -1,7 +1,7 @@
-import {DependencyTracker, EventFirer, UpdateQueue, observable} from '@pucelle/ff'
+import {DependencyTracker, EventFirer, UpdateQueue} from '@pucelle/ff'
 import {ensureComponentStyle, ComponentStyle} from './style'
-import {getComponentFromElement} from './from-element'
-import {TemplateSlot, TemplateSlotPosition, SlotPositionType, CompiledTemplateResult} from '../template'
+import {addElementComponentMap, getComponentFromElement} from './from-element'
+import {TemplateSlot, TemplateSlotPosition, TemplateSlotPositionType, CompiledTemplateResult} from '../template'
 import {ComponentConstructor, RenderResult} from './types'
 import {Part, PartCallbackParameter} from '../types'
 
@@ -48,7 +48,6 @@ const ComponentCreatedReadyStates: WeakMap<object, 1 | 2> = new WeakMap()
  * - If instantiate from `new`, It **cant** be automatically connected or disconnected along it's element.
  * - If instantiate from custom element, It **can** be automatically connected or disconnected along it's element.
  */
-@observable
 export class Component<E = any> extends EventFirer<E & ComponentEvents> implements Part {
 
 	/** 
@@ -110,10 +109,11 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		super()
 
 		this.el = el
-		this.rootContentSlot = new TemplateSlot(new TemplateSlotPosition(SlotPositionType.AfterContent, this.el), this)
+		this.rootContentSlot = new TemplateSlot(new TemplateSlotPosition(TemplateSlotPositionType.AfterContent, this.el), this)
 		Object.assign(this, properties)
 
 		ensureComponentStyle(this.constructor as ComponentConstructor)
+		addElementComponentMap(el, this)
 		ComponentCreatedReadyStates.set(this, 1)
 	}
 
@@ -302,7 +302,9 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	/** Remove element from document, and disconnect. */
 	remove() {
 		// Not wait for leave transition.
-		this.beforeDisconnectCallback(PartCallbackParameter.RemoveImmediately)
+		if (this.connected) {
+			this.beforeDisconnectCallback(PartCallbackParameter.RemoveImmediately)
+		}
 		
 		this.el.remove()
 	}

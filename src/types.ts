@@ -1,14 +1,32 @@
 /** Values of Part Callback Parameter. */
 export enum PartCallbackParameter {
 
-	/** If nodes of current part has been inserted or removed within current context, this value is unioned. */
+	/** 
+	 * If current part will be connected or disconnected from current context,
+	 * this value is unioned.
+	 * 
+	 * E.g., `<if {...}><div :binding /><ChildCom />...`, after `<if>` state change.
+	 * - for `:binding`, the source of connect or disconnect action "HappenInCurrentContext".
+	 * - for `<ChildCom>`, the source of connect or disconnect action happen in parent context.
+	 */
 	HappenInCurrentContext = 1,
 
-	/** If nodes of current part will be directly inserted or removed, this value is unioned. */
-	DirectlyMoveNodes = 2,
+	/** 
+	 * If nodes of current part will be inserted or removed directly from their parent,
+	 * this value is unioned.
+	 * 
+	 * E.g., `<if {...}><div :transition>...`,
+	 * the transition can play after `<if>` state change because `div` is "DirectNodeToMove" .
+	 */
+	DirectNodeToMove = 2,
 
 	/** 
-	 * If nodes of current part has been removed immediately, no need to play transition any more.
+	 * If nodes of current part has been removed immediately,
+	 * this value is unioned.
+	 * 
+	 * E.g., if any ancestral element was removed directly,
+	 * no transition needs to be played any more.
+	 * 
 	 * Only use it for disconnect callback.
 	 */
 	RemoveImmediately = 4,

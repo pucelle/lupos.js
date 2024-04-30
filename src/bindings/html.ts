@@ -1,4 +1,4 @@
-import {HTMLUtils, DateUtils} from '@pucelle/ff'
+import {HTMLUtils} from '@pucelle/ff'
 import {Binding, defineNamedBinding} from './define'
 
 
@@ -13,7 +13,6 @@ export class HTMLBinding implements Binding {
 
 	constructor(el: Element) {
 		this.el = el as HTMLElement
-		console.log(DateUtils.getDaysOfYear(new Date()))
 	}
 
 	update(value: string | number | null | undefined) {

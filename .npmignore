@@ -1,8 +1,8 @@
 node_modules
 .vscode
+.VSCodeCounter
 src
 test
 tsconfig.json
-typedoc.json
 README.md
 *.tgz

@@ -2,7 +2,7 @@ import {Binding, defineNamedBinding} from './define'
 
 
 /** Object used for `:class=${{class1: value1, class2: value2}}` */
-type ClassObject = Record<string, string | number>
+type ClassObject = Record<string, any>
 
 
 /**

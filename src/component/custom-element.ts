@@ -1,16 +1,21 @@
-import {logger} from '@pucelle/ff'
-import {addElementComponentMap, getComponentFromElement} from './from-element'
+import {getComponentFromElement} from './from-element'
 import {ComponentConstructor} from './types'
 import {PartCallbackParameter} from '../types'
 
 
 /** Map custom element property to component property. */
-type PropertyMapOf<T extends ComponentConstructor> = Record<string, keyof InstanceType<T> | [keyof InstanceType<T>, PropertyFormatter]>
+type PropertyMapOf<T extends ComponentConstructor> = Record<string, keyof InstanceType<T>
+	| [keyof InstanceType<T>, PropertyFormatter]>
+
+/** Format an element property to a component property. */
 type PropertyFormatter = (value: string) => any
 
 
 /** To cache `custom element name -> component constructor` */
-const CustomElementConstructorMap: Map<string, {Com: ComponentConstructor, propertyMap: PropertyMapOf<ComponentConstructor>}> = new Map()
+const CustomElementConstructorMap: Map<
+	string,
+	{Com: ComponentConstructor, propertyMap: PropertyMapOf<ComponentConstructor>}
+> = new Map()
 
 
 /**
@@ -41,7 +46,7 @@ export function defineCustomElement<T extends ComponentConstructor>(name: string
 function defineCallbacks(name: string) {
 	customElements.define(name, class LuposElement extends HTMLElement {
 
-		// Although W3C Spec says connect callback will not be called when inserting an element to a document fragment,
+		// W3C Spec says connect callback will not be called when inserting an element to a document fragment,
 		// but I still find it is occurred sometimes.
 		connectedCallback() {
 			onConnected(this)
@@ -67,7 +72,6 @@ function onConnected(el: HTMLElement) {
 		let props = makeProperties(el, propertyMap)
 
 		com = new Com(props, el)
-		addElementComponentMap(el, com)
 	}
 }
 
@@ -97,6 +101,6 @@ function onDisconnected(el: HTMLElement) {
 	let com = getComponentFromElement(el)
 	if (com && com.connected) {
 		com.beforeDisconnectCallback(PartCallbackParameter.RemoveImmediately)
-		logger.logOnce(`Suggest you DON'T remove custom element directly, which will cause disconnection action cant work normally! We suggest you to remove component instead.`, 'CustomElementDisconnectActionWarning')
+		console.warn(`Suggest you DON'T remove custom element directly, which will cause disconnect action cant work as expected! We suggest you to remove component instead.`, 'CustomElementDisconnectActionWarning')
 	}
 }
