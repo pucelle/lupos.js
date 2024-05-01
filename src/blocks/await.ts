@@ -24,7 +24,7 @@ export function createAwaitBlockFn(makers: (TemplateMaker | null)[]): AwaitBlock
 		function updateIndex(index: number) {
 			let maker = makers[index]
 			template = maker ? maker.make(context) : null
-			slot.updateTemplate(template)
+			slot.updateTemplateOnly(template)
 
 			if (template) {
 				template.update(values!)

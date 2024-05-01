@@ -31,7 +31,7 @@ export function createIfBlockFn(
 				if (newIndex !== index) {
 					let maker = newIndex >= 0 ? makers[newIndex] : null
 					template = maker ? maker.make(context) : null
-					slot.updateTemplate(template)
+					slot.updateTemplateOnly(template)
 					index = newIndex
 				}
 
@@ -77,7 +77,7 @@ export function createCacheableIfBlockFn(
 						templates.set(newIndex, template)
 					}
 					
-					slot.updateTemplate(template)
+					slot.updateTemplateOnly(template)
 				}
 
 				if (template) {

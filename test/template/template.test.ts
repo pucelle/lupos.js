@@ -6,7 +6,7 @@ describe('Test Template', () => {
 	test('Template content order', async () => {
 		let t1 = createHTMLTemplateFn('<div>1</div><div>2</div>')
 
-		// Compile from `<Child><div :slot="slotName">Slot Content...`
+		// Compile from html`<div>1</div><div>2</div>`
 		let maker1 = new TemplateMaker((_context: any) => {
 			let t = t1()
 			let div = t.content.firstElementChild!
@@ -47,7 +47,7 @@ describe('Test Template', () => {
 
 		let slot = new TemplateSlot(pos2 as TemplateSlotPosition<any>, null)
 		let pos3 = new TemplateSlotPosition(TemplateSlotPositionType.BeforeSlot, slot)
-
+		
 		t.insertNodesBefore(pos3)
 		expect(t.el.content.textContent).toBe('')
 		expect(container.textContent).toBe('123')

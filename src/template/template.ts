@@ -17,12 +17,12 @@ const PositionMap = new TemplateSlotPositionMap()
 export class Template implements Part {
 
 	readonly el: HTMLTemplateElement
-	readonly maker: TemplateMaker
+	readonly maker: TemplateMaker | null
 	readonly startInnerPosition: TemplateSlotPosition<TemplateSlotStartInnerPositionType>
 	readonly update: (values: any[]) => void
 	private readonly parts: [Part, number][]
 
-	constructor(maker: TemplateMaker, initResult: TemplateInitResult) {
+	constructor(maker: TemplateMaker | null, initResult: TemplateInitResult) {
 		this.maker = maker
 
 		this.el = initResult.el

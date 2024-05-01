@@ -49,7 +49,7 @@ describe('Test :slot', () => {
 				el: t,
 				position: new TemplateSlotPosition(TemplateSlotPositionType.Before, s),
 				update: (values: any[]) => {
-					slot.update(values[0])
+					slot.updateNodeOnly(values[0])
 				},
 				parts: [[slot, 1]],
 			}
@@ -150,7 +150,7 @@ describe('Test :slot', () => {
 				el: t,
 				position: new TemplateSlotPosition(TemplateSlotPositionType.Before, s),
 				update: async (values: any[]) => {
-					slot.update(values[0])
+					slot.updateNodeOnly(values[0])
 				},
 				parts: [[slot, 1]],
 			}

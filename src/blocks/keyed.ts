@@ -21,7 +21,7 @@ export function createkeyedBlockFn(maker: TemplateMaker | null): KeyedBlock {
 			update(newKey: any, values: any[]) {
 				if (newKey !== key) {
 					template = maker ? maker.make(context) : null
-					slot.updateTemplate(template)
+					slot.updateTemplateOnly(template)
 					key = newKey
 				}
 
