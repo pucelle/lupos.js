@@ -1,4 +1,4 @@
-import {PerFrameTransition, WebTransition, WebTransitionOptions} from '@pucelle/ff'
+import {ObjectUtils, PerFrameTransition, WebTransition, WebTransitionOptions} from '@pucelle/ff'
 import {Binding, defineNamedBinding} from './define'
 import {PerFrameTransitionProperties, TransitionProperties, TransitionResult, WebTransitionProperties} from './transitions'
 import {Part, PartCallbackParameter} from '../types'
@@ -18,9 +18,9 @@ const NotConnectCallbackForFirstTime: WeakSet<TransitionBinding> = new WeakSet()
 /**
  * `:transition` binding can play transition animation after element connected or before disconnect.
  * - `<el :transition=${fade({duration, ...})}>`
- * - `<el ${transition(fade({duration, ...}))}>`
  * - `<el :transition.local=${...}>`: play transition only when element itself is added or removed. `.local` can omit.
  * - `<el :transition.global=${...}>`: play transition when element or any ancestral element is added or removed.
+ * - `<el :transition.immediate=${...}>`: play transition immediately when element initialized.
  * 
  * `:transition` binding can dispatch for events on the target element:
  * - `enter-started`: After enter transition started.
@@ -159,12 +159,12 @@ export class TransitionBinding implements Binding, Part {
 
 		if (this.mixedTransitionType === MixedTransitionType.PerFrame) {
 			let perFrame = (props as PerFrameTransitionProperties).perFrame;
-			(this.mixedTransition as PerFrameTransition).playBetween(1, 0, perFrame);
+			await (this.mixedTransition as PerFrameTransition).playBetween(1, 0, perFrame);
 		}
 		else {
 			let startFrame = (props as WebTransitionProperties).startFrame;
 			let endFrame = (props as WebTransitionProperties).endFrame;
-			(this.mixedTransition as WebTransition).playBetween(endFrame, startFrame)
+			await (this.mixedTransition as WebTransition).playBetween(endFrame, startFrame)
 		}
 
 		let leaveEndedEvent = new CustomEvent('leave-ended')
@@ -184,19 +184,17 @@ export class TransitionBinding implements Binding, Part {
 		}
 
 		if (!this.mixedTransition) {
+			let options = ObjectUtils.cleanEmptyValues({
+				duration: props.duration,
+				easing: props.easing,
+				delay: props.delay,
+			})
+
 			if (type === MixedTransitionType.PerFrame) {
-				this.mixedTransition = new PerFrameTransition({
-					duration: props.duration,
-					easing: props.easing,
-					delay: props.delay,
-				})
+				this.mixedTransition = new PerFrameTransition(options)
 			}
 			else {
-				this.mixedTransition = new WebTransition(this.el, {
-					duration: props.duration,
-					easing: props.easing as WebTransitionOptions['easing'],
-					delay: props.delay,
-				})
+				this.mixedTransition = new WebTransition(this.el, options as WebTransitionOptions)
 			}
 		}
 	}

@@ -67,10 +67,11 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		let el: Element | null = element
 
 		while (el) {
-			if (el instanceof this) {
-				return el as InstanceType<C>
+			let com = Component.from(el)
+			if (com instanceof this) {
+				return com as InstanceType<C>
 			}
-			
+	
 			el = (el as Element).parentElement
 		}
 
@@ -191,6 +192,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 */
 	__applySlotElement(slotName: string, el: Element | null) {
 		this.slotElements[slotName] = el
+		DependencyTracker.onSet(this.slotElements, slotName)
 	}
 
 	afterConnectCallback(this: Component, _param: number) {
@@ -301,6 +303,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 
 	/** Remove element from document, and disconnect. */
 	remove() {
+		
 		// Not wait for leave transition.
 		if (this.connected) {
 			this.beforeDisconnectCallback(PartCallbackParameter.RemoveImmediately)

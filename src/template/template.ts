@@ -16,7 +16,7 @@ const PositionMap = new TemplateSlotPositionMap()
  */
 export class Template implements Part {
 
-	readonly el: HTMLTemplateElement | null
+	readonly el: HTMLTemplateElement
 	readonly maker: TemplateMaker
 	readonly startInnerPosition: TemplateSlotPosition<TemplateSlotStartInnerPositionType>
 	readonly update: (values: any[]) => void
@@ -25,7 +25,7 @@ export class Template implements Part {
 	constructor(maker: TemplateMaker, initResult: TemplateInitResult) {
 		this.maker = maker
 
-		this.el = initResult.el || null
+		this.el = initResult.el
 		this.startInnerPosition = initResult.position
 		this.parts = initResult.parts || []
 		this.update = initResult.update || noop
@@ -56,7 +56,10 @@ export class Template implements Part {
 	 * Can only get when nodes exist in current template.
 	 */
 	getFirstNode(): ChildNode | null {
-		if (this.startInnerPosition.type === TemplateSlotPositionType.Before) {
+		if (!this.startInnerPosition) {
+			return null
+		}
+		else if (this.startInnerPosition.type === TemplateSlotPositionType.Before) {
 			return this.startInnerPosition.target as ChildNode
 		}
 		else if (this.startInnerPosition.type === TemplateSlotPositionType.BeforeSlot) {
@@ -72,10 +75,7 @@ export class Template implements Part {
 	 * Note it will not call connect callback, you should do it manually after updated current template.
 	 */
 	insertNodesBefore(position: TemplateSlotPosition) {
-		if (this.el) {
-			position.insertBefore(...this.el.content.childNodes)
-		}
-
+		position.insertNodesBefore(...this.el.content.childNodes)
 		PositionMap.addPosition(this, position)
 	}
 
@@ -88,26 +88,41 @@ export class Template implements Part {
 	}
 
 	/** 
-	 * Recycle nodes that was first created in current template.
+	 * Recycle nodes that was firstly created in current template.
 	 * Will also call disconnect callback before recycling nodes.
 	 */
 	async recycleNodes() {
+		await this.beforeDisconnectCallback(
+			PartCallbackParameter.HappenInCurrentContext
+			| PartCallbackParameter.DirectNodeToMove
+		)
+
 		let position = PositionMap.getPosition(this)!
+		let firstNode = this.getFirstNode()
 
-		if (this.el) {
-			await this.beforeDisconnectCallback(
-				PartCallbackParameter.HappenInCurrentContext
-				| PartCallbackParameter.DirectNodeToMove
-			)
-
-			let firstNode = this.getFirstNode()
-			if (firstNode) {
-				for (let node of position.walkNodesForwardUntil(firstNode)) {
-					this.el.prepend(node)
-				}
-			}
+		if (firstNode) {
+			this.el.content.append(...position.walkNodesFrom(firstNode))
 		}
 
 		PositionMap.deletePosition(this, position)
+	}
+
+	/** 
+	 * Move nodes that was first created in current template,
+	 * and already inserted a position, to before a new position.
+	 */
+	moveNodesBefore(position: TemplateSlotPosition) {
+		let oldPosition = PositionMap.getPosition(this)!
+		if (oldPosition === position) {
+			return
+		}
+
+		let firstNode = this.getFirstNode()
+		if (firstNode) {
+			position.insertNodesBefore(...oldPosition.walkNodesFrom(firstNode))
+		}
+
+		PositionMap.deletePosition(this, oldPosition)
+		PositionMap.addPosition(this, position)
 	}
 }

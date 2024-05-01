@@ -14,6 +14,7 @@ export class SlotBinding implements Binding, Part {
 
 	private readonly el: Element
 	private slotName: string | null = null
+	private staticCom: Component | null = null
 	private com: Component | null = null
 
 	constructor(el: Element) {
@@ -25,14 +26,14 @@ export class SlotBinding implements Binding, Part {
 	}
 
 	/** For compiler knows about closest component. */
-	updateCom(com: Component) {
-		this.com = com
+	updateStaticCom(com: Component) {
+		this.staticCom = com
 	}
 
 	afterConnectCallback(param: number) {
-		let com = Component.fromClosest(this.el)
+		let com = this.staticCom || Component.fromClosest(this.el)
 		if (com) {
-			this.updateCom(com)
+			this.com = com
 		}
 
 		if (com && param & PartCallbackParameter.HappenInCurrentContext) {
@@ -44,6 +45,8 @@ export class SlotBinding implements Binding, Part {
 		if (this.com && param & PartCallbackParameter.HappenInCurrentContext) {
 			this.com.__applySlotElement(this.slotName!, null)
 		}
+
+		this.com = null
 	}
 }
 

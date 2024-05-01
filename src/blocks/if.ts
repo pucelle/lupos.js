@@ -2,7 +2,7 @@ import {Template, TemplateMaker, TemplateSlot} from '../template'
 
 
 /** Type of compiling statements like `<if>...`, `<switch>...`. */
-type IfBlockStatement = (slot: TemplateSlot, context: any) => {
+type IfBlock = (slot: TemplateSlot, context: any) => {
 	update(values: any[]): void
 }
 
@@ -15,10 +15,10 @@ type IfBlockStatement = (slot: TemplateSlot, context: any) => {
  * 	<else ${...}>...</else>
  * ```
  */
-export function make_if_statement(
+export function createIfBlockFn(
 	indexFn: (values: any[]) => number,
 	makers: (TemplateMaker | null)[]
-): IfBlockStatement
+): IfBlock
 {
 	return function(slot: TemplateSlot, context: any) {
 		let index = -1
@@ -53,10 +53,10 @@ export function make_if_statement(
  * 	<else ${...}>...</else>
  * ```
  */
-export function make_if_statement_cacheable(
+export function createCacheableIfBlockFn(
 	indexFn: (values: any[]) => number,
 	makers: (TemplateMaker | null)[]
-): IfBlockStatement
+): IfBlock
 {
 	return function(slot: TemplateSlot, context: any) {
 		let index = -1

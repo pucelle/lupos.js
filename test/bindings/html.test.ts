@@ -1,4 +1,4 @@
-import {HTMLBinding} from '../../src/bindings/html'
+import {HTMLBinding} from '../../src'
 
 
 describe('Test :html', () => {

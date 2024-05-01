@@ -38,7 +38,7 @@ export interface PerFrameTransitionProperties extends TransitionOptions {
 	 * Process somethings per frame.
 	 * `progress` betweens `0~1`.
 	 */
-	perFrame: (progress: number) => {}
+	perFrame: (progress: number) => void
 }
 
 /** 

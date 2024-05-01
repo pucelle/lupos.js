@@ -16,7 +16,7 @@ export class TemplateSlotPositionMap {
 	private tpmap: Map<Template, TemplateSlotPosition> = new Map()
 	private ptmap: Map<TemplateSlotPosition, Template> = new Map()
 
-	/** Insert a template before a position. */
+	/** After insert a template before a position, remember relative position. */
 	addPosition(template: Template, position: TemplateSlotPosition) {
 		let prevT = this.ptmap.get(position)
 		if (prevT) {

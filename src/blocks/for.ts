@@ -3,7 +3,7 @@ import {CompiledTemplateResult, Template, TemplateSlot} from '../template'
 
 
 /** Type of compiling statements like `<for of=${...}>...`. */
-type ForBlockStatement = (slot: TemplateSlot, context: any) => {
+type ForBlock = (slot: TemplateSlot, context: any) => {
 	update(values: any[]): void
 }
 
@@ -19,7 +19,7 @@ type ForRenderFn = (item: any, index: number) => CompiledTemplateResult
  * 	`}</for>
  * ```
  */
-export function make_for_statement(renderFn: ForRenderFn): ForBlockStatement {
+export function createForBlockFn(renderFn: ForRenderFn): ForBlock {
 	return function(slot: TemplateSlot, context: any) {
 		let updator = new ForUpdator(slot, context, renderFn)
 	
@@ -49,7 +49,7 @@ class ForUpdator<T> {
 	}
 
 	/** Update data items. */
-	update(newData: T[]) {
+	async update(newData: T[]) {
 		let oldData = this.data
 		let oldTs = this.templates
 		let editRecord = getEditRecord(oldData, newData, true)
@@ -67,14 +67,14 @@ class ForUpdator<T> {
 				this.reuseTemplate(fromT!, newItem!, toIndex)
 			}
 			else if (type === EditType.Move) {
-				this.insertTemplateBefore(fromT!, nextOldT)
+				this.moveTemplate(fromT!, nextOldT)
 				this.reuseTemplate(fromT!, newItem!, toIndex)
 			}
 			else if (type === EditType.Modify) {
 				this.reuseTemplate(fromT!, newItem!, toIndex)
 			}
 			else if (type === EditType.MoveModify) {
-				this.insertTemplateBefore(fromT!, nextOldT)
+				this.moveTemplate(fromT!, nextOldT)
 				this.reuseTemplate(fromT!, newItem!, toIndex)
 			}
 			else if (type === EditType.Insert) {
@@ -99,7 +99,7 @@ class ForUpdator<T> {
 		let result = this.renderFn(item, index)
 		let t = result.maker.make(this.context)
 
-		this.insertTemplateBefore(t, nextOldT)
+		this.insertTemplate(t, nextOldT)
 		t.update(result.values)
 		t.callConnectCallback()
 		this.templates.push(t)
@@ -117,7 +117,12 @@ class ForUpdator<T> {
 		t.recycleNodes()
 	}
 
-	private insertTemplateBefore(t: Template, nextOldT: Template | null) {
+	private async moveTemplate(t: Template, nextOldT: Template | null) {
+		let position = nextOldT?.startInnerPosition || this.slot.endOuterPosition
+		t.moveNodesBefore(position)
+	}
+
+	private insertTemplate(t: Template, nextOldT: Template | null) {
 		let position = nextOldT?.startInnerPosition || this.slot.endOuterPosition
 		t.insertNodesBefore(position)
 	}

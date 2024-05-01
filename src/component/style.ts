@@ -1,4 +1,4 @@
-import {Watcher} from '@pucelle/ff'
+import {createEffect} from '@pucelle/ff'
 import {TemplateResult} from '../template'
 import {ComponentConstructor} from './types'
 
@@ -34,8 +34,8 @@ function createStyleElement(style: ComponentStyle, identifyName: string) {
 	let styleTag = document.createElement('style')
 	styleTag.setAttribute('name', identifyName)
 
-	Watcher.watchImmediately(() => getStyleContent(style), value => {
-		styleTag.textContent = value
+	createEffect(() => {
+		styleTag.textContent = getStyleContent(style)
 	})
 	
 	let scriptTag = document.head.querySelector('script')

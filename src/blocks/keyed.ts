@@ -2,7 +2,7 @@ import {Template, TemplateMaker, TemplateSlot} from '../template'
 
 
 /** Type of compiling all the statement like `<keyed ${}>...`. */
-type KeyedBlockStatement = (slot: TemplateSlot, context: any) => {
+type KeyedBlock = (slot: TemplateSlot, context: any) => {
 	update(key: any, values: any[]): void
 }
 
@@ -12,7 +12,7 @@ type KeyedBlockStatement = (slot: TemplateSlot, context: any) => {
  * 	<keyed ${...}>...</keyed>
  * ```
  */
-export function make_keyed_statement(maker: TemplateMaker | null): KeyedBlockStatement {
+export function createkeyedBlockFn(maker: TemplateMaker | null): KeyedBlock {
 	return function(slot: TemplateSlot, context: any) {
 		let key: any = undefined
 		let template: Template | null = null

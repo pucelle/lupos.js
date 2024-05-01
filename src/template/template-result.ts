@@ -52,44 +52,6 @@ export function css(strings: TemplateStringsArray, ...values: any[]): TemplateRe
  */
 export class TemplateResult {
 
-	/** Joins several templates with a spliter to one template result. */
-	static join(results: TemplateResult[], spliter: string | TemplateResult) {
-		let strings: string[] = []
-		let values: any[] = []
-
-		for (let i = 0; i < results.length; i++) {
-			let result = results[i]
-
-			// Not first.
-			if (i > 0) {
-				strings[strings.length - 1] += result.strings[0]
-				strings.push(...result.strings.slice(1))
-			}
-			else {
-				strings.push(...result.strings)
-			}
-			
-			values.push(...result.values)
-
-			if (spliter instanceof TemplateResult) {
-				// Not last.
-				if (i < results.length - 1 && spliter) {
-					strings[strings.length - 1] += spliter.strings[0]
-					strings.push(...spliter.strings.slice(1))
-					values.push(...spliter.values)
-				}
-			}
-			else {
-				// Not last.
-				if (i < results.length - 1 && spliter) {
-					strings[strings.length - 1] += spliter
-				}
-			}
-		}
-
-		return new TemplateResult(results[0].type, strings, values)
-	}
-
 	readonly type: TemplateType
 	readonly strings: TemplateStringsArray | string[]
 	readonly values: any[]
@@ -100,10 +62,7 @@ export class TemplateResult {
 		this.values = values
 	}
 
-	/** 
-	 * Join strings and values to string.
-	 * Just for debugging.
-	 */
+	/** Join strings and values to a string. */
 	toString(): string {
 		let text = this.strings[0]
 
@@ -123,24 +82,5 @@ export class TemplateResult {
 		}
 
 		return text
-	}
-
-	/** Clone current template result and returns a new one. */
-	clone(): TemplateResult {
-		return new TemplateResult(this.type, [...this.strings], [...this.values])
-	}
-
-	/** Concat with another template result, and returns a new one. */
-	concat(...results: TemplateResult[]): TemplateResult {
-		let strings = [...this.strings]
-		let values = [...this.values]
-
-		for (let result of results) {
-			strings[strings.length - 1] += result.strings[0]
-			strings.push(...result.strings.slice(1))
-			values.push(...result.values)
-		}
-
-		return new TemplateResult(this.type, strings, values)
 	}
 }

@@ -19,7 +19,16 @@ export enum SlotContentType {
  */
 export class TemplateSlot implements Part {
 
-	/** End outer position, indicate where to put new content. */
+	/** 
+	 * End outer position, indicate where to put new content.
+	 * 
+	 * Note:
+	 * - if located before a slot element with `:slot` specified,
+	 * need to insert a comment before it and use it's position.
+	 * - if located as after the content end of component, the "AfterContent" position
+	 * of a component is not stable it may append more contents after component rendered,
+	 * so need insert a comment after current slot and use it's position.
+	 */
 	readonly endOuterPosition: TemplateSlotPosition<TemplateSlotEndOuterPositionType>
 
 	private context: any
@@ -107,6 +116,9 @@ export class TemplateSlot implements Part {
 
 			return null
 		}
+		else if (this.contentType === SlotContentType.Node) {
+			return this.content as ChildNode
+		}
 		else {
 			return this.content as Text | null
 		}
@@ -123,7 +135,7 @@ export class TemplateSlot implements Part {
 		}
 
 		if (this.endOuterPosition.type === TemplateSlotPositionType.Before) {
-			return node
+			return (this.endOuterPosition.target as ChildNode)
 		}
 		else if (this.endOuterPosition.type === TemplateSlotPositionType.BeforeSlot) {
 			return (this.endOuterPosition.target as TemplateSlot).getFirstNodeClosest()
@@ -187,6 +199,9 @@ export class TemplateSlot implements Part {
 				let t = ts[i]
 				this.removeTemplate(t)
 			}
+		}
+		else if (this.contentType === SlotContentType.Node) {
+			(this.content as ChildNode).remove()
 		}
 
 		this.content = null
@@ -286,7 +301,7 @@ export class TemplateSlot implements Part {
 			}
 			else {
 				node = document.createTextNode(text)
-				this.endOuterPosition.insertBefore(node)
+				this.endOuterPosition.insertNodesBefore(node)
 				this.content = node
 			}
 		}
@@ -310,7 +325,7 @@ export class TemplateSlot implements Part {
 			}
 
 			if (node) {
-				this.endOuterPosition.insertBefore(node)
+				this.endOuterPosition.insertNodesBefore(node)
 			}
 			
 			this.content = node

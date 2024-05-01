@@ -14,12 +14,12 @@ describe('Test :ref', () => {
 
 			t.content.append(child.el)
 
-			// Static contents moved to here.
+			// Static updates move to here.
 			b.update((r: any) => context.ref = r)
 
 			return {
 				el: t,
-				position: new TemplateSlotPosition(TemplateSlotPositionType.BeforeContent, context.el),
+				position: new TemplateSlotPosition(TemplateSlotPositionType.Before, child.el),
 				parts: [[b, 1]],
 			}
 		})
@@ -56,12 +56,12 @@ describe('Test :ref', () => {
 
 			t.content.append(div)
 
-			// Static contents moved to here.
+			// Static updates move to here.
 			b.update((r: any) => context.ref = r)
 
 			return {
 				el: t,
-				position: new TemplateSlotPosition(TemplateSlotPositionType.BeforeContent, context.el),
+				position: new TemplateSlotPosition(TemplateSlotPositionType.Before, div),
 				parts: [[b, 1]],
 			}
 		})

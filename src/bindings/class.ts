@@ -19,6 +19,7 @@ export class ClassBinding implements Binding {
 	private readonly el: Element
 	private classNames: string[] = []
 
+	/** Modifier `className` of `:class.className` will be replaced by compiler. */
 	constructor(el: Element) {
 		this.el = el
 	}

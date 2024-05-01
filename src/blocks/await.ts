@@ -2,7 +2,7 @@ import {Template, TemplateMaker, TemplateSlot} from '../template'
 
 
 /** Type of compiling statements like `<await>...`. */
-type AwaitBlockStatement = (slot: TemplateSlot, context: any) => {
+type AwaitBlock = (slot: TemplateSlot, context: any) => {
 	update(promise: Promise<any>, values: any[]): void
 }
 
@@ -15,7 +15,7 @@ type AwaitBlockStatement = (slot: TemplateSlot, context: any) => {
  * 	<catch>...</catch>
  * ```
  */
-export function make_await_statement(makers: (TemplateMaker | null)[]): AwaitBlockStatement {
+export function createAwaitBlockFn(makers: (TemplateMaker | null)[]): AwaitBlock {
 	return function(slot: TemplateSlot, context: any) {
 		let promise: Promise<any> | null = null
 		let values: any[] | null = null

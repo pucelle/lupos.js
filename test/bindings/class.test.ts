@@ -1,4 +1,4 @@
-import {ClassBinding} from '../../src/bindings/class'
+import {ClassBinding} from '../../src'
 
 
 describe('Test :class', () => {

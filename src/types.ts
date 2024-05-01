@@ -40,16 +40,22 @@ export enum PartCallbackParameter {
 export interface Part {
 
 	/** 
-	 * After nodes or any ancestral nodes of current part were inserted into a context.
+	 * After nodes or any ancestral nodes of current part were inserted,
+	 * and current part was totally update, call it's connect callback.
+	 * 
+	 * If part was moved to another place, would not call this connect callback.
+	 * 
 	 * Will also broadcast calling recursively for all descendant parts.
-	 * For bindings, it should be completely updated right now.
+
 	 * - `param`: AND byte operate of `PartCallbackParameter`.
 	 */
 	afterConnectCallback(param: number): void
 
 	/** 
-	 * Before nodes or any ancestral nodes of current part are going to be removed from a context.
+	 * Before nodes or any ancestral nodes of current part are going to be removed.
+	 * 
 	 * Will also broadcast calling recursively for all descendant parts.
+	 * 
 	 * - `param`: AND byte operate of `PartCallbackParameter`.
 	 */
 	beforeDisconnectCallback(param: number): Promise<void>

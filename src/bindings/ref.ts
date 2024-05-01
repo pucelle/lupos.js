@@ -21,6 +21,7 @@ export class RefBinding implements Binding, Part {
 
 	private refFn: ((value: any) => void) | null = null
 
+	/** Modifier `el` will be replaced by compiler. */
 	constructor(el: Element) {
 		this.el = el
 	}

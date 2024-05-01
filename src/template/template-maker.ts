@@ -9,22 +9,27 @@ export type TemplateInitFn = (context: any) => TemplateInitResult
 /** Part of contents compiled from a template literal. */
 export interface TemplateInitResult {
 
-	/** 
-	 * Cache all nodes of template.
-	 * If no element, and no part, ignore it.
-	 */
-	el?: HTMLTemplateElement
+	/** Template element to initialize all nodes inside. */
+	el: HTMLTemplateElement
 
-	/** Start inner position, indicate the end edge of current content. */
+	/** 
+	 * Start inner position, indicate the start edge of current content.
+	 * 
+	 * Note if located before a slot element with `:slot` specified,
+	 * must insert a comment before it and use it's position.
+	 */
 	position: TemplateSlotPosition<TemplateSlotStartInnerPositionType>
 
-	/** Update and apply new values. */
+	/** 
+	 * Update and apply new values.
+	 * If nothing needs to be updated, ignores it.
+	 */
 	update?: (values: any[]) => void
 
 	/** 
 	 * List of all parts inside.
-	 * Second value is the AND of each `PartCallbackParameter`, can be `1` or `3`,
-	 * it represents whether part in the first level (under root) of template,
+	 * Second value is the AND operate of each `PartCallbackParameter`, can be `1` or `3`,
+	 * If no parts inside, ignores it.
 	 */
 	parts?: [Part, number][]
 }
@@ -39,7 +44,7 @@ export class TemplateMaker {
 		this.init = init
 	}
 
-	/** Bind with a context to create a `CompiledTemplateResult`. */
+	/** Bind with a context to create a Template. */
 	make(context: any): Template {
 		return new Template(this, this.init(context))
 	}

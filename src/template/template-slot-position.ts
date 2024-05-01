@@ -32,6 +32,12 @@ export enum TemplateSlotPositionType {
 export type TemplateSlotStartInnerPositionType = TemplateSlotPositionType.Before | TemplateSlotPositionType.BeforeSlot | TemplateSlotPositionType.BeforeContent
 export type TemplateSlotEndOuterPositionType = TemplateSlotPositionType.Before | TemplateSlotPositionType.BeforeSlot | TemplateSlotPositionType.AfterContent
 
+/** Target type by slot type. */
+type TargetTypeMap<T> = 
+	T extends TemplateSlotPositionType.Before ? Node
+	: T extends TemplateSlotPositionType.BeforeSlot ? TemplateSlot
+	: Element
+
 
 /** 
  * A `TemplateSlotPosition` indicates where a template slot located.
@@ -43,13 +49,13 @@ export class TemplateSlotPosition<T = TemplateSlotPositionType> {
 	type: T
 	target: Element | Node | TemplateSlot
 
-	constructor(type: T, target: Element | Node | TemplateSlot) {
+	constructor(type: T, target: TargetTypeMap<T>) {
 		this.type = type
 		this.target = target
 	}
 
 	/** Insert nodes before current position. */
-	insertBefore(...newNodes: ChildNode[]) {
+	insertNodesBefore(...newNodes: ChildNode[]) {
 		if (this.type === TemplateSlotPositionType.Before) {
 			let node = this.target as ChildNode
 			node.before(...newNodes)
@@ -62,8 +68,7 @@ export class TemplateSlotPosition<T = TemplateSlotPositionType> {
 				node.before(...newNodes)
 			}
 			else {
-				let parent = slot.tryGetParentElement()!
-				parent.append(...newNodes)
+				slot.endOuterPosition.insertNodesBefore(...newNodes)
 			}
 		}
 		else {
@@ -72,51 +77,25 @@ export class TemplateSlotPosition<T = TemplateSlotPositionType> {
 		}
 	}
 
-	/** Walk nodes backward before current position, until specified node or end. */
-	*walkNodesForwardUntil(until: ChildNode | null): Iterable<ChildNode> {
+	/** Walk nodes from specified node, and until before of current position. */
+	*walkNodesFrom(from: ChildNode): Iterable<ChildNode> {
+		let untilBeforeNode: ChildNode | null
+		let node: ChildNode | null = from
+
 		if (this.type === TemplateSlotPositionType.Before) {
-			let node = (this.target as ChildNode).previousSibling
-
-			while (node) {
-				let prevNode = node.previousSibling
-
-				// May remove current node when yield.
-				yield node
-
-				if (node === until) {
-					break
-				}
-
-				node = prevNode
-			}
+			untilBeforeNode = this.target as ChildNode
 		}
 		else if (this.type === TemplateSlotPositionType.BeforeSlot) {
-			let node = (this.target as TemplateSlot).getFirstNodeClosest()?.previousSibling
-			
-			while (node) {
-				let prevNode = node.previousSibling
-				yield node
-
-				if (node === until) {
-					break
-				}
-
-				node = prevNode
-			}
+			untilBeforeNode = (this.target as TemplateSlot).getFirstNodeClosest()
 		}
 		else {
-			let node = (this.target as Element).lastChild
-			
-			while (node) {
-				let prevNode = node.previousSibling
-				yield node
-
-				if (node === until) {
-					break
-				}
-
-				node = prevNode
-			}
+			untilBeforeNode = null
 		}
+
+		do {
+			yield node
+			node = node.nextSibling
+		}
+		while (node && node !== untilBeforeNode)
 	}
 }

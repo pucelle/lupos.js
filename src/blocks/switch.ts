@@ -1,4 +1,4 @@
-import {make_if_statement, make_if_statement_cacheable} from './if'
+import {createIfBlockFn, createCacheableIfBlockFn} from './if'
 
 
 /** 
@@ -11,7 +11,7 @@ import {make_if_statement, make_if_statement_cacheable} from './if'
  *  </switch>
  * ```
  */
-export const make_switch_statement = make_if_statement
+export const createSwitchBlockFn = createIfBlockFn
 
 
 /** 
@@ -24,4 +24,4 @@ export const make_switch_statement = make_if_statement
  *  </switch>
  * ```
  */
-export const make_switch_statement_cacheable = make_if_statement_cacheable
+export const createCacheableSwitchBlockFn = createCacheableIfBlockFn
