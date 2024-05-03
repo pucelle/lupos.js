@@ -10,6 +10,7 @@ export enum SlotContentType {
 	TemplateResult,
 	TemplateResultArray,
 	Text,
+	Node,
 
 	// Two not identified types, can use null instead.
 	// NotIdentifiedNode,
@@ -38,7 +39,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 
 	private context: any
 	private contentType: T | null = null
-	private content: Template | Template[] | null = null
+	private content: Template | Template[] | ChildNode | null = null
 
 	constructor(
 		endOuterPosition: SlotPosition<SlotEndOuterPositionType>,
@@ -127,6 +128,9 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 				}
 			}
 		}
+		else if (this.contentType === SlotContentType.Node) {
+			return this.content as ChildNode
+		}
 	
 		return null
 	}
@@ -147,7 +151,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 		let newContentType = this.identifyContentType(value)
 
 		if (newContentType !== this.contentType) {
-			this.clearOldContent()
+			this.clearContent()
 		}
 
 		this.contentType = newContentType
@@ -161,6 +165,9 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 		else if (newContentType === SlotContentType.TemplateResultArray) {
 			this.updateTemplateResultArray(value as CompiledTemplateResult[])
 		}
+		else if (newContentType === SlotContentType.Node) {
+			this.updateNode(value as ChildNode)
+		}
 	}
 
 	private identifyContentType(value: unknown): T | null {
@@ -173,17 +180,24 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 		else if (Array.isArray(value)) {
 			return SlotContentType.TemplateResultArray as T
 		}
+		else if (value instanceof Node) {
+			return SlotContentType.Node as T
+		}
 		else {
 			return SlotContentType.Text as T
 		}
 	}
 
-	private clearOldContent() {
+	/** Clear current content. */
+	clearContent() {
 		if (!this.content) {
 			return
 		}
 
-		if (this.contentType === SlotContentType.TemplateResult || this.contentType === SlotContentType.Text) {
+		if (this.contentType === SlotContentType.TemplateResult
+			|| this.contentType === SlotContentType.Text
+			|| this.contentType === SlotContentType.Node
+		) {
 			this.removeTemplate(this.content as Template)
 		}
 		else {
@@ -196,6 +210,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 		}
 
 		this.content = null
+		this.contentType = null
 	}
 
 	/** Update template when knowing it's in template result type. */
@@ -271,6 +286,25 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 		t.update([text])
 	}
 
+	/** Update content to a node when knowing it's in node type. */
+	updateNode(node: ChildNode) {
+		let t = this.content as Template<ChildNode[]> | null
+
+		if (node) {
+			if (!t) {
+				t = this.content = NodesTemplateMaker.make(null)
+				t.insertNodesBefore(this.endOuterPosition)
+			}
+
+			t.update([node])
+		}
+		else {
+			if (t) {
+				t.update([])
+			}
+		}
+	}
+
 	/** 
 	 * Update template manually without checking maker equality.
 	 * When use this method, ensure current content type is `null`.
@@ -311,30 +345,6 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 			}
 
 			t.update(nodes)
-		}
-		else {
-			if (t) {
-				t.update([])
-			}
-		}
-	}
-
-	/** 
-	 * Update content to a node manually.
-	 * When use this method, ensure current content type is `null`.
-	 * Current value is not in auto-recognized content type, so you cant use `update()`.
-	 * Use it for replacing nodes, like insert slot elements.
-	 */
-	updateNodeOnly(this: TemplateSlot<null>, node: ChildNode | null) {
-		let t = this.content as Template<ChildNode[]> | null
-
-		if (node) {
-			if (!t) {
-				t = this.content = NodesTemplateMaker.make(null)
-				t.insertNodesBefore(this.endOuterPosition)
-			}
-
-			t.update([node])
 		}
 		else {
 			if (t) {

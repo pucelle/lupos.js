@@ -48,8 +48,8 @@ describe('Test :slot', () => {
 			return {
 				el: t,
 				position: new SlotPosition(SlotPositionType.Before, s),
-				update: (_values: any[]) => {
-					slot.updateNodeOnly(context.__getSlotElement('slotName'))
+				update: (values: any[]) => {
+					slot.updateNode(values[0])
 				},
 				parts: [[slot, 1]],
 			}
@@ -67,7 +67,7 @@ describe('Test :slot', () => {
 
 			// Renders html`<slot name="slotName" />`
 			protected render() {
-				return new CompiledTemplateResult(maker2, [])
+				return new CompiledTemplateResult(maker2, [this.__getSlotElement('slotName')])
 			}
 		}
 
@@ -131,12 +131,12 @@ describe('Test :slot', () => {
 
 		let t3 = createHTMLTemplateFn('<slot></slot>')
 
-		// Compile from `<slot name="slotName">...`
+		// Compile from `<slot name="slotName">Default`
 		let maker3 = new TemplateMaker((context: Child) => {
 			let t = t3()
 			let s = t.content.firstElementChild!
 
-			let slot = new TemplateSlot<null>(
+			let slot = new TemplateSlot(
 				new SlotPosition(SlotPositionType.AfterContent, s),
 				context,
 			)
@@ -145,9 +145,22 @@ describe('Test :slot', () => {
 				el: t,
 				position: new SlotPosition(SlotPositionType.Before, s),
 				update: (values: any[]) => {
-					slot.updateNodeOnly(values[0])
+					slot.update(values[0] || new CompiledTemplateResult(maker4, []))
 				},
 				parts: [[slot, 1]],
+			}
+		})
+
+		let t4 = createHTMLTemplateFn('Default Content')
+
+		// Compile from `Default Content`
+		let maker4 = new TemplateMaker((_context: Child) => {
+			let t = t4()
+			let text = t.content.firstChild!
+
+			return {
+				el: t,
+				position: new SlotPosition(SlotPositionType.Before, text),
 			}
 		})
 
@@ -175,18 +188,18 @@ describe('Test :slot', () => {
 		let parent = new Parent()
 		parent.appendTo(document.body)
 		await UpdateQueue.untilComplete()
-		expect(parent.el.querySelector('slot > *')).toBeInstanceOf(HTMLElement)
+		expect(parent.el.querySelector('slot')?.textContent).toBe('Slot Content')
 
 		parent.prop = false
 		DependencyTracker.onSet(parent, 'prop')
 		await UpdateQueue.untilComplete()
-		expect(parent.el.querySelector('slot > *')).toEqual(null)
+		expect(parent.el.querySelector('slot')?.textContent).toEqual('Default Content')
 
 		parent.prop = true
 		DependencyTracker.onSet(parent, 'prop')
 		await UpdateQueue.untilComplete()
 	
-		expect(parent.el.querySelector('slot > *')).toBeInstanceOf(HTMLElement)
+		expect(parent.el.querySelector('slot')?.textContent).toBe('Slot Content')
 	})
 
 
