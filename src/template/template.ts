@@ -1,26 +1,36 @@
-import {TemplateSlotPosition, TemplateSlotStartInnerPositionType, TemplateSlotPositionType} from './template-slot-position'
+import {SlotPosition, SlotStartInnerPositionType, SlotPositionType} from './slot-position'
 import {TemplateSlot} from './template-slot'
 import {TemplateMaker, TemplateInitResult} from './template-maker'
 import {noop} from '@pucelle/ff'
 import {Part, PartCallbackParameter} from '../types'
-import {TemplateSlotPositionMap} from './template-slot-position-map'
+import {SlotPositionMap} from './slot-position-map'
 
 
 /** Help to cache template insert position. */
-const PositionMap = new TemplateSlotPositionMap()
+const PositionMap = new SlotPositionMap()
 
 
 /** 
  * Represents a template make from a html`...`
  * Be generated after a `TemplateMaker` binded with a context.
  */
-export class Template implements Part {
+export class Template<P extends any[] = any[]> implements Part {
 
 	readonly el: HTMLTemplateElement
 	readonly maker: TemplateMaker | null
-	readonly startInnerPosition: TemplateSlotPosition<TemplateSlotStartInnerPositionType>
-	readonly update: (values: any[]) => void
+	readonly startInnerPosition: SlotPosition<SlotStartInnerPositionType>
+	readonly update: (values: P) => void
 	private readonly parts: [Part, number][]
+
+	/** 
+	 * Required, can avoid call connect callbacks repeatedly.
+	 * 
+	 * E.g.,
+	 * A template1 was updated, cause slot to append template2,
+	 * template2 was updated and connected, call template1 connect callback,
+	 * cause template1's connect callback to be called repeatedly.
+	 */
+	private connected: boolean = false
 
 	constructor(maker: TemplateMaker | null, initResult: TemplateInitResult) {
 		this.maker = maker
@@ -32,12 +42,24 @@ export class Template implements Part {
 	}
 
 	afterConnectCallback(param: number) {
-		for (let [part, topLevel] of this.parts) {
-			part.afterConnectCallback(param & topLevel)
+		if (this.connected) {
+			return
+		}
+
+		this.connected = true
+
+		for (let [part, partParam] of this.parts) {
+			part.afterConnectCallback(param & partParam)
 		}
 	}
 
-	beforeDisconnectCallback(param: number): Promise<void> {
+	beforeDisconnectCallback(param: number): Promise<void> | void {
+		if (!this.connected) {
+			return
+		}
+
+		this.connected = false
+
 		let promises: Promise<void>[] = []
 
 		for (let [part, topLevel] of this.parts) {
@@ -47,7 +69,9 @@ export class Template implements Part {
 			}
 		}
 
-		return Promise.all(promises) as Promise<any>
+		if (promises.length > 0) {
+			return Promise.all(promises) as Promise<any> 
+		}
 	}
 
 	/** 
@@ -59,11 +83,11 @@ export class Template implements Part {
 		if (!this.startInnerPosition) {
 			return null
 		}
-		else if (this.startInnerPosition.type === TemplateSlotPositionType.Before) {
+		else if (this.startInnerPosition.type === SlotPositionType.Before) {
 			return this.startInnerPosition.target as ChildNode
 		}
-		else if (this.startInnerPosition.type === TemplateSlotPositionType.BeforeSlot) {
-			return (this.startInnerPosition.target as TemplateSlot).getFirstNode()
+		else if (this.startInnerPosition.type === SlotPositionType.BeforeSlot) {
+			return (this.startInnerPosition.target as TemplateSlot).getStartNode()
 		}
 		else {
 			return this.startInnerPosition.target as Element
@@ -74,17 +98,9 @@ export class Template implements Part {
 	 * Insert nodes before an end position.
 	 * Note it will not call connect callback, you should do it manually after updated current template.
 	 */
-	insertNodesBefore(position: TemplateSlotPosition) {
+	insertNodesBefore(position: SlotPosition) {
 		position.insertNodesBefore(...this.el.content.childNodes)
 		PositionMap.addPosition(this, position)
-	}
-
-	/** After nodes inserted and template updated, call connect callback. */
-	callConnectCallback() {
-		this.afterConnectCallback(
-			PartCallbackParameter.HappenInCurrentContext
-			| PartCallbackParameter.DirectNodeToMove
-		)
 	}
 
 	/** 
@@ -97,6 +113,7 @@ export class Template implements Part {
 			| PartCallbackParameter.DirectNodeToMove
 		)
 
+		// Note here postpone recycling nodes for at least a micro task tick.
 		let position = PositionMap.getPosition(this)!
 		let firstNode = this.getFirstNode()
 
@@ -111,7 +128,7 @@ export class Template implements Part {
 	 * Move nodes that was first created in current template,
 	 * and already inserted a position, to before a new position.
 	 */
-	moveNodesBefore(position: TemplateSlotPosition) {
+	moveNodesBefore(position: SlotPosition) {
 		let oldPosition = PositionMap.getPosition(this)!
 		if (oldPosition === position) {
 			return

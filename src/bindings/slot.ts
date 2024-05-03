@@ -31,22 +31,26 @@ export class SlotBinding implements Binding, Part {
 	}
 
 	afterConnectCallback(param: number) {
+		if (!(param & PartCallbackParameter.HappenInCurrentContext)) {
+			return
+		}
+
 		let com = this.staticCom || Component.fromClosest(this.el)
 		if (com) {
 			this.com = com
-		}
-
-		if (com && param & PartCallbackParameter.HappenInCurrentContext) {
 			com.__applySlotElement(this.slotName!, this.el)
 		}
 	}
 
-	async beforeDisconnectCallback(param: number) {
-		if (this.com && param & PartCallbackParameter.HappenInCurrentContext) {
-			this.com.__applySlotElement(this.slotName!, null)
+	beforeDisconnectCallback(param: number) {
+		if (!(param & PartCallbackParameter.HappenInCurrentContext)) {
+			return
 		}
 
-		this.com = null
+		if (this.com) {
+			this.com.__applySlotElement(this.slotName!, null)
+			this.com = null
+		}
 	}
 }
 

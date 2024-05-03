@@ -1,5 +1,5 @@
 import {DependencyTracker, UpdateQueue} from '@pucelle/ff'
-import {CompiledTemplateResult, Component, RefBinding, TemplateSlotPositionType, TemplateMaker, TemplateSlotPosition, createHTMLTemplateFn} from '../../src/'
+import {CompiledTemplateResult, Component, RefBinding, SlotPositionType, TemplateMaker, SlotPosition, createHTMLTemplateFn} from '../../src/'
 
 
 describe('Test :ref', () => {
@@ -19,7 +19,7 @@ describe('Test :ref', () => {
 
 			return {
 				el: t,
-				position: new TemplateSlotPosition(TemplateSlotPositionType.Before, child.el),
+				position: new SlotPosition(SlotPositionType.Before, child.el),
 				parts: [[b, 1]],
 			}
 		})
@@ -61,7 +61,7 @@ describe('Test :ref', () => {
 
 			return {
 				el: t,
-				position: new TemplateSlotPosition(TemplateSlotPositionType.Before, div),
+				position: new SlotPosition(SlotPositionType.Before, div),
 				parts: [[b, 1]],
 			}
 		})

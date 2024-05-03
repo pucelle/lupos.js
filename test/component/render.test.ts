@@ -1,5 +1,5 @@
 import {DependencyTracker, UpdateQueue} from '@pucelle/ff'
-import {CompiledTemplateResult, TemplateMaker, TemplateSlotPosition, TemplateSlotPositionType, createHTMLTemplateFn, render} from '../../src'
+import {CompiledTemplateResult, TemplateMaker, SlotPosition, SlotPositionType, createHTMLTemplateFn, render} from '../../src'
 
 
 describe('Test render', () => {
@@ -14,7 +14,7 @@ describe('Test render', () => {
 
 			return {
 				el: t,
-				position: new TemplateSlotPosition(TemplateSlotPositionType.Before, div),
+				position: new SlotPosition(SlotPositionType.Before, div),
 			}
 		})
 
@@ -40,7 +40,7 @@ describe('Test render', () => {
 				update(values: any[]) {
 					text.data = values[0]
 				},
-				position: new TemplateSlotPosition(TemplateSlotPositionType.Before, div),
+				position: new SlotPosition(SlotPositionType.Before, div),
 			}
 		})
 

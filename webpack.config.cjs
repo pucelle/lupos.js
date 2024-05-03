@@ -7,7 +7,7 @@ module.exports = (env) => {
 	let outputPath = path.resolve(__dirname, 'dist')
 
 	return {
-		entry: ['./src/index.ts'],
+		entry: ['./docs/index.ts'],
 		mode: env.production ? 'production' : 'development',
 		target: 'web',
 		output: {
@@ -42,6 +42,12 @@ module.exports = (env) => {
 					}],
 					exclude: /node_modules/
 				},
+				{
+					test: /\.m?js/,
+					resolve: {
+						fullySpecified: false
+					}
+				}
 			],
 		},
 	}

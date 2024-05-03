@@ -1,7 +1,7 @@
-import {TemplateSlotPosition, TemplateSlotPositionType, TemplateSlotEndOuterPositionType} from './template-slot-position'
+import {SlotPosition, SlotPositionType, SlotEndOuterPositionType} from './slot-position'
 import {Template} from './template'
 import {CompiledTemplateResult} from './template-result-compiled'
-import {Part} from '../types'
+import {Part, PartCallbackParameter} from '../types'
 import {NodesTemplateMaker, TextTemplateMaker} from './template-makers'
 
 
@@ -21,7 +21,7 @@ export enum SlotContentType {
  * A `TemplateSlot` indicates a `>${...}<` inside a template,
  * helps to update content of the slot.
  */
-export class TemplateSlot implements Part {
+export class TemplateSlot<T extends SlotContentType | null = SlotContentType> implements Part {
 
 	/** 
 	 * End outer position, indicate where to put new content.
@@ -29,24 +29,25 @@ export class TemplateSlot implements Part {
 	 * Note:
 	 * - if located before a slot element with `:slot` specified,
 	 * need to insert a comment before it and use it's position.
-	 * - if located as after the content end of component, the "AfterContent" position
-	 * of a component is not stable it may append more contents after component rendered,
+	 * - if located as after or after the content end of component, these positions
+	 * are not stable because it may append more contents after component rendered,
+	 * or been moved to a new position as rest slot elements.
 	 * so need insert a comment after current slot and use it's position.
 	 */
-	readonly endOuterPosition: TemplateSlotPosition<TemplateSlotEndOuterPositionType>
+	readonly endOuterPosition: SlotPosition<SlotEndOuterPositionType>
 
 	private context: any
-	private contentType: SlotContentType | null = null
+	private contentType: T | null = null
 	private content: Template | Template[] | null = null
 
 	constructor(
-		endOuterPosition: TemplateSlotPosition<TemplateSlotEndOuterPositionType>,
+		endOuterPosition: SlotPosition<SlotEndOuterPositionType>,
 		context: any,
-		knownType: SlotContentType | null = null
+		knownType: T | null = null
 	) {
 		this.endOuterPosition = endOuterPosition
 		this.context = context
-		this.contentType = knownType
+		this.contentType = knownType as T
 	}
 
 	afterConnectCallback(param: number) {
@@ -64,7 +65,7 @@ export class TemplateSlot implements Part {
 		}
 	}
 
-	async beforeDisconnectCallback(param: number): Promise<void> {
+	beforeDisconnectCallback(param: number): Promise<void> | void {
 		if (this.contentType === SlotContentType.TemplateResult) {
 			return (this.content as Template).beforeDisconnectCallback(param)
 		}
@@ -78,7 +79,9 @@ export class TemplateSlot implements Part {
 				}
 			}
 
-			return Promise.all(promises) as Promise<any>
+			if (promises.length > 0) {
+				return Promise.all(promises) as Promise<any>
+			}
 		}
 	}
 
@@ -93,12 +96,12 @@ export class TemplateSlot implements Part {
 	 * which means: either `getFirstNodeClosest()` or `getParentElement()` must exist.
 	 */
 	tryGetParentElement(): Element | null {
-		let node = this.getFirstNodeClosest()
+		let node = this.getStartNodeClosest()
 		if (node) {
 			return node.parentElement
 		}
 		
-		if (this.endOuterPosition.type === TemplateSlotPositionType.BeforeSlot) {
+		if (this.endOuterPosition.type === SlotPositionType.BeforeSlot) {
 			return (this.endOuterPosition.target as TemplateSlot).tryGetParentElement()
 		}
 		else {
@@ -106,8 +109,8 @@ export class TemplateSlot implements Part {
 		}
 	}
 
-	/** Get first node of the all the contents that inside of current slot. */
-	getFirstNode(): ChildNode | null {
+	/** Get start inner node of the all the contents that inside of current slot. */
+	getStartNode(): ChildNode | null {
 		if (this.contentType === SlotContentType.TemplateResult || this.contentType === SlotContentType.Text) {
 			if (this.content) {
 				return (this.content as Template).getFirstNode()
@@ -129,24 +132,11 @@ export class TemplateSlot implements Part {
 	}
 
 	/** 
-	 * Try to get first node inside, if miss,
-	 * try to find next node exactly after current slot.
+	 * Try to get start inner node inside, if miss,
+	 * try to find outer next node exactly after current slot.
 	 */
-	getFirstNodeClosest(): ChildNode | null {
-		let node = this.getFirstNode()
-		if (node) {
-			return node
-		}
-
-		if (this.endOuterPosition.type === TemplateSlotPositionType.Before) {
-			return (this.endOuterPosition.target as ChildNode)
-		}
-		else if (this.endOuterPosition.type === TemplateSlotPositionType.BeforeSlot) {
-			return (this.endOuterPosition.target as TemplateSlot).getFirstNodeClosest()
-		}
-		else {
-			return null
-		}
+	getStartNodeClosest(): ChildNode | null {
+		return this.getStartNode() || this.endOuterPosition.getClosestOuterEndNode()
 	}
 
 	/** 
@@ -156,7 +146,7 @@ export class TemplateSlot implements Part {
 	update(value: unknown) {
 		let newContentType = this.identifyContentType(value)
 
-		if (newContentType !== this.contentType && this.contentType !== null) {
+		if (newContentType !== this.contentType) {
 			this.clearOldContent()
 		}
 
@@ -173,18 +163,18 @@ export class TemplateSlot implements Part {
 		}
 	}
 
-	private identifyContentType(value: unknown): SlotContentType | null {
-		if (value instanceof CompiledTemplateResult) {
-			return SlotContentType.TemplateResult
+	private identifyContentType(value: unknown): T | null {
+		if (value === null || value === undefined) {
+			return null
+		}
+		else if (value instanceof CompiledTemplateResult) {
+			return SlotContentType.TemplateResult as T
 		}
 		else if (Array.isArray(value)) {
-			return SlotContentType.TemplateResultArray
-		}
-		else if (value !== null && value !== undefined) {
-			return SlotContentType.Text
+			return SlotContentType.TemplateResultArray as T
 		}
 		else {
-			return null
+			return SlotContentType.Text as T
 		}
 	}
 
@@ -222,7 +212,7 @@ export class TemplateSlot implements Part {
 			let newT = tr.maker.make(this.context)
 			newT.insertNodesBefore(this.endOuterPosition)
 			newT.update(tr.values)
-			newT.callConnectCallback()
+			newT.afterConnectCallback(PartCallbackParameter.HappenInCurrentContext | PartCallbackParameter.DirectNodeToMove)
 			
 			this.content = newT
 		}
@@ -253,7 +243,7 @@ export class TemplateSlot implements Part {
 				
 				this.insertTemplate(newT, nextOldT)
 				newT.update(tr.values)
-				newT.callConnectCallback()
+				newT.afterConnectCallback(PartCallbackParameter.HappenInCurrentContext | PartCallbackParameter.DirectNodeToMove)
 
 				oldTs[i] = newT
 			}
@@ -271,7 +261,7 @@ export class TemplateSlot implements Part {
 	/** Update template when knowing it's in text type. */
 	updateText(value: unknown) {
 		let text = value === null || value === undefined ? '' : String(value).trim()
-		let t = this.content as Template | null
+		let t = this.content as Template<[string]> | null
 
 		if (!t) {
 			t = this.content = TextTemplateMaker.make(null)
@@ -287,7 +277,7 @@ export class TemplateSlot implements Part {
 	 * Current value is not in auto-recognized content type, so you cant use `update()`.
 	 * Use this when template is managed and cached outside, update template here.
 	 */
-	updateTemplateOnly(t: Template | null) { 
+	updateTemplateOnly(this: TemplateSlot<null>, t: Template | null) { 
 		let oldT = this.content as Template | null
 
 		if (oldT === t) {
@@ -311,15 +301,22 @@ export class TemplateSlot implements Part {
 	 * Current value is not in auto-recognized content type, so you cant use `update()`.
 	 * Use it for replacing nodes, like insert slot elements.
 	 */
-	updateNodesOnly(nodes: ChildNode[]) {
-		let t = this.content as Template | null
+	updateNodesOnly(this: TemplateSlot<null>, nodes: ChildNode[] | null) {
+		let t = this.content as Template<ChildNode[]> | null
 
-		if (!t) {
-			t = this.content = NodesTemplateMaker.make(null)
-			t.insertNodesBefore(this.endOuterPosition)
+		if (nodes) {
+			if (!t) {
+				t = this.content = NodesTemplateMaker.make(null)
+				t.insertNodesBefore(this.endOuterPosition)
+			}
+
+			t.update(nodes)
 		}
-
-		t.update(nodes)
+		else {
+			if (t) {
+				t.update([])
+			}
+		}
 	}
 
 	/** 
@@ -328,15 +325,22 @@ export class TemplateSlot implements Part {
 	 * Current value is not in auto-recognized content type, so you cant use `update()`.
 	 * Use it for replacing nodes, like insert slot elements.
 	 */
-	updateNodeOnly(node: ChildNode | null) {
-		let t = this.content as Template | null
+	updateNodeOnly(this: TemplateSlot<null>, node: ChildNode | null) {
+		let t = this.content as Template<ChildNode[]> | null
 
-		if (!t) {
-			t = this.content = NodesTemplateMaker.make(null)
-			t.insertNodesBefore(this.endOuterPosition)
+		if (node) {
+			if (!t) {
+				t = this.content = NodesTemplateMaker.make(null)
+				t.insertNodesBefore(this.endOuterPosition)
+			}
+
+			t.update([node])
 		}
-
-		t.update(node ? [node] : [])
+		else {
+			if (t) {
+				t.update([])
+			}
+		}
 	}
 
 	/** Insert a template before another. */

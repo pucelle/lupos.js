@@ -1,5 +1,6 @@
 import {DependencyTracker, UpdateQueue} from '@pucelle/ff'
-import {CompiledTemplateResult, Component, SlotBinding, TemplateSlotPositionType, TemplateMaker, TemplateSlotPosition, TemplateSlot, createHTMLTemplateFn} from '../../src/'
+import {CompiledTemplateResult, Component, SlotBinding, SlotPositionType, TemplateMaker, SlotPosition, TemplateSlot, createHTMLTemplateFn} from '../../src/'
+import {SlotRange} from '../../src/template/slot-range'
 
 
 describe('Test :slot', () => {
@@ -27,34 +28,32 @@ describe('Test :slot', () => {
 
 			return {
 				el: t,
-				position: new TemplateSlotPosition(TemplateSlotPositionType.Before, c),
+				position: new SlotPosition(SlotPositionType.Before, c),
 				parts: [[child, 3], [b, 1]],
 			}
 		})
 
-
 		let t3 = createHTMLTemplateFn('<slot></slot>')
 
 		// Compile from `<slot name="slotName">...`
-		let maker2 = new TemplateMaker((context: Parent) => {
+		let maker2 = new TemplateMaker((context: Child) => {
 			let t = t3()
 			let s = t.content.firstElementChild!
 
-			let slot = new TemplateSlot(
-				new TemplateSlotPosition(TemplateSlotPositionType.AfterContent, s),
+			let slot = new TemplateSlot<null>(
+				new SlotPosition(SlotPositionType.AfterContent, s),
 				context,
 			)
 
 			return {
 				el: t,
-				position: new TemplateSlotPosition(TemplateSlotPositionType.Before, s),
-				update: (values: any[]) => {
-					slot.updateNodeOnly(values[0])
+				position: new SlotPosition(SlotPositionType.Before, s),
+				update: (_values: any[]) => {
+					slot.updateNodeOnly(context.__getSlotElement('slotName'))
 				},
 				parts: [[slot, 1]],
 			}
 		})
-
 
 		class Parent extends Component {
 
@@ -68,11 +67,9 @@ describe('Test :slot', () => {
 
 			// Renders html`<slot name="slotName" />`
 			protected render() {
-				DependencyTracker.onGet(this.slotElements, 'slotName')
-				return new CompiledTemplateResult(maker2, [this.slotElements.slotName])
+				return new CompiledTemplateResult(maker2, [])
 			}
 		}
-
 
 		let parent = new Parent()
 		parent.appendTo(document.body)
@@ -85,7 +82,7 @@ describe('Test :slot', () => {
 		let t1 = createHTMLTemplateFn('')
 
 		// Compile from `<Child>${...}...`
-		let maker1 = new TemplateMaker((context: Component) => {
+		let maker1 = new TemplateMaker((context: Parent) => {
 			let t = t1()
 			let c = document.createComment('')
 			let child = new Child()
@@ -93,7 +90,7 @@ describe('Test :slot', () => {
 			let slot = new TemplateSlot(
 
 				// End of component cant be located, because may append new contents.
-				new TemplateSlotPosition(TemplateSlotPositionType.Before, c),
+				new SlotPosition(SlotPositionType.Before, c),
 				context,
 			)
 			
@@ -102,7 +99,7 @@ describe('Test :slot', () => {
 
 			return {
 				el: t,
-				position: new TemplateSlotPosition(TemplateSlotPositionType.Before, child.el),
+				position: new SlotPosition(SlotPositionType.Before, child.el),
 				update: (values: any[]) => {
 					slot.update(values[0])
 				},
@@ -110,11 +107,10 @@ describe('Test :slot', () => {
 			}
 		})
 
-
 		let t2 = createHTMLTemplateFn('<!----><div>Slot Content</div>')
 
 		// Compile from `<div :slot="slotName">...`
-		let maker2 = new TemplateMaker((_context: Component) => {
+		let maker2 = new TemplateMaker((_context: Parent) => {
 			let t = t2()
 			let c = t.content.firstChild!
 			let div = t.content.firstElementChild!
@@ -127,35 +123,33 @@ describe('Test :slot', () => {
 				el: t,
 
 				// the slot element cant be located, so nothing inside. 
-				position: new TemplateSlotPosition(TemplateSlotPositionType.Before, c),
+				position: new SlotPosition(SlotPositionType.Before, c),
 
 				parts: [[b, 1]],
 			}
 		})
 
-
 		let t3 = createHTMLTemplateFn('<slot></slot>')
 
 		// Compile from `<slot name="slotName">...`
-		let maker3 = new TemplateMaker((context: Component) => {
+		let maker3 = new TemplateMaker((context: Child) => {
 			let t = t3()
 			let s = t.content.firstElementChild!
 
-			let slot = new TemplateSlot(
-				new TemplateSlotPosition(TemplateSlotPositionType.AfterContent, s),
+			let slot = new TemplateSlot<null>(
+				new SlotPosition(SlotPositionType.AfterContent, s),
 				context,
 			)
 
 			return {
 				el: t,
-				position: new TemplateSlotPosition(TemplateSlotPositionType.Before, s),
-				update: async (values: any[]) => {
+				position: new SlotPosition(SlotPositionType.Before, s),
+				update: (values: any[]) => {
 					slot.updateNodeOnly(values[0])
 				},
 				parts: [[slot, 1]],
 			}
 		})
-
 
 		class Parent extends Component {
 			prop: boolean = true
@@ -173,8 +167,7 @@ describe('Test :slot', () => {
 
 			// Renders html`<slot name="slotName" />`
 			protected render() {
-				DependencyTracker.onGet(this.slotElements, 'slotName')
-				return new CompiledTemplateResult(maker3, [this.slotElements.slotName])
+				return new CompiledTemplateResult(maker3, [this.__getSlotElement('slotName')])
 			}
 		}
 
@@ -194,5 +187,74 @@ describe('Test :slot', () => {
 		await UpdateQueue.untilComplete()
 	
 		expect(parent.el.querySelector('slot > *')).toBeInstanceOf(HTMLElement)
+	})
+
+
+	test('Rest Slot', async () => {
+		let t1 = createHTMLTemplateFn('')
+		let t2 = createHTMLTemplateFn('SlotContent')
+
+		// Compile from `<Child>SlotContent`
+		let maker1 = new TemplateMaker((_context: Parent) => {
+			let t = t1()
+			let child = new Child()
+			let content = t2()
+			let text = content.content.firstChild!
+
+			child.el.append(content.content)
+			t.content.append(child.el)
+
+			let p = new SlotPosition<SlotPositionType.Before>(SlotPositionType.Before, text)
+			let r = new SlotRange(p, text)
+			child.__applyRestSlotRange(r)
+
+			return {
+				el: t,
+				position: new SlotPosition(SlotPositionType.Before, child.el),
+				parts: [[child, 3]],
+			}
+		})
+
+		let t3 = createHTMLTemplateFn('<slot></slot>')
+
+		// Compile from `<slot>...`
+		let maker2 = new TemplateMaker((context: Child) => {
+			let t = t3()
+			let s = t.content.firstElementChild!
+
+			let slot = new TemplateSlot<null>(
+				new SlotPosition(SlotPositionType.AfterContent, s),
+				context,
+			)
+
+			// Rest slot nodes is static, so move it to here.
+			slot.updateNodesOnly(context.__getRestSlotNodes())
+
+			return {
+				el: t,
+				position: new SlotPosition(SlotPositionType.Before, s),
+				parts: [[slot, 1]],
+			}
+		})
+
+		class Parent extends Component {
+
+			// Renders html`<Child><div :slot="slotName" /></Child>`
+			protected render() {
+				return new CompiledTemplateResult(maker1, [])
+			}
+		}
+
+		class Child extends Component {
+
+			protected render() {
+				return new CompiledTemplateResult(maker2, [])
+			}
+		}
+
+		let parent = new Parent()
+		parent.appendTo(document.body)
+		await UpdateQueue.untilComplete()
+		expect(parent.el.querySelector('slot')?.textContent).toBe('SlotContent')
 	})
 })

@@ -1,4 +1,4 @@
-import {TemplateSlotPosition, TemplateSlotStartInnerPositionType} from './template-slot-position'
+import {SlotPosition, SlotStartInnerPositionType} from './slot-position'
 import {Template} from './template'
 import {Part} from '../types'
 
@@ -18,7 +18,7 @@ export interface TemplateInitResult {
 	 * Note if located before a slot element with `:slot` specified,
 	 * must insert a comment before it and use it's position.
 	 */
-	position: TemplateSlotPosition<TemplateSlotStartInnerPositionType>
+	position: SlotPosition<SlotStartInnerPositionType>
 
 	/** 
 	 * Update and apply new values.

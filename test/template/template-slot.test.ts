@@ -1,5 +1,5 @@
 import {UpdateQueue} from '@pucelle/ff'
-import {TemplateSlotPositionType, TemplateMaker, TemplateSlotPosition, createHTMLTemplateFn, TemplateSlot, CompiledTemplateResult} from '../../src'
+import {SlotPositionType, TemplateMaker, SlotPosition, createHTMLTemplateFn, TemplateSlot, CompiledTemplateResult} from '../../src'
 
 
 describe('Test TemplateSlot', () => {
@@ -14,13 +14,13 @@ describe('Test TemplateSlot', () => {
 
 			return {
 				el: t,
-				position: new TemplateSlotPosition(TemplateSlotPositionType.Before, div),
+				position: new SlotPosition(SlotPositionType.Before, div),
 			}
 		})
 
 		let container = document.createElement('div')
-		let pos1 = new TemplateSlotPosition(TemplateSlotPositionType.AfterContent, container)
-		let slot = new TemplateSlot(pos1 as TemplateSlotPosition<any>, null)
+		let pos1 = new SlotPosition(SlotPositionType.AfterContent, container)
+		let slot = new TemplateSlot<any>(pos1 as SlotPosition<any>, null)
 		let result = new CompiledTemplateResult(maker1, [])
 		let text = document.createTextNode('3')
 

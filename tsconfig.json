@@ -22,9 +22,9 @@
 		"node_modules",
 		"test",
 		"out",
-		"demo",
+		"docs",
+		"dist",
 		"*.js",
 		"*.cjs",
-		"dist"
 	]
 }

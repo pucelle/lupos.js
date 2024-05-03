@@ -1,5 +1,6 @@
 import {EditType, getEditRecord} from '@pucelle/ff'
 import {CompiledTemplateResult, Template, TemplateSlot} from '../template'
+import {PartCallbackParameter} from '../types'
 
 
 /** Type of compiling statements like `<for of=${...}>...`. */
@@ -101,7 +102,7 @@ class ForUpdator<T> {
 
 		this.insertTemplate(t, nextOldT)
 		t.update(result.values)
-		t.callConnectCallback()
+		t.afterConnectCallback(PartCallbackParameter.HappenInCurrentContext | PartCallbackParameter.DirectNodeToMove)
 		this.templates.push(t)
 	}
 
@@ -109,7 +110,7 @@ class ForUpdator<T> {
 		let result = this.renderFn(item, index)
 
 		t.update(result.values)
-		t.callConnectCallback()
+		t.afterConnectCallback(PartCallbackParameter.HappenInCurrentContext | PartCallbackParameter.DirectNodeToMove)
 		this.templates.push(t)
 	}
 

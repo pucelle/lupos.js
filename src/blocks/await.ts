@@ -1,8 +1,14 @@
 import {Template, TemplateMaker, TemplateSlot} from '../template'
+import {PartCallbackParameter} from '../types'
 
 
 /** Type of compiling statements like `<await>...`. */
-type AwaitBlock = (slot: TemplateSlot, context: any) => {
+type AwaitBlock = (slot: TemplateSlot<null>, context: any) => {
+
+	/** 
+	 * Note update await block or resolve awaiting promise must wait
+	 * for a micro task tick, then template will begin to update.
+	 */
 	update(promise: Promise<any>, values: any[]): void
 }
 
@@ -16,7 +22,7 @@ type AwaitBlock = (slot: TemplateSlot, context: any) => {
  * ```
  */
 export function createAwaitBlockFn(makers: (TemplateMaker | null)[]): AwaitBlock {
-	return function(slot: TemplateSlot, context: any) {
+	return function(slot: TemplateSlot<null>, context: any) {
 		let promise: Promise<any> | null = null
 		let values: any[] | null = null
 		let template: Template | null = null
@@ -28,7 +34,7 @@ export function createAwaitBlockFn(makers: (TemplateMaker | null)[]): AwaitBlock
 
 			if (template) {
 				template.update(values!)
-				template.callConnectCallback()
+				template.afterConnectCallback(PartCallbackParameter.HappenInCurrentContext | PartCallbackParameter.DirectNodeToMove)
 			}
 		}
 	

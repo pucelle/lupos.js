@@ -1,5 +1,5 @@
 import {UpdateQueue} from '@pucelle/ff'
-import {Component, TemplateMaker, TemplateSlot, TemplateSlotPosition, TemplateSlotPositionType, createAwaitBlockFn, createHTMLTemplateFn} from '../../src'
+import {Component, TemplateMaker, TemplateSlot, SlotPosition, SlotPositionType, createAwaitBlockFn, createHTMLTemplateFn} from '../../src'
 
 
 describe('Test Await Block', () => {
@@ -15,7 +15,7 @@ describe('Test Await Block', () => {
 			
 			return {
 				el: t,
-				position: new TemplateSlotPosition(TemplateSlotPositionType.Before, div),
+				position: new SlotPosition(SlotPositionType.Before, div),
 			}
 		})
 
@@ -25,7 +25,7 @@ describe('Test Await Block', () => {
 			
 			return {
 				el: t,
-				position: new TemplateSlotPosition(TemplateSlotPositionType.Before, div),
+				position: new SlotPosition(SlotPositionType.Before, div),
 			}
 		})
 
@@ -35,7 +35,7 @@ describe('Test Await Block', () => {
 			
 			return {
 				el: t,
-				position: new TemplateSlotPosition(TemplateSlotPositionType.Before, div),
+				position: new SlotPosition(SlotPositionType.Before, div),
 			}
 		})
 
@@ -46,7 +46,7 @@ describe('Test Await Block', () => {
 		])
 
 		let container = document.createElement('div')
-		let s = new TemplateSlot(new TemplateSlotPosition(TemplateSlotPositionType.AfterContent, container), null)
+		let s = new TemplateSlot<null>(new SlotPosition(SlotPositionType.AfterContent, container), null)
 		let b = block(s, null)
 
 

@@ -71,7 +71,7 @@ export class TransitionBinding implements Binding, Part {
 		}
 	}
 
-	async beforeDisconnectCallback(param: number): Promise<void> {
+	beforeDisconnectCallback(param: number): Promise<void> | void {
 
 		// Ancestral element has been removed immediately, no need to play transition.
 		if (param & PartCallbackParameter.RemoveImmediately) {

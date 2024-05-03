@@ -1,6 +1,6 @@
 import {createHTMLTemplateFn} from "./html-template-fn"
 import {TemplateInitResult, TemplateMaker} from "./template-maker"
-import {TemplateSlotPosition, TemplateSlotPositionType, TemplateSlotStartInnerPositionType} from "./template-slot-position"
+import {SlotPosition, SlotPositionType, SlotStartInnerPositionType} from "./slot-position"
 
 
 /** Template has only a text node inside. */
@@ -14,7 +14,7 @@ const CommentTemplateFn = createHTMLTemplateFn('<!---->')
 export const TextTemplateMaker = new TemplateMaker(function() {
 	let el = TextTemplateFn()
 	let text = el.content.firstChild as Text
-	let position = new TemplateSlotPosition<TemplateSlotStartInnerPositionType>(TemplateSlotPositionType.Before, text)
+	let position = new SlotPosition<SlotStartInnerPositionType>(SlotPositionType.Before, text)
 
 	return {
 		el,
@@ -30,7 +30,7 @@ export const TextTemplateMaker = new TemplateMaker(function() {
 export const NodesTemplateMaker = new TemplateMaker(function() {
 	let el = CommentTemplateFn()
 	let comment = el.content.firstChild as Comment
-	let position = new TemplateSlotPosition<TemplateSlotStartInnerPositionType>(TemplateSlotPositionType.Before, comment)
+	let position = new SlotPosition<SlotStartInnerPositionType>(SlotPositionType.Before, comment)
 	let endNode: ChildNode | null = null
 
 	return {

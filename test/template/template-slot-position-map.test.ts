@@ -1,19 +1,19 @@
-import {TemplateSlotPositionType, TemplateSlotPosition, Template} from '../../src'
-import {TemplateSlotPositionMap} from '../../src/template/template-slot-position-map'
+import {SlotPositionType, SlotPosition, Template} from '../../src'
+import {SlotPositionMap} from '../../src/template/slot-position-map'
 
 
-describe('Test TemplateSlotPositionMap', () => {
+describe('Test SlotPositionMap', () => {
 
-	function createFakePosition(): TemplateSlotPosition<any> {
-		return new TemplateSlotPosition(TemplateSlotPositionType.AfterContent, new Text())
+	function createFakePosition(): SlotPosition<any> {
+		return new SlotPosition(SlotPositionType.AfterContent, new Text())
 	}
 
 	function createFakeTemplate() {
 		return new Template(null, {el: document.createElement('template'), position: createFakePosition()})
 	}
 
-	test('TemplateSlotPositionMap', async () => {
-		let m = new TemplateSlotPositionMap()
+	test('SlotPositionMap', async () => {
+		let m = new SlotPositionMap()
 
 		let t1 = createFakeTemplate()
 		let t2 = createFakeTemplate()

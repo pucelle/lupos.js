@@ -1,9 +1,10 @@
 import {DependencyTracker, EventFirer, UpdateQueue} from '@pucelle/ff'
 import {ensureComponentStyle, ComponentStyle} from './style'
 import {addElementComponentMap, getComponentFromElement} from './from-element'
-import {TemplateSlot, TemplateSlotPosition, TemplateSlotPositionType, CompiledTemplateResult} from '../template'
+import {TemplateSlot, SlotPosition, SlotPositionType, CompiledTemplateResult} from '../template'
 import {ComponentConstructor, RenderResult} from './types'
 import {Part, PartCallbackParameter} from '../types'
+import {SlotRange} from '../template/slot-range'
 
 
 export interface ComponentEvents {
@@ -106,11 +107,17 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 */
 	protected readonly slotElements: Record<string, Element | null> = {}
 
+	/** 
+	 * Cache range of rest slot content,
+	 * which will be used to fill `<slot />` element the component itself render.
+	 */
+	protected restSlotRange: SlotRange | null = null
+
 	constructor(properties: Record<string, any> = {}, el: HTMLElement = document.createElement('div')) {
 		super()
 
 		this.el = el
-		this.rootContentSlot = new TemplateSlot(new TemplateSlotPosition(TemplateSlotPositionType.AfterContent, this.el), this)
+		this.rootContentSlot = new TemplateSlot(new SlotPosition(SlotPositionType.AfterContent, this.el), this)
 		Object.assign(this, properties)
 
 		ensureComponentStyle(this.constructor as ComponentConstructor)
@@ -187,12 +194,40 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	}
 
 	/** 
-	 * For `:slot=slotName` binding apply slot elements.
+	 * For `:slot=slotName` binding to apply slot elements,
+	 * which may be used later to fill `<slot name=slotName>` inside current component context.
 	 * For inner usage only.
 	 */
 	__applySlotElement(slotName: string, el: Element | null) {
 		this.slotElements[slotName] = el
 		DependencyTracker.onSet(this.slotElements, slotName)
+	}
+
+	/** 
+	 * Get element by specified slot name,
+	 * and use it to fill `<slot name=slotName>` inside current component context.
+	 * For inner usage only, and be called by compiled codes.
+	 */
+	__getSlotElement(slotName: string): Element | null {
+		DependencyTracker.onGet(this.slotElements, slotName)
+		return this.slotElements[slotName]
+	}
+
+	/** 
+	 * Apply rest slot range, which may be used to fill `<slot>` inside current component context.
+	 * For inner usage only, and be called by compiled codes.
+	 */
+	__applyRestSlotRange(range: SlotRange) {
+		this.restSlotRange = range
+	}
+
+	/** 
+	 * Get list of rest slot nodes.
+	 * Use these nodes to fill `<slot />` element that the component itself render.
+	 * For inner usage only, and be called by compiled codes.
+	 */
+	__getRestSlotNodes(): ChildNode[] | null {
+		return this.restSlotRange ? [...this.restSlotRange.walkNodes()] : null
 	}
 
 	afterConnectCallback(this: Component, _param: number) {
@@ -209,7 +244,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		this.rootContentSlot.afterConnectCallback(0)
 	}
 
-	async beforeDisconnectCallback(this: Component, param: number): Promise<void> {
+	beforeDisconnectCallback(this: Component, param: number): Promise<void> | void {
 		DependencyTracker.untrack(this.willUpdate, this)
 
 		this.connected = false

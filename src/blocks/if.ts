@@ -1,8 +1,9 @@
 import {Template, TemplateMaker, TemplateSlot} from '../template'
+import {PartCallbackParameter} from '../types'
 
 
 /** Type of compiling statements like `<if>...`, `<switch>...`. */
-type IfBlock = (slot: TemplateSlot, context: any) => {
+type IfBlock = (slot: TemplateSlot<null>, context: any) => {
 	update(values: any[]): void
 }
 
@@ -20,7 +21,7 @@ export function createIfBlockFn(
 	makers: (TemplateMaker | null)[]
 ): IfBlock
 {
-	return function(slot: TemplateSlot, context: any) {
+	return function(slot: TemplateSlot<any>, context: any) {
 		let index = -1
 		let template: Template | null = null
 	
@@ -37,7 +38,7 @@ export function createIfBlockFn(
 
 				if (template) {
 					template.update(values)
-					template.callConnectCallback()
+					template.afterConnectCallback(PartCallbackParameter.HappenInCurrentContext | PartCallbackParameter.DirectNodeToMove)
 				}
 			}
 		}
@@ -58,7 +59,7 @@ export function createCacheableIfBlockFn(
 	makers: (TemplateMaker | null)[]
 ): IfBlock
 {
-	return function(slot: TemplateSlot, context: any) {
+	return function(slot: TemplateSlot<null>, context: any) {
 		let index = -1
 		let templates: Map<number, Template | null> = new Map()
 	
@@ -82,7 +83,7 @@ export function createCacheableIfBlockFn(
 
 				if (template) {
 					template.update(values)
-					template.callConnectCallback()
+					template.afterConnectCallback(PartCallbackParameter.HappenInCurrentContext | PartCallbackParameter.DirectNodeToMove)
 				}
 			}
 		}

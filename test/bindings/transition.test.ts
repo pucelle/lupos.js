@@ -1,5 +1,5 @@
 import {DOMEvents, DependencyTracker, UpdateQueue, sleep} from '@pucelle/ff'
-import {CompiledTemplateResult, Component, TemplateMaker, TemplateSlotPosition, TemplateSlotPositionType, TransitionBinding, TransitionOptions, createHTMLTemplateFn, defineTransition} from '../../src'
+import {CompiledTemplateResult, Component, TemplateMaker, SlotPosition, SlotPositionType, TransitionBinding, TransitionOptions, createHTMLTemplateFn, defineTransition} from '../../src'
 import {jest} from '@jest/globals'
 
 
@@ -29,7 +29,7 @@ describe('Test :transition', () => {
 
 			return {
 				el: t,
-				position: new TemplateSlotPosition(TemplateSlotPositionType.Before, div),
+				position: new SlotPosition(SlotPositionType.Before, div),
 				parts: [[b, 3]],
 			}
 		})

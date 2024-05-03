@@ -1,8 +1,9 @@
 import {Template, TemplateMaker, TemplateSlot} from '../template'
+import {PartCallbackParameter} from '../types'
 
 
 /** Type of compiling all the statement like `<keyed ${}>...`. */
-type KeyedBlock = (slot: TemplateSlot, context: any) => {
+type KeyedBlock = (slot: TemplateSlot<null>, context: any) => {
 	update(key: any, values: any[]): void
 }
 
@@ -13,7 +14,7 @@ type KeyedBlock = (slot: TemplateSlot, context: any) => {
  * ```
  */
 export function createkeyedBlockFn(maker: TemplateMaker | null): KeyedBlock {
-	return function(slot: TemplateSlot, context: any) {
+	return function(slot: TemplateSlot<null>, context: any) {
 		let key: any = undefined
 		let template: Template | null = null
 	
@@ -27,7 +28,7 @@ export function createkeyedBlockFn(maker: TemplateMaker | null): KeyedBlock {
 
 				if (template) {
 					template.update(values)
-					template.callConnectCallback()
+					template.afterConnectCallback(PartCallbackParameter.HappenInCurrentContext | PartCallbackParameter.DirectNodeToMove)
 				}
 			}
 		}

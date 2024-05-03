@@ -58,5 +58,5 @@ export interface Part {
 	 * 
 	 * - `param`: AND byte operate of `PartCallbackParameter`.
 	 */
-	beforeDisconnectCallback(param: number): Promise<void>
+	beforeDisconnectCallback(param: number): Promise<void> | void
 }

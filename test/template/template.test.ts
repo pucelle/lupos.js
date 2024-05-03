@@ -1,4 +1,4 @@
-import {TemplateSlotPositionType, TemplateMaker, TemplateSlotPosition, createHTMLTemplateFn, TemplateSlot} from '../../src/'
+import {SlotPositionType, TemplateMaker, SlotPosition, createHTMLTemplateFn, TemplateSlot} from '../../src/'
 
 
 describe('Test Template', () => {
@@ -13,7 +13,7 @@ describe('Test Template', () => {
 
 			return {
 				el: t,
-				position: new TemplateSlotPosition(TemplateSlotPositionType.Before, div),
+				position: new SlotPosition(SlotPositionType.Before, div),
 			}
 		})
 
@@ -22,7 +22,7 @@ describe('Test Template', () => {
 		expect(t.getFirstNode()?.textContent).toBe('1')
 
 		let container = document.createElement('div')
-		let pos1 = new TemplateSlotPosition(TemplateSlotPositionType.AfterContent, container)
+		let pos1 = new SlotPosition(SlotPositionType.AfterContent, container)
 		t.insertNodesBefore(pos1)
 
 		expect(t.el.content.textContent).toBe('')
@@ -35,7 +35,7 @@ describe('Test Template', () => {
 		let div = document.createElement('div')
 		div.textContent = '3'
 		container.append(div)
-		let pos2 = new TemplateSlotPosition(TemplateSlotPositionType.Before, div)
+		let pos2 = new SlotPosition(SlotPositionType.Before, div)
 
 		t.insertNodesBefore(pos2)
 		expect(t.el.content.textContent).toBe('')
@@ -45,9 +45,9 @@ describe('Test Template', () => {
 		expect(t.el.content.textContent).toBe('12')
 		expect(container.textContent).toBe('3')
 
-		let slot = new TemplateSlot(pos2 as TemplateSlotPosition<any>, null)
-		let pos3 = new TemplateSlotPosition(TemplateSlotPositionType.BeforeSlot, slot)
-		
+		let slot = new TemplateSlot(pos2 as SlotPosition<any>, null)
+		let pos3 = new SlotPosition(SlotPositionType.BeforeSlot, slot)
+
 		t.insertNodesBefore(pos3)
 		expect(t.el.content.textContent).toBe('')
 		expect(container.textContent).toBe('123')
@@ -60,7 +60,7 @@ describe('Test Template', () => {
 		let container2 = document.createElement('div')
 		let div2 = document.createElement('div')
 		container2.append(div2)
-		let pos4 = new TemplateSlotPosition(TemplateSlotPositionType.Before, div2)
+		let pos4 = new SlotPosition(SlotPositionType.Before, div2)
 
 		t.moveNodesBefore(pos4)
 		expect(container.textContent).toBe('3')

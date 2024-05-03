@@ -46,13 +46,21 @@ export class RefBinding implements Binding, Part {
 	}
 
 	afterConnectCallback(param: number) {
-		if (this.refFn && param & PartCallbackParameter.HappenInCurrentContext) {
+		if (!(param & PartCallbackParameter.HappenInCurrentContext)) {
+			return
+		}
+
+		if (this.refFn) {
 			this.doReference()
 		}
 	}
 
-	async beforeDisconnectCallback(param: number) {
-		if (this.refFn && param & PartCallbackParameter.HappenInCurrentContext) {
+	beforeDisconnectCallback(param: number) {
+		if (!(param & PartCallbackParameter.HappenInCurrentContext)) {
+			return
+		}
+
+		if (this.refFn) {
 			this.refFn(null)
 		}
 	}
