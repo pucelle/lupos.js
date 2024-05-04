@@ -1,3 +1,4 @@
+import {SlotEndOuterPositionType, SlotPosition} from './slot-position'
 import {Template} from './template'
 import {CompiledTemplateResult} from './template-result-compiled'
 import {SlotContentType, TemplateSlot} from './template-slot'
@@ -11,6 +12,10 @@ export class DynamicTypedTemplateSlot<T extends SlotContentType | null = SlotCon
 
 	/** Can update it. */
 	declare protected contentType: T | null
+
+	constructor(endOuterPosition: SlotPosition<SlotEndOuterPositionType>, context: any) {
+		super(endOuterPosition, context)
+	}
 
 	/** 
 	 * Update by value parameter but don't know it's type.
