@@ -1,4 +1,4 @@
-import {SlotPositionType, TemplateMaker, SlotPosition, createHTMLTemplateFn, TemplateSlot} from '../../src'
+import {SlotPositionType, TemplateMaker, SlotPosition, createHTMLTemplateFn, DynamicTypedTemplateSlot} from '../../src'
 
 
 describe('Test Template', () => {
@@ -45,7 +45,7 @@ describe('Test Template', () => {
 		expect(t.el.content.textContent).toBe('12')
 		expect(container.textContent).toBe('3')
 
-		let slot = new TemplateSlot(pos2 as SlotPosition<any>, null)
+		let slot = new DynamicTypedTemplateSlot(pos2 as SlotPosition<any>, null)
 		let pos3 = new SlotPosition(SlotPositionType.BeforeSlot, slot)
 
 		t.insertNodesBefore(pos3)

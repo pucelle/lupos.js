@@ -1,5 +1,5 @@
 import {UpdateQueue} from '@pucelle/ff'
-import {Component, TemplateMaker, TemplateSlot, SlotPosition, SlotPositionType, createSwitchBlockFn, createHTMLTemplateFn} from '../../src'
+import {Component, TemplateMaker, DynamicTypedTemplateSlot, SlotPosition, SlotPositionType, createSwitchBlockFn, createHTMLTemplateFn} from '../../src'
 
 
 describe('Test Switch Block', () => {
@@ -56,7 +56,7 @@ describe('Test Switch Block', () => {
 		])
 
 		let container = document.createElement('div')
-		let s = new TemplateSlot<null>(new SlotPosition(SlotPositionType.AfterContent, container), null)
+		let s = new DynamicTypedTemplateSlot<null>(new SlotPosition(SlotPositionType.AfterContent, container), null)
 		let b = block(s, null)
 
 		b.update([1, 1, 1])

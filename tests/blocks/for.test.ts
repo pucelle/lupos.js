@@ -1,5 +1,5 @@
 import {UpdateQueue} from '@pucelle/ff'
-import {CompiledTemplateResult, Component, TemplateMaker, TemplateSlot, SlotPosition, SlotPositionType, createForBlockFn, createHTMLTemplateFn} from '../../src'
+import {CompiledTemplateResult, Component, TemplateMaker, DynamicTypedTemplateSlot, SlotPosition, SlotPositionType, createForBlockFn, createHTMLTemplateFn} from '../../src'
 
 
 describe('Test For Block', () => {
@@ -13,7 +13,7 @@ describe('Test For Block', () => {
 			let text = div.firstChild as Text
 
 			// knows it's inner content could only be text.
-			// let s = new TemplateSlot(new SlotPosition(SlotPositionType.AfterContent, div), context)
+			// let s = new DynamicTypedTemplateSlot(new SlotPosition(SlotPositionType.AfterContent, div), context)
 			
 			return {
 				el: t,
@@ -32,7 +32,7 @@ describe('Test For Block', () => {
 		})
 
 		let container = document.createElement('div')
-		let s = new TemplateSlot(new SlotPosition(SlotPositionType.AfterContent, container), null)
+		let s = new DynamicTypedTemplateSlot(new SlotPosition(SlotPositionType.AfterContent, container), null)
 		let b = block(s, null)
 
 		b.update([1])

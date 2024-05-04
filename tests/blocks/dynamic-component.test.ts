@@ -1,5 +1,5 @@
 import {DependencyTracker, UpdateQueue} from '@pucelle/ff'
-import {ClassBinding, CompiledTemplateResult, Component, SlotPosition, SlotPositionType, SlotRange, TemplateMaker, TemplateSlot, createDynamicComponentBlockFn, createHTMLTemplateFn} from '../../src'
+import {ClassBinding, CompiledTemplateResult, Component, SlotPosition, SlotPositionType, SlotRange, TemplateMaker, DynamicTypedTemplateSlot, createDynamicComponentBlockFn, createHTMLTemplateFn} from '../../src'
 
 
 describe('Test Dynamic Component', () => {
@@ -29,7 +29,7 @@ describe('Test Dynamic Component', () => {
 			let div = content.content.firstElementChild!
 			let startP = new SlotPosition<SlotPositionType.Before>(SlotPositionType.Before, comment1)
 			let endP = new SlotPosition<SlotPositionType.Before>(SlotPositionType.Before, comment2)
-			let slot = new TemplateSlot<null>(endP, context)
+			let slot = new DynamicTypedTemplateSlot<null>(endP, context)
 			let p = new SlotPosition<SlotPositionType.Before>(SlotPositionType.Before, div)
 			let contentRange = new SlotRange(p, div)
 			let b = blockFn(slot, contentRange, context)

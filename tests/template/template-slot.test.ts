@@ -2,9 +2,9 @@ import {UpdateQueue} from '@pucelle/ff'
 import {SlotPositionType, TemplateMaker, SlotPosition, createHTMLTemplateFn, CompiledTemplateResult, DynamicTypedTemplateSlot} from '../../src'
 
 
-describe('Test TemplateSlot', () => {
+describe('Test DynamicTypedTemplateSlot', () => {
 
-	test('TemplateSlot', async () => {
+	test('DynamicTypedTemplateSlot', async () => {
 		let t1 = createHTMLTemplateFn('<div>1</div>')
 
 		// Compile from html`<div>1</div>`

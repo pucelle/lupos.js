@@ -1,5 +1,5 @@
 import {DependencyTracker, UpdateQueue} from '@pucelle/ff'
-import {CompiledTemplateResult, Component, SlotBinding, SlotPositionType, TemplateMaker, SlotPosition, TemplateSlot, createHTMLTemplateFn} from '../../src'
+import {CompiledTemplateResult, Component, SlotBinding, SlotPositionType, TemplateMaker, SlotPosition, DynamicTypedTemplateSlot, createHTMLTemplateFn} from '../../src'
 import {SlotRange} from '../../src/template/slot-range'
 
 
@@ -40,16 +40,16 @@ describe('Test :slot', () => {
 			let t = t3()
 			let s = t.content.firstElementChild!
 
-			let slot = new TemplateSlot<null>(
+			let slot = new DynamicTypedTemplateSlot<null>(
 				new SlotPosition(SlotPositionType.AfterContent, s),
-				context,
+				context
 			)
 
 			return {
 				el: t,
 				position: new SlotPosition(SlotPositionType.Before, s),
 				update: (values: any[]) => {
-					slot.updateNode(values[0])
+					slot.update(values[0])
 				},
 				parts: [[slot, 1]],
 			}
@@ -87,7 +87,7 @@ describe('Test :slot', () => {
 			let c = document.createComment('')
 			let child = new Child()
 
-			let slot = new TemplateSlot(
+			let slot = new DynamicTypedTemplateSlot(
 
 				// End of component cant be located, because may append new contents.
 				new SlotPosition(SlotPositionType.Before, c),
@@ -136,7 +136,7 @@ describe('Test :slot', () => {
 			let t = t3()
 			let s = t.content.firstElementChild!
 
-			let slot = new TemplateSlot(
+			let slot = new DynamicTypedTemplateSlot(
 				new SlotPosition(SlotPositionType.AfterContent, s),
 				context,
 			)
