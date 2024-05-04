@@ -14,12 +14,12 @@ const PositionMap = new SlotPositionMap()
  * Represents a template make from a html`...`
  * Be generated after a `TemplateMaker` binded with a context.
  */
-export class Template<P extends any[] = any[]> implements Part {
+export class Template<A extends any[] = any[]> implements Part {
 
 	readonly el: HTMLTemplateElement
 	readonly maker: TemplateMaker | null
 	readonly startInnerPosition: SlotPosition<SlotStartInnerPositionType>
-	readonly update: (values: P) => void
+	readonly update: (values: A) => void
 	private readonly parts: [Part, number][]
 
 	/** 

@@ -1,4 +1,4 @@
-import {SlotPosition, SlotPositionType, SlotEndOuterPositionType} from './slot-position'
+import {SlotPosition, SlotEndOuterPositionType} from './slot-position'
 import {Template} from './template'
 import {CompiledTemplateResult} from './template-result-compiled'
 import {Part, PartCallbackParameter} from '../types'
@@ -12,8 +12,7 @@ export enum SlotContentType {
 	Text,
 	Node,
 
-	// Two not identified types, can use null instead.
-	// NotIdentifiedNode,
+	// Not identified types, can use null instead.
 	// NotIdentifiedTemplate,
 }
 
@@ -21,15 +20,16 @@ export enum SlotContentType {
 /** 
  * A `TemplateSlot` indicates a `>${...}<` inside a template,
  * helps to update content of the slot.
+ * Already knows fixed content type.
  */
 export class TemplateSlot<T extends SlotContentType | null = SlotContentType> implements Part {
 
-	/** End outer position, indicate where to put new content. */
+	/** End outer position, indicates where to put new content. */
 	readonly endOuterPosition: SlotPosition<SlotEndOuterPositionType>
 
-	private context: any
-	private contentType: T | null = null
-	private content: Template | Template[] | ChildNode | null = null
+	protected context: any
+	protected readonly contentType: T | null = null
+	protected content: Template | Template[] | ChildNode | null = null
 
 	constructor(
 		endOuterPosition: SlotPosition<SlotEndOuterPositionType>,
@@ -77,25 +77,6 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 		this.context = context
 	}
 
-	/** 
-	 * Try to get parent element of current slot.
-	 * Result is exist only when have a slibing slot in the start position,
-	 * which means: either `getFirstNodeClosest()` or `getParentElement()` must exist.
-	 */
-	tryGetParentElement(): Element | null {
-		let node = this.getStartNodeClosest()
-		if (node) {
-			return node.parentElement
-		}
-		
-		if (this.endOuterPosition.type === SlotPositionType.BeforeSlot) {
-			return (this.endOuterPosition.target as TemplateSlot).tryGetParentElement()
-		}
-		else {
-			return null
-		}
-	}
-
 	/** Get start inner node of the all the contents that inside of current slot. */
 	getStartNode(): ChildNode | null {
 		if (this.contentType === SlotContentType.TemplateResult || this.contentType === SlotContentType.Text) {
@@ -130,80 +111,26 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 	}
 
 	/** 
-	 * Update by value parameter but don't know it's type.
-	 * Note value must be in one of 3 identifiable types.
-	 * 
-	 * Note customized Template created from `new Template(...)`, not `Maker.make(...)`,
-	 * cant be used here as update value.
+	 * Update by value parameter after known it's type.
+	 * Note value must be strictly of the content type.
 	 */
 	update(value: unknown) {
-		let newContentType = this.identifyContentType(value)
-
-		if (newContentType !== this.contentType) {
-			this.clearContent()
-		}
-
-		this.contentType = newContentType
-
-		if (newContentType === SlotContentType.TemplateResult) {
+		if (this.contentType === SlotContentType.TemplateResult) {
 			this.updateTemplateResult(value as CompiledTemplateResult)
 		}
-		else if (newContentType === SlotContentType.Text) {
+		else if (this.contentType === SlotContentType.Text) {
 			this.updateText(value)
 		}
-		else if (newContentType === SlotContentType.TemplateResultArray) {
+		else if (this.contentType === SlotContentType.TemplateResultArray) {
 			this.updateTemplateResultArray(value as CompiledTemplateResult[])
 		}
-		else if (newContentType === SlotContentType.Node) {
+		else if (this.contentType === SlotContentType.Node) {
 			this.updateNode(value as ChildNode)
 		}
 	}
 
-	private identifyContentType(value: unknown): T | null {
-		if (value === null || value === undefined) {
-			return null
-		}
-		else if (value instanceof CompiledTemplateResult) {
-			return SlotContentType.TemplateResult as T
-		}
-		else if (Array.isArray(value)) {
-			return SlotContentType.TemplateResultArray as T
-		}
-		else if (value instanceof Node) {
-			return SlotContentType.Node as T
-		}
-		else {
-			return SlotContentType.Text as T
-		}
-	}
-
-	/** Clear current content. */
-	clearContent() {
-		if (!this.content) {
-			return
-		}
-
-		if (this.contentType === SlotContentType.TemplateResult
-			|| this.contentType === SlotContentType.Text
-			|| this.contentType === SlotContentType.Node
-		) {
-			this.removeTemplate(this.content as Template)
-		}
-		else {
-			let ts = this.content as Template[]
-
-			for (let i = 0; i < ts.length; i++) {
-				let t = ts[i]
-				this.removeTemplate(t)
-			}
-		}
-
-		this.content = null
-		this.contentType = null
-	}
-
 	/** Update template when knowing it's in template result type. */
-	updateTemplateResult(tr: CompiledTemplateResult) {
+	protected updateTemplateResult(tr: CompiledTemplateResult) {
 		let oldT = this.content as Template | null
 		if (oldT && oldT.maker === tr.maker) {
 			oldT.update(tr.values)
@@ -223,7 +150,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 	}
 
 	/** Update template when knowing it's in template result list type. */
-	updateTemplateResultArray(trs: CompiledTemplateResult[]) {
+	protected updateTemplateResultArray(trs: CompiledTemplateResult[]) {
 		let oldTs = this.content as Template[] | null
 		if (!oldTs) {
 			oldTs = this.content = []
@@ -263,7 +190,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 	}
 
 	/** Update template when knowing it's in text type. */
-	updateText(value: unknown) {
+	protected updateText(value: unknown) {
 		let text = value === null || value === undefined ? '' : String(value).trim()
 		let t = this.content as Template<[string]> | null
 
@@ -276,7 +203,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 	}
 
 	/** Update content to a node when knowing it's in node type. */
-	updateNode(node: ChildNode) {
+	protected updateNode(node: ChildNode) {
 		let t = this.content as Template<ChildNode[]> | null
 
 		if (node) {
@@ -321,13 +248,13 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 	}
 
 	/** Insert a template before another. */
-	private insertTemplate(t: Template, nextT: Template | null) {
+	protected insertTemplate(t: Template, nextT: Template | null) {
 		let position = nextT?.startInnerPosition || this.endOuterPosition
 		t.insertNodesBefore(position)
 	}
 
 	/** Remove a template. */
-	private removeTemplate(t: Template) {
+	protected removeTemplate(t: Template) {
 		t.recycleNodes()
 	}
 }

@@ -1,7 +1,7 @@
 import {DependencyTracker, EventFirer, UpdateQueue} from '@pucelle/ff'
 import {ensureComponentStyle, ComponentStyle} from './style'
 import {addElementComponentMap, getComponentFromElement} from './from-element'
-import {TemplateSlot, SlotPosition, SlotPositionType, CompiledTemplateResult} from '../template'
+import {TemplateSlot, SlotPosition, SlotPositionType, CompiledTemplateResult, DynamicTypedTemplateSlot} from '../template'
 import {ComponentConstructor, RenderResult} from './types'
 import {Part, PartCallbackParameter} from '../types'
 import {SlotRange} from '../template/slot-range'
@@ -98,8 +98,8 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	/** Whether current component was connected into a document. */
 	connected: boolean = false
 
-	/** Help to patch render result. */
-	protected readonly rootContentSlot: TemplateSlot
+	/** Help to patch render result to current element. */
+	protected contentSlot!: TemplateSlot
 
 	/**
 	 * Caches slot elements which are marked as `<... slot="slotName">`.
@@ -117,12 +117,17 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		super()
 
 		this.el = el
-		this.rootContentSlot = new TemplateSlot(new SlotPosition(SlotPositionType.AfterContent, this.el), this)
+		this.initContentSlot()
 		Object.assign(this, properties)
 
 		ensureComponentStyle(this.constructor as ComponentConstructor)
 		addElementComponentMap(el, this)
 		ComponentCreatedReadyStates.set(this, 1)
+	}
+
+	/** Initialize content slot, can be overwritten to fixed-type `TemplateSlot`. */
+	protected initContentSlot() {
+		this.contentSlot = new DynamicTypedTemplateSlot(new SlotPosition(SlotPositionType.AfterContent, this.el), this)
 	}
 
 	/**
@@ -241,7 +246,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		this.onConnected()
 		this.fire('connected')
 
-		this.rootContentSlot.afterConnectCallback(0)
+		this.contentSlot.afterConnectCallback(0)
 	}
 
 	beforeDisconnectCallback(this: Component, param: number): Promise<void> | void {
@@ -251,8 +256,8 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		this.onDisconnected()
 		this.fire('disconnected')
 
-		// Only transfer `RemoveImmediately` parameter.
-		return this.rootContentSlot.beforeDisconnectCallback(param & PartCallbackParameter.RemoveImmediately)
+		// Only `RemoveImmediately` parameter passes.
+		return this.contentSlot.beforeDisconnectCallback(param & PartCallbackParameter.RemoveImmediately)
 	}
 
 	/** After any tracked data change, enqueue it to update in next animation frame. */
@@ -296,7 +301,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 			DependencyTracker.endTrack()
 		}
 
-		this.rootContentSlot!.update(result)
+		this.contentSlot!.update(result)
 	}
 
 	/** 

@@ -31,7 +31,7 @@ class AttachedComponent<E = any> extends Component<E> {
 		
 		this.renderer = renderer
 		this.context = context
-		this.rootContentSlot.replaceContext(context)
+		this.contentSlot.replaceContext(context)
 	}
 
 	protected render(): RenderResult {
