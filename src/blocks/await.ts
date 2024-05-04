@@ -1,5 +1,4 @@
 import {Template, TemplateMaker, TemplateSlot} from '../template'
-import {PartCallbackParameter} from '../types'
 
 
 /** Type of compiling statements like `<await>...`. */
@@ -30,12 +29,7 @@ export function createAwaitBlockFn(makers: (TemplateMaker | null)[]): AwaitBlock
 		function updateIndex(index: number) {
 			let maker = makers[index]
 			template = maker ? maker.make(context) : null
-			slot.updateTemplateOnly(template)
-
-			if (template) {
-				template.update(values!)
-				template.afterConnectCallback(PartCallbackParameter.HappenInCurrentContext | PartCallbackParameter.DirectNodeToMove)
-			}
+			slot.updateTemplateOnly(template, values!)
 		}
 	
 		return {

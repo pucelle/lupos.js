@@ -24,17 +24,7 @@ export enum SlotContentType {
  */
 export class TemplateSlot<T extends SlotContentType | null = SlotContentType> implements Part {
 
-	/** 
-	 * End outer position, indicate where to put new content.
-	 * 
-	 * Note:
-	 * - if located before a slot element with `:slot` specified,
-	 * need to insert a comment before it and use it's position.
-	 * - if located as after or after the content end of component, these positions
-	 * are not stable because it may append more contents after component rendered,
-	 * or been moved to a new position as rest slot elements.
-	 * so need insert a comment after current slot and use it's position.
-	 */
+	/** End outer position, indicate where to put new content. */
 	readonly endOuterPosition: SlotPosition<SlotEndOuterPositionType>
 
 	private context: any
@@ -52,10 +42,6 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 	}
 
 	afterConnectCallback(param: number) {
-		// No need to check whether `endOuterPosition` is `SlotPositionType.AfterContent`.
-		// Because when component use this position, `directly` parameter is always be `0`.
-		// When a template should use this position, it always be `0`, and add a comment instead.
-
 		if (this.contentType === SlotContentType.TemplateResult) {
 			(this.content as Template).afterConnectCallback(param)
 		}
@@ -146,6 +132,9 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 	/** 
 	 * Update by value parameter but don't know it's type.
 	 * Note value must be in one of 3 identifiable types.
+	 * 
+	 * Note customized Template created from `new Template(...)`, not `Maker.make(...)`,
+	 * cant be used here as update value.
 	 */
 	update(value: unknown) {
 		let newContentType = this.identifyContentType(value)
@@ -311,7 +300,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 	 * Current value is not in auto-recognized content type, so you cant use `update()`.
 	 * Use this when template is managed and cached outside, update template here.
 	 */
-	updateTemplateOnly(this: TemplateSlot<null>, t: Template | null) { 
+	updateTemplateOnly(this: TemplateSlot<null>, t: Template | null, values: any[] | null) { 
 		let oldT = this.content as Template | null
 
 		if (oldT === t) {
@@ -324,33 +313,11 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 
 		if (t) {
 			t.insertNodesBefore(this.endOuterPosition)
+			t.update(values!)
+			t.afterConnectCallback(PartCallbackParameter.HappenInCurrentContext | PartCallbackParameter.DirectNodeToMove)
 		}
 
 		this.content = t
-	}
-
-	/** 
-	 * Update content to a group of nodes manually.
-	 * When use this method, ensure current content type is `null`.
-	 * Current value is not in auto-recognized content type, so you cant use `update()`.
-	 * Use it for replacing nodes, like insert slot elements.
-	 */
-	updateNodesOnly(this: TemplateSlot<null>, nodes: ChildNode[] | null) {
-		let t = this.content as Template<ChildNode[]> | null
-
-		if (nodes) {
-			if (!t) {
-				t = this.content = NodesTemplateMaker.make(null)
-				t.insertNodesBefore(this.endOuterPosition)
-			}
-
-			t.update(nodes)
-		}
-		else {
-			if (t) {
-				t.update([])
-			}
-		}
 	}
 
 	/** Insert a template before another. */

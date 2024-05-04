@@ -12,12 +12,7 @@ export interface TemplateInitResult {
 	/** Template element to initialize all nodes inside. */
 	el: HTMLTemplateElement
 
-	/** 
-	 * Start inner position, indicate the start edge of current content.
-	 * 
-	 * Note if located before a slot element with `:slot` specified,
-	 * must insert a comment before it and use it's position.
-	 */
+	/** Start inner position, indicate the start edge of current content. */
 	position: SlotPosition<SlotStartInnerPositionType>
 
 	/** 
@@ -46,6 +41,6 @@ export class TemplateMaker {
 
 	/** Bind with a context to create a Template. */
 	make(context: any): Template {
-		return new Template(this, this.init(context))
+		return new Template(this.init(context), this)
 	}
 }

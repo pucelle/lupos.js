@@ -34,7 +34,7 @@ export enum PartCallbackParameter {
 
 
 /** 
- * Component, TemplateSlot, Template, partial Binding implement it.
+ * Component, TemplateSlot, Template, partial Bindings implement it.
  * If a binding needs to implement `Part`, must implement both methods.
  */
 export interface Part {

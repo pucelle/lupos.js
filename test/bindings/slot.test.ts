@@ -235,18 +235,12 @@ describe('Test :slot', () => {
 			let t = t3()
 			let s = t.content.firstElementChild!
 
-			let slot = new TemplateSlot<null>(
-				new SlotPosition(SlotPositionType.AfterContent, s),
-				context,
-			)
-
 			// Rest slot nodes is static, so move it to here.
-			slot.updateNodesOnly(context.__getRestSlotNodes())
+			s.append(...context.__getRestSlotNodes())
 
 			return {
 				el: t,
 				position: new SlotPosition(SlotPositionType.Before, s),
-				parts: [[slot, 1]],
 			}
 		})
 

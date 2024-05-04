@@ -103,6 +103,7 @@ class ForUpdator<T> {
 		this.insertTemplate(t, nextOldT)
 		t.update(result.values)
 		t.afterConnectCallback(PartCallbackParameter.HappenInCurrentContext | PartCallbackParameter.DirectNodeToMove)
+
 		this.templates.push(t)
 	}
 
@@ -111,6 +112,7 @@ class ForUpdator<T> {
 
 		t.update(result.values)
 		t.afterConnectCallback(PartCallbackParameter.HappenInCurrentContext | PartCallbackParameter.DirectNodeToMove)
+		
 		this.templates.push(t)
 	}
 

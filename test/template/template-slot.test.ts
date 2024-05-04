@@ -36,8 +36,7 @@ describe('Test TemplateSlot', () => {
 		await UpdateQueue.untilComplete()
 		expect(container.textContent).toBe('2')
 
-		slot.clearContent()
-		slot.updateNodesOnly([text])
+		slot.update(text)
 		await UpdateQueue.untilComplete()
 		expect(container.textContent).toBe('3')
 	})

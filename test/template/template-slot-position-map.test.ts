@@ -9,7 +9,7 @@ describe('Test SlotPositionMap', () => {
 	}
 
 	function createFakeTemplate() {
-		return new Template(null, {el: document.createElement('template'), position: createFakePosition()})
+		return new Template({el: document.createElement('template'), position: createFakePosition()})
 	}
 
 	test('SlotPositionMap', async () => {

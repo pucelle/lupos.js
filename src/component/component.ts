@@ -73,7 +73,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 				return com as InstanceType<C>
 			}
 	
-			el = (el as Element).parentElement
+			el = el.parentElement
 		}
 
 		return null
@@ -226,8 +226,8 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * Use these nodes to fill `<slot />` element that the component itself render.
 	 * For inner usage only, and be called by compiled codes.
 	 */
-	__getRestSlotNodes(): ChildNode[] | null {
-		return this.restSlotRange ? [...this.restSlotRange.walkNodes()] : null
+	__getRestSlotNodes(): ChildNode[] {
+		return this.restSlotRange ? [...this.restSlotRange.walkNodes()] : []
 	}
 
 	afterConnectCallback(this: Component, _param: number) {

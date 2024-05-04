@@ -19,11 +19,6 @@ export class SlotRange {
 		this.endInnerNode = endInnerNode
 	}
 
-	/** Insert nodes before a specified position. */
-	insertNodesBefore(position: SlotPosition) {
-		position.insertNodesBefore(...this.walkNodes())
-	}
-
 	/** Walk nodes in the range. */
 	*walkNodes(): Iterable<ChildNode> {
 		let node = this.startInnerPosition.getStartNode()

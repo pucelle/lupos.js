@@ -1,5 +1,4 @@
 import {Template, TemplateMaker, TemplateSlot} from '../template'
-import {PartCallbackParameter} from '../types'
 
 
 /** Type of compiling all the statement like `<keyed ${}>...`. */
@@ -22,13 +21,9 @@ export function createkeyedBlockFn(maker: TemplateMaker | null): KeyedBlock {
 			update(newKey: any, values: any[]) {
 				if (newKey !== key) {
 					template = maker ? maker.make(context) : null
-					slot.updateTemplateOnly(template)
-					key = newKey
-				}
+					slot.updateTemplateOnly(template, values)
 
-				if (template) {
-					template.update(values)
-					template.afterConnectCallback(PartCallbackParameter.HappenInCurrentContext | PartCallbackParameter.DirectNodeToMove)
+					key = newKey
 				}
 			}
 		}

@@ -28,7 +28,6 @@ describe('Test :style', () => {
 	})
 
 
-
 	test(':style=${{...}}', () => {
 		let div = document.createElement('div')
 		div.style.cssText = 'color: red'

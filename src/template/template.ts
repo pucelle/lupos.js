@@ -32,8 +32,12 @@ export class Template<P extends any[] = any[]> implements Part {
 	 * - cause template2's connect callback to be called repeatedly.
 	 */
 	private connected: boolean = false
-
-	constructor(maker: TemplateMaker | null, initResult: TemplateInitResult) {
+	
+	/** 
+	 * If `maker` is `null`, normally create template from `new Template(...)`,
+	 * not `Maker.make(...)`, can only be updated by `slot.updateTemplateOnly(...)`.
+	 */
+	constructor(initResult: TemplateInitResult, maker: TemplateMaker | null = null) {
 		this.maker = maker
 
 		this.el = initResult.el
@@ -100,7 +104,7 @@ export class Template<P extends any[] = any[]> implements Part {
 	 * Note it will not call connect callback, you should do it manually after updated current template.
 	 */
 	insertNodesBefore(position: SlotPosition) {
-		position.insertNodesBefore(...this.el.content.childNodes)
+		position.insertNodesBefore(this.el.content)
 		PositionMap.addPosition(this, position)
 	}
 

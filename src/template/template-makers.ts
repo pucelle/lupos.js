@@ -1,6 +1,9 @@
 import {createHTMLTemplateFn} from "./html-template-fn"
 import {TemplateInitResult, TemplateMaker} from "./template-maker"
 import {SlotPosition, SlotPositionType, SlotStartInnerPositionType} from "./slot-position"
+import {Component} from "../component"
+import {PartCallbackParameter} from "../types"
+import {Template} from "./template"
 
 
 /** Template has only a text node inside. */
@@ -13,20 +16,25 @@ const CommentTemplateFn = createHTMLTemplateFn('<!---->')
 /** Template maker to create a text node to update text content. */
 export const TextTemplateMaker = new TemplateMaker(function() {
 	let el = TextTemplateFn()
-	let text = el.content.firstChild as Text
-	let position = new SlotPosition<SlotStartInnerPositionType>(SlotPositionType.Before, text)
+	let textNode = el.content.firstChild as Text
+	let position = new SlotPosition<SlotStartInnerPositionType>(SlotPositionType.Before, textNode)
 
 	return {
 		el,
 		position,
-		update(values: [string]) {
-			text.data = values[0]
+		update([text]: [string]) {
+			textNode.data = text
 		}
 	} as TemplateInitResult
 })
 
 
-/** Template maker to update nodes. */
+/** 
+ * Template maker to update nodes inside.
+ * Note the parts inside `nodes` are not included in the returned template,
+ * so cant call their connect and disconnect callback.
+ * Fit for containing nodes which have been registered as parts, like slot elements.
+ */
 export const NodesTemplateMaker = new TemplateMaker(function() {
 	let el = CommentTemplateFn()
 	let comment = el.content.firstChild as Comment
@@ -57,7 +65,24 @@ export const NodesTemplateMaker = new TemplateMaker(function() {
 			else {
 				endNode = null
 			}
-		}
+		},
 	} as TemplateInitResult
 })
 
+
+/** 
+ * maker a Template to contain a component inside.
+ * Can call the connect and disconnect callback of the component.
+ */
+export function makeComponentTemplate(com: Component): Template {
+	let el = document.createElement('template')
+	let position = new SlotPosition<SlotStartInnerPositionType>(SlotPositionType.Before, com.el)
+
+	el.content.append(com.el)
+
+	return new Template({
+		el,
+		position,
+		parts: [[com, PartCallbackParameter.DirectNodeToMove & PartCallbackParameter.HappenInCurrentContext]],
+	})
+}
