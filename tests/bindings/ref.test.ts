@@ -1,5 +1,5 @@
 import {DependencyTracker, UpdateQueue} from '@pucelle/ff'
-import {CompiledTemplateResult, Component, RefBinding, SlotPositionType, TemplateMaker, SlotPosition, createHTMLTemplateFn} from '../../src/'
+import {CompiledTemplateResult, Component, RefBinding, SlotPositionType, TemplateMaker, SlotPosition, createHTMLTemplateFn} from '../../src'
 
 
 describe('Test :ref', () => {

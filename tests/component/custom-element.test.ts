@@ -1,4 +1,4 @@
-import {Component, defineCustomElement} from '../../src/'
+import {Component, defineCustomElement} from '../../src'
 
 
 describe('Test Custom Element', () => {

@@ -1,5 +1,5 @@
 import {UpdateQueue} from '@pucelle/ff'
-import {Component, css} from '../../src/'
+import {Component, css} from '../../src'
 import {jest} from '@jest/globals'
 
 

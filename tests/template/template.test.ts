@@ -1,4 +1,4 @@
-import {SlotPositionType, TemplateMaker, SlotPosition, createHTMLTemplateFn, TemplateSlot} from '../../src/'
+import {SlotPositionType, TemplateMaker, SlotPosition, createHTMLTemplateFn, TemplateSlot} from '../../src'
 
 
 describe('Test Template', () => {

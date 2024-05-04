@@ -1,5 +1,5 @@
 import {DependencyTracker, UpdateQueue} from '@pucelle/ff'
-import {CompiledTemplateResult, Component, SlotBinding, SlotPositionType, TemplateMaker, SlotPosition, TemplateSlot, createHTMLTemplateFn} from '../../src/'
+import {CompiledTemplateResult, Component, SlotBinding, SlotPositionType, TemplateMaker, SlotPosition, TemplateSlot, createHTMLTemplateFn} from '../../src'
 import {SlotRange} from '../../src/template/slot-range'
 
 

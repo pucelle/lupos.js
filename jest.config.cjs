@@ -5,6 +5,6 @@ module.exports = {
     ],
 	testEnvironment: "jsdom",
 	testMatch: [
-		"**/test/**/*.test.ts"
+		"**/tests/**/*.test.ts"
 	]
 }
