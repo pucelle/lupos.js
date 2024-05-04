@@ -1,5 +1,5 @@
 import {UpdateQueue} from '@pucelle/ff'
-import {SlotPositionType, TemplateMaker, SlotPosition, createHTMLTemplateFn, CompiledTemplateResult, DynamicTemplateSlot} from '../../src'
+import {SlotPositionType, TemplateMaker, SlotPosition, createHTMLTemplateFn, CompiledTemplateResult, DynamicTypedTemplateSlot} from '../../src'
 
 
 describe('Test TemplateSlot', () => {
@@ -20,7 +20,7 @@ describe('Test TemplateSlot', () => {
 
 		let container = document.createElement('div')
 		let pos1 = new SlotPosition(SlotPositionType.AfterContent, container)
-		let slot = new DynamicTemplateSlot<any>(pos1 as SlotPosition<any>, null)
+		let slot = new DynamicTypedTemplateSlot<any>(pos1 as SlotPosition<any>, null)
 		let result = new CompiledTemplateResult(maker1, [])
 		let text = document.createTextNode('3')
 
