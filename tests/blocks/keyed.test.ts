@@ -3,7 +3,7 @@ import {Component, TemplateMaker, DynamicTypedTemplateSlot, SlotPosition, SlotPo
 
 
 describe('Test Keyed Block', () => {
-	test('if keyed', async () => {
+	test('Keyed Block', async () => {
 		let t1 = createHTMLTemplateFn('<div>1</div>')
 
 		// Compile from `<div>...</div>`

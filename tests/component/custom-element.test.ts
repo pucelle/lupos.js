@@ -3,7 +3,7 @@ import {Component, defineCustomElement} from '../../src'
 
 describe('Test Custom Element', () => {
 
-	test('connecct', async () => {
+	test('Custom Element Connect', async () => {
 		class Com extends Component {
 
 			protected render() {

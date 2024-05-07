@@ -3,7 +3,7 @@ import {SlotPositionType, TemplateMaker, SlotPosition, createHTMLTemplateFn, Dyn
 
 describe('Test Template', () => {
 
-	test('Template content order', async () => {
+	test('Template Content Order', async () => {
 		let t1 = createHTMLTemplateFn('<div>1</div><div>2</div>')
 
 		// Compile from html`<div>1</div><div>2</div>`

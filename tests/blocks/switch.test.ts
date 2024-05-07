@@ -3,7 +3,7 @@ import {Component, TemplateMaker, DynamicTypedTemplateSlot, SlotPosition, SlotPo
 
 
 describe('Test Switch Block', () => {
-	test('switch block', async () => {
+	test('Switch Block', async () => {
 		let t1 = createHTMLTemplateFn('<div>1</div>')
 		let t2 = createHTMLTemplateFn('<div>2</div>')
 		let t3 = createHTMLTemplateFn('<div>3</div>')

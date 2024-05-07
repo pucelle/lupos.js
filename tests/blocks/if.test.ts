@@ -3,7 +3,7 @@ import {Component, TemplateMaker, DynamicTypedTemplateSlot, SlotPosition, SlotPo
 
 
 describe('Test If Block', () => {
-	test('if block', async () => {
+	test('If Block', async () => {
 		let t1 = createHTMLTemplateFn('<div>1</div>')
 		let t2 = createHTMLTemplateFn('<div>2</div>')
 		let t3 = createHTMLTemplateFn('<div>3</div>')

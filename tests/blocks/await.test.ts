@@ -3,7 +3,7 @@ import {Component, TemplateMaker, DynamicTypedTemplateSlot, SlotPosition, SlotPo
 
 
 describe('Test Await Block', () => {
-	test('await block', async () => {
+	test('Await Block', async () => {
 		let t1 = createHTMLTemplateFn('<div>1</div>')
 		let t2 = createHTMLTemplateFn('<div>2</div>')
 		let t3 = createHTMLTemplateFn('<div>3</div>')

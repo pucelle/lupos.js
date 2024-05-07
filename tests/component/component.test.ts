@@ -5,7 +5,7 @@ import {jest} from '@jest/globals'
 
 describe('Test Component', () => {
 
-	test('Component apis', async () => {
+	test('Component Apis', async () => {
 		class Parent extends Component {
 
 			static style() {

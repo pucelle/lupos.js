@@ -4,7 +4,7 @@ import {CompiledTemplateResult, TemplateMaker, SlotPosition, SlotPositionType, c
 
 describe('Test render', () => {
 
-	test('render static', async () => {
+	test('Render Static', async () => {
 		let t1 = createHTMLTemplateFn(`<div>123</div>`)
 
 		// Compile from `<div>123</div>`
@@ -26,7 +26,7 @@ describe('Test render', () => {
 	})
 
 
-	test('render dynamic', async () => {
+	test('Render Dynamic', async () => {
 		let t1 = createHTMLTemplateFn(`<div> </div>`)
 
 		// Compile from `<div>${...}</div>`

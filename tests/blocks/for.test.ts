@@ -3,7 +3,7 @@ import {CompiledTemplateResult, Component, TemplateMaker, DynamicTypedTemplateSl
 
 
 describe('Test For Block', () => {
-	test('for block', async () => {
+	test('For Block', async () => {
 		let t1 = createHTMLTemplateFn('<div> </div>')
 
 		// Compile from `<div>${}</div>`
