@@ -8,18 +8,19 @@ export type RenderResultRenderer<T = any> = TemplateResult | CompiledTemplateRes
 
 
 /** 
- * Render a static content like html`...` inside a specified `context`,
- * Or render a responsive content like () => html`...` inside a specified `context`.
- * E.g., render a popup or contextmenu based on current context after any interaction.
- * Returns a component like instance which attach to specified context. */
+ * Render a static content by parameter html`...` within a specified `context`,
+ * Or render a responsive content by parameter like () => html`...` within a specified `context`.
+ * E.g., render a popup or contextmenu based on current context after some interactions.
+ * Returns a component like instance which attach to the context we provided.
+ */
 export function render<T = any>(renderer: RenderResultRenderer<T>, context: T = null as T): AttachedComponent {
 	return new AttachedComponent(renderer, context)
 }
 
 
 /** 
- * Same with Component, except it attachs a context,
- * and render all the things within this context.
+ * Same as a anonymous component, except it attaches a context,
+ * and render all the things within that context.
  */
 class AttachedComponent<E = any> extends Component<E> {
 

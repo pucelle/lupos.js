@@ -21,7 +21,8 @@ const CrossFadeElementMatchMap: DoubleKeysMap<string | number, 'enter' | 'leave'
 
 /** 
  * Help to sync enter and leave cross fade transitions,
- * makesure they can communite before playing, for `crossfade` transition.
+ * make sure they can communicate before playing.
+ * For `crossfade` transition.
  */
 const CrossFadeTransitionBarrierQueue = new BarrierQueue()
 

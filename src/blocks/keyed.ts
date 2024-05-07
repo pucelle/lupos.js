@@ -12,7 +12,7 @@ type KeyedBlock = (slot: TemplateSlot<null>, context: any) => {
  * 	<keyed ${...}>...</keyed>
  * ```
  */
-export function createkeyedBlockFn(maker: TemplateMaker | null): KeyedBlock {
+export function createKeyedBlockFn(maker: TemplateMaker | null): KeyedBlock {
 	return function(slot: TemplateSlot<null>, context: any) {
 		let key: any = undefined
 		let template: Template | null = null

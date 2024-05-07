@@ -11,26 +11,26 @@ export class SlotPositionMap {
 	/** 
 	 * Template <=> It's after position.
 	 * It's equivalent to a double linked list.
-	 * Can also use `TwoWayMap`, but use two maps indepently can avoid some useless operations.
+	 * Can also use `TwoWayMap`, but use two maps independently can avoid some useless operations.
 	 */
-	private tpmap: Map<Template, SlotPosition> = new Map()
-	private ptmap: Map<SlotPosition, Template> = new Map()
+	private tpMap: Map<Template, SlotPosition> = new Map()
+	private ptMap: Map<SlotPosition, Template> = new Map()
 
 	/** After insert a template before a position, remember relative position. */
 	addPosition(template: Template<any>, position: SlotPosition) {
-		let prevT = this.ptmap.get(position)
+		let prevT = this.ptMap.get(position)
 		if (prevT) {
-			this.tpmap.set(prevT, template.startInnerPosition)
-			this.ptmap.set(template.startInnerPosition, prevT)
+			this.tpMap.set(prevT, template.startInnerPosition)
+			this.ptMap.set(template.startInnerPosition, prevT)
 		}
 
-		this.tpmap.set(template, position)
-		this.ptmap.set(position, template)
+		this.tpMap.set(template, position)
+		this.ptMap.set(position, template)
 	}
 
 	/** Get template position, the position where template located before. */
 	getPosition(template: Template<any>): SlotPosition | undefined {
-		return this.tpmap.get(template)
+		return this.tpMap.get(template)
 	}
 
 	/** 
@@ -38,18 +38,18 @@ export class SlotPositionMap {
 	 * - `position`: Known position of template.
 	 */
 	deletePosition(template: Template<any>, position: SlotPosition) {
-		let prevT = this.ptmap.get(template.startInnerPosition)
+		let prevT = this.ptMap.get(template.startInnerPosition)
 
 		if (prevT) {
-			this.tpmap.delete(template)
-			this.ptmap.delete(template.startInnerPosition)
+			this.tpMap.delete(template)
+			this.ptMap.delete(template.startInnerPosition)
 
-			this.tpmap.set(prevT, position)
-			this.ptmap.set(position, prevT)
+			this.tpMap.set(prevT, position)
+			this.ptMap.set(position, prevT)
 		}
 		else {
-			this.tpmap.delete(template)
-			this.ptmap.delete(position)
+			this.tpMap.delete(template)
+			this.ptMap.delete(position)
 		}
 	}
 }

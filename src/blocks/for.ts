@@ -22,11 +22,11 @@ type ForRenderFn = (item: any, index: number) => CompiledTemplateResult
  */
 export function createForBlockFn(renderFn: ForRenderFn): ForBlock {
 	return function(slot: TemplateSlot, context: any) {
-		let updator = new ForUpdator(slot, context, renderFn)
+		let updater = new ForUpdater(slot, context, renderFn)
 	
 		return {
 			update(items: any[]) {
-				updator.update(items)
+				updater.update(items)
 			}
 		}
 	}
@@ -34,7 +34,7 @@ export function createForBlockFn(renderFn: ForRenderFn): ForBlock {
 
 
 /** Help to update for data items. */
-class ForUpdator<T> {
+class ForUpdater<T> {
 
 	private readonly slot: TemplateSlot
 	private readonly context: any
@@ -59,8 +59,8 @@ class ForUpdator<T> {
 		this.templates = []
 
 		for (let record of editRecord) {
-			let {type, nextOldIndex, fromIndex, toIndex} = record
-			let nextOldT = this.getItemAtIndex(oldTs, nextOldIndex)
+			let {type, insertIndex, fromIndex, toIndex} = record
+			let nextOldT = this.getItemAtIndex(oldTs, insertIndex)
 			let fromT = this.getItemAtIndex(oldTs, fromIndex)
 			let newItem = toIndex >= 0 ? newData[toIndex] : null
 

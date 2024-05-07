@@ -13,7 +13,7 @@ export enum SlotPositionType {
 	 */
 	BeforeContent = 0,
 
-	/** End position collapse with end of container ranget. */
+	/** End position collapse with end of container range. */
 	AfterContent = 1,
 
 	/** End position collapse with start of sibling node. */

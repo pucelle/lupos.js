@@ -31,8 +31,8 @@ export const TextTemplateMaker = new TemplateMaker(function() {
 
 /** 
  * Template maker to update nodes inside.
- * Note the parts inside `nodes` are not included in the returned template,
- * so cant call their connect and disconnect callback.
+ * Note the parts inside of `nodes` are not included in the returned template,
+ * so cant automatically call their connect and disconnect callbacks.
  * Fit for containing nodes which have been registered as parts, like slot elements.
  */
 export const NodesTemplateMaker = new TemplateMaker(function() {
@@ -71,8 +71,8 @@ export const NodesTemplateMaker = new TemplateMaker(function() {
 
 
 /** 
- * maker a Template to contain a component inside.
- * Can call the connect and disconnect callback of the component.
+ * Make a template to contain a component inside.
+ * It can automatically call the connect and disconnect callbacks of the component.
  */
 export function makeComponentTemplate(com: Component): Template {
 	let el = document.createElement('template')

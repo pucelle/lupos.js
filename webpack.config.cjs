@@ -34,20 +34,22 @@ module.exports = (env) => {
 			rules: [
 				{
 					test: /\.tsx?$/,
-					use: [{
-						loader: 'ts-loader',
-						options: {
-							transpileOnly: true,
-						},
-					}],
+					loader: 'ts-loader',
+					options: {
+
+						// Skip type checking when compiling.
+						transpileOnly: true,
+					},
 					exclude: /node_modules/
 				},
+
+				// Can resolve esm module path.
 				{
 					test: /\.m?js/,
 					resolve: {
 						fullySpecified: false
 					}
-				}
+				},
 			],
 		},
 	}

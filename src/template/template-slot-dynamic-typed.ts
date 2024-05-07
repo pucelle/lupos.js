@@ -18,11 +18,8 @@ export class DynamicTypedTemplateSlot<T extends SlotContentType | null = SlotCon
 	}
 
 	/** 
-	 * Update by value parameter but don't know it's type.
-	 * Note value must be in one of 3 identifiable types.
-	 * 
-	 * Note customized Template created from `new Template(...)`, not `Maker.make(...)`,
-	 * cant be used here as update value.
+	 * Update by value parameter but don't know it's type early.
+	 * Note value must be in one of 4 identifiable types.
 	 */
 	update(value: unknown) {
 		let newContentType = this.identifyContentType(value)
@@ -36,6 +33,7 @@ export class DynamicTypedTemplateSlot<T extends SlotContentType | null = SlotCon
 		super.update(value)
 	}
 
+	/** Identify content type by value. */
 	protected identifyContentType(value: unknown): T | null {
 		if (value === null || value === undefined) {
 			return null
@@ -54,7 +52,7 @@ export class DynamicTypedTemplateSlot<T extends SlotContentType | null = SlotCon
 		}
 	}
 
-	/** Clear current content. */
+	/** Clear current content, reset content and content type. */
 	protected clearContent() {
 		if (!this.content) {
 			return

@@ -4,8 +4,8 @@ import {Component} from './component'
 
 /** 
  * Decorate a class property to declare a context variable,
- * this property can be shared with all decendant components,
- * just after decendant components declare `@useContext property`.
+ * this property can be shared with all descendant components,
+ * just after descendant components declare `@useContext property`.
  */
 export declare function setContext(target: any, property: string): void
 
@@ -19,7 +19,8 @@ export declare function useContext(target: any, property: string): void
 
 /** 
  * Cache contextual variables of a component,
- * the varible property name, and the source component where declare this property.
+ * second key is the variable property name,
+ * and the value is the source component where declare this property.
  */
 export const ContextVariableUnionMap: WeakDoubleKeysMap<Component, PropertyKey, Component> = new WeakDoubleKeysMap()
 
@@ -29,8 +30,8 @@ export function addContextVariable(com: Component, prop: PropertyKey) {
 }
 
 /** 
- * Get source component which declares `@setContext prop`, and get its property value,
- * from it's decendant component which declares `@useContext prop`.
+ * Get source component where declares `@setContext prop`,
+ * from it's descendant component which declares `@useContext prop`.
  */
 export function getContextVariableDeclared(com: Component, prop: PropertyKey): Component | undefined {
 	let source = ContextVariableUnionMap.get(com, prop)
@@ -47,7 +48,7 @@ export function getContextVariableDeclared(com: Component, prop: PropertyKey): C
 	return undefined
 }
 
-/** Find source component which declares `@setContext prop`. */
+/** Find source component where declares `@setContext prop`. */
 function findContextVariableDeclared(com: Component, prop: PropertyKey): Component | undefined {
 	let el: Element | null = com.el.parentElement
 

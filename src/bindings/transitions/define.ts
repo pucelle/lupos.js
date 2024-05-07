@@ -62,9 +62,9 @@ export type TransitionPropertiesGetter<E extends Element, O extends TransitionOp
 
 
 /** 
- * Define a transiton, it accepts a transition getter,
+ * Define a transition, it accepts a transition getter,
  * which make a transition properties object from target element and some options.
- * And output a function whici return an object to cache this getter and captured options.
+ * And output a function which returns an object to cache this getter and captured options.
  * 
  * Note uses `defineTransition` cause executing codes in top level,
  * so you may need to set `sideEffects: false` to make tree shaking work as expected.

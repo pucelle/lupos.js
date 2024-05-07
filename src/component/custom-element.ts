@@ -20,9 +20,9 @@ const CustomElementConstructorMap: Map<
 
 /**
  * Defines a custom element which will initialize specified component.
- * - `name`: The custom element name.
- * - `Com`: The Component class constructor.
- * - `propertyMap`: A map, which's key is custom element attribute name, and value is component property,
+ * @param name The custom element name.
+ * @param Com The Component class constructor.
+ * @param propertyMap A map, which's key is custom element attribute name, and value is component property,
  *   or `[component property, formatter]`. Frequently used formatters can be `Number`, `String`, `JSON.parse`.
  * 
  * Note normally only when working with pure HTML codes,
@@ -30,8 +30,8 @@ const CustomElementConstructorMap: Map<
  * Otherwise just refer a component in a template or new it directly.
  * 
  * Defining custom elements gains an additional benefit:
- * - the component will be automatically `disconnected` if the element is disconnected from document.
- * - same action with `connected`.
+ * - the component will be automatically `connect` or `disconnected`
+ *   after the element was connected or disconnected from document.
  */
 export function defineCustomElement<T extends ComponentConstructor>(name: string, Com: T, propertyMap: PropertyMapOf<T> = {}) {
 	if (!name.includes('-')) {
@@ -42,7 +42,7 @@ export function defineCustomElement<T extends ComponentConstructor>(name: string
 	defineCallbacks(name)
 }
 
-/** Defines custom element's connect and disconnect actions. */
+/** Defines custom element's connect and disconnect callbacks. */
 function defineCallbacks(name: string) {
 	customElements.define(name, class LuposElement extends HTMLElement {
 
@@ -59,7 +59,7 @@ function defineCallbacks(name: string) {
 	}, {extends: 'div'})
 }
 
-/** Enqueue connection for an element. */
+/** Connect callback for an element. */
 function onConnected(el: HTMLElement) {
 	let com = getComponentFromElement(el)
 
@@ -96,7 +96,7 @@ function makeProperties(el: HTMLElement, propertyMap: PropertyMapOf<any>): Recor
 	return props
 }
 
-/** Enqueue disconnection for an element. */
+/** Disconnect callback for an element. */
 function onDisconnected(el: HTMLElement) {
 	let com = getComponentFromElement(el)
 	if (com && com.connected) {

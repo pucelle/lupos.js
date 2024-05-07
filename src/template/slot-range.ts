@@ -2,12 +2,13 @@ import {SlotPosition, SlotPositionType} from './slot-position'
 
 
 /** 
- * Locate the start and end of a node range.
- * So later can pick nodes of the range and move them.
+ * Locate the start and end position of a node range.
+ * So later can pick nodes within the range and move them.
  * 
  * Use it to remember rest slot range.
- * Compiler may need to insert a comment node in the end of
- * current range to make the end position static.
+ * Compiler may need to insert a comment node in the end
+ * to make the end inner node static, and avoid break the
+ * range after component-itself contents appended.
  */
 export class SlotRange {
 

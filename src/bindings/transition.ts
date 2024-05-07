@@ -11,18 +11,18 @@ enum MixedTransitionType {
 }
 
 
-/** Cache those bindings that havn't trigger connect callback yet. */
+/** Cache those bindings that haven't trigger connect callback yet. */
 const NotConnectCallbackForFirstTime: WeakSet<TransitionBinding> = new WeakSet()
 
 
 /**
- * `:transition` binding can play transition animation after element connected or before disconnect.
+ * `:transition` binding can play transition after element connected or before element disconnect.
  * - `<el :transition=${fade({duration, ...})}>`
- * - `<el :transition.local=${...}>`: play transition only when element itself is added or removed. `.local` can omit.
- * - `<el :transition.global=${...}>`: play transition when element or any ancestral element is added or removed.
+ * - `<el :transition.local=${...}>`: play transition only when element itself get inserted or removed. `.local` can omit.
+ * - `<el :transition.global=${...}>`: play transition when element or any ancestral element get inserted or removed.
  * - `<el :transition.immediate=${...}>`: play transition immediately when element initialized.
  * 
- * `:transition` binding can dispatch for events on the target element:
+ * `:transition` binding will dispatch 4 events on the target element:
  * - `enter-started`: After enter transition started.
  * - `enter-ended`: After enter transition ended.
  * - `leave-started`: After leave transition started.
@@ -35,7 +35,7 @@ export class TransitionBinding implements Binding, Part {
 	/** 
 	 * A `local` transition as default action,
 	 * can only play when attached elements been directly inserted or removed.
-	 * A `global` transition can play when any level of ancestral elements get inserted or removed.
+	 * A `global` transition can play when any level of ancestral element get inserted or removed.
 	 * Normally `global` property can only be set by compiler.
 	 */
 	global: boolean = false

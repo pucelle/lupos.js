@@ -5,22 +5,25 @@ import {Part, PartCallbackParameter} from '../types'
 import {NodesTemplateMaker, TextTemplateMaker} from './template-makers'
 
 
-/** Contents that can be included in a `<tag>${...}<.tag>`. */
+/** 
+ * Represents the type of the contents that can be included
+ * in a template literal like `<tag>${...}<.tag>`.
+ */
 export enum SlotContentType {
 	TemplateResult,
 	TemplateResultArray,
 	Text,
 	Node,
 
-	// Not identified types, can use null instead.
+	// Not identified types, use null instead so not present.
 	// NotIdentifiedTemplate,
 }
 
 
 /** 
- * A `TemplateSlot` indicates a `>${...}<` inside a template,
- * helps to update content of the slot.
- * Already knows fixed content type.
+ * A `TemplateSlot` locate a slot position `>${...}<` inside a template  literal,
+ * it helps to update content of the slot.
+ * Must know the content type of slot, otherwise use `DynamicTypedTemplateSlot`.
  */
 export class TemplateSlot<T extends SlotContentType | null = SlotContentType> implements Part {
 
@@ -72,12 +75,15 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 		}
 	}
 
-	/** Replace context after initialized. */
+	/** 
+	 * Replace context after initialized.
+	 * Only for internal usage.
+	 */
 	replaceContext(context: any) {
 		this.context = context
 	}
 
-	/** Get start inner node of the all the contents that inside of current slot. */
+	/** Get start inner node of the all the contents of current slot. */
 	getStartNode(): ChildNode | null {
 		if (this.contentType === SlotContentType.TemplateResult || this.contentType === SlotContentType.Text) {
 			if (this.content) {
@@ -112,7 +118,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 
 	/** 
 	 * Update by value parameter after known it's type.
-	 * Note value must be strictly of the content type.
+	 * Note value must be strictly of the content type specified.
 	 */
 	update(value: unknown) {
 		if (this.contentType === SlotContentType.TemplateResult) {
@@ -129,7 +135,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 		}
 	}
 
-	/** Update template when knowing it's in template result type. */
+	/** Update from a template result. */
 	protected updateTemplateResult(tr: CompiledTemplateResult) {
 		let oldT = this.content as Template | null
 		if (oldT && oldT.maker === tr.maker) {
@@ -149,7 +155,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 		}
 	}
 
-	/** Update template when knowing it's in template result list type. */
+	/** Update from a template result list. */
 	protected updateTemplateResultArray(trs: CompiledTemplateResult[]) {
 		let oldTs = this.content as Template[] | null
 		if (!oldTs) {
@@ -189,7 +195,18 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 		}
 	}
 
-	/** Update template when knowing it's in text type. */
+	/** Insert a template before another one. */
+	protected insertTemplate(t: Template, nextT: Template | null) {
+		let position = nextT?.startInnerPosition || this.endOuterPosition
+		t.insertNodesBefore(position)
+	}
+
+	/** Remove a template. */
+	protected removeTemplate(t: Template) {
+		t.recycleNodes()
+	}
+
+	/** Update from a text-like value. */
 	protected updateText(value: unknown) {
 		let text = value === null || value === undefined ? '' : String(value).trim()
 		let t = this.content as Template<[string]> | null
@@ -202,7 +219,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 		t.update([text])
 	}
 
-	/** Update content to a node when knowing it's in node type. */
+	/** Update from a node. */
 	protected updateNode(node: ChildNode) {
 		let t = this.content as Template<ChildNode[]> | null
 
@@ -222,10 +239,9 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 	}
 
 	/** 
-	 * Update template manually without checking maker equality.
+	 * Update template manually without compare template maker.
 	 * When use this method, ensure current content type is `null`.
-	 * Current value is not in auto-recognized content type, so you cant use `update()`.
-	 * Use this when template is managed and cached outside, update template here.
+	 * Use this when template is been managed and cached outside.
 	 */
 	updateTemplateOnly(this: TemplateSlot<null>, t: Template | null, values: any[] | null) { 
 		let oldT = this.content as Template | null
@@ -245,16 +261,5 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 		}
 
 		this.content = t
-	}
-
-	/** Insert a template before another. */
-	protected insertTemplate(t: Template, nextT: Template | null) {
-		let position = nextT?.startInnerPosition || this.endOuterPosition
-		t.insertNodesBefore(position)
-	}
-
-	/** Remove a template. */
-	protected removeTemplate(t: Template) {
-		t.recycleNodes()
 	}
 }

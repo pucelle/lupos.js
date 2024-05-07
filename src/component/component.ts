@@ -53,7 +53,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 
 	/** 
 	 * Get component instance from an element.
-	 * Returned result will be auto-infered as instance of current constructor, so please ensure they are.
+	 * Returned result will be auto-inferred as instance of current constructor, so please ensure they are.
 	 * - `el`: The element to get component instance at.
 	 */
 	static from<C extends {new (...args: any): any}>(this: C, el: Element): InstanceType<C> | null {
@@ -125,7 +125,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		ComponentCreatedReadyStates.set(this, 1)
 	}
 
-	/** Initialize content slot, can be overwritten to fixed-type `TemplateSlot`. */
+	/** Initialize content slot, can be overwritten to a fixed-type of `TemplateSlot`. */
 	protected initContentSlot() {
 		this.contentSlot = new DynamicTypedTemplateSlot(new SlotPosition(SlotPositionType.AfterContent, this.el), this)
 	}
@@ -285,7 +285,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		}
 	}
 
-	/** Tracke and update rendering contents. */
+	/** Update and track rendering contents. */
 	protected updateRendering() {
 		DependencyTracker.beginTrack(this.willUpdate, this)
 		let result: CompiledTemplateResult | CompiledTemplateResult[] | string | null

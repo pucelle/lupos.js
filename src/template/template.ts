@@ -6,14 +6,14 @@ import {Part, PartCallbackParameter} from '../types'
 import {SlotPositionMap} from './slot-position-map'
 
 
-/** Help to cache template insert position. */
+/** 
+ * Help to cache template insert positions,
+ * Especially manage positions when template insert and delete dynamically.
+ */
 const PositionMap = new SlotPositionMap()
 
 
-/** 
- * Represents a template make from a html`...`
- * Be generated after a `TemplateMaker` binded with a context.
- */
+/** Represents a template make from a template literal html`...` bind with a context. */
 export class Template<A extends any[] = any[]> implements Part {
 
 	readonly el: HTMLTemplateElement
@@ -35,7 +35,7 @@ export class Template<A extends any[] = any[]> implements Part {
 	
 	/** 
 	 * If `maker` is `null`, normally create template from `new Template(...)`,
-	 * not `Maker.make(...)`, can only be updated by `slot.updateTemplateOnly(...)`.
+	 * not `Maker.make(...)`. then can only update by `slot.updateTemplateOnly(...)`.
 	 */
 	constructor(initResult: TemplateInitResult, maker: TemplateMaker | null = null) {
 		this.maker = maker
@@ -80,9 +80,9 @@ export class Template<A extends any[] = any[]> implements Part {
 	}
 
 	/** 
-	 * Get last node of the contents in current slot.
-	 * If have no fixed nodes, return last node of previois slot.
+	 * Get first node of all the contents in current template.
 	 * Can only get when nodes exist in current template.
+	 * If cant find a node, returns `null`.
 	 */
 	getFirstNode(): ChildNode | null {
 		if (!this.startInnerPosition) {
@@ -100,8 +100,9 @@ export class Template<A extends any[] = any[]> implements Part {
 	}
 
 	/** 
-	 * Insert nodes before an end position.
-	 * Note it will not call connect callback, you should do it manually after updated current template.
+	 * Insert all nodes of current template before a position.
+	 * Note you must ensure these nodes stay in current template, or been recycled.
+	 * Will not call connect callback, you should do it manually after current template updated.
 	 */
 	insertNodesBefore(position: SlotPosition) {
 		position.insertNodesBefore(this.el.content)
@@ -109,8 +110,10 @@ export class Template<A extends any[] = any[]> implements Part {
 	}
 
 	/** 
-	 * Recycle nodes that was firstly created in current template.
-	 * Will also call disconnect callback before recycling nodes.
+	 * Recycle nodes that was firstly created in current template,
+	 * move them back to current template.
+	 * Note you must ensure these nodes have been inserted to a position.
+	 * Will call disconnect callback before recycling nodes.
 	 */
 	async recycleNodes() {
 		await this.beforeDisconnectCallback(
@@ -130,8 +133,8 @@ export class Template<A extends any[] = any[]> implements Part {
 	}
 
 	/** 
-	 * Move nodes that was first created in current template,
-	 * and already inserted a position, to before a new position.
+	 * Move nodes that was first created in current template, to before a new position.
+	 * Note you must ensure these nodes have been inserted to a position.
 	 */
 	moveNodesBefore(position: SlotPosition) {
 		let oldPosition = PositionMap.getPosition(this)!
