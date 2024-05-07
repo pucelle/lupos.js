@@ -1,5 +1,5 @@
 import {UpdateQueue} from '@pucelle/ff'
-import {Component, TemplateMaker, DynamicTypedTemplateSlot, SlotPosition, SlotPositionType, createkeyedBlockFn, createHTMLTemplateFn} from '../../src'
+import {Component, TemplateMaker, DynamicTypedTemplateSlot, SlotPosition, SlotPositionType, createKeyedBlockFn, createHTMLTemplateFn} from '../../src'
 
 
 describe('Test Keyed Block', () => {
@@ -17,7 +17,7 @@ describe('Test Keyed Block', () => {
 			}
 		})
 
-		let block = createkeyedBlockFn(maker1)
+		let block = createKeyedBlockFn(maker1)
 
 		let container = document.createElement('div')
 		let s = new DynamicTypedTemplateSlot<null>(new SlotPosition(SlotPositionType.AfterContent, container), null)

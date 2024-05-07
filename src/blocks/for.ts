@@ -71,9 +71,6 @@ class ForUpdater<T> {
 				this.moveTemplate(fromT!, nextOldT)
 				this.reuseTemplate(fromT!, newItem!, toIndex)
 			}
-			else if (type === EditType.Modify) {
-				this.reuseTemplate(fromT!, newItem!, toIndex)
-			}
 			else if (type === EditType.MoveModify) {
 				this.moveTemplate(fromT!, nextOldT)
 				this.reuseTemplate(fromT!, newItem!, toIndex)
