@@ -1,7 +1,7 @@
 import {DependencyTracker, EventFirer, UpdateQueue} from '@pucelle/ff'
 import {ensureComponentStyle, ComponentStyle} from './style'
 import {addElementComponentMap, getComponentFromElement} from './from-element'
-import {TemplateSlot, SlotPosition, SlotPositionType, CompiledTemplateResult, DynamicTypedTemplateSlot} from '../template'
+import {TemplateSlot, SlotPosition, SlotPositionType, CompiledTemplateResult, DynamicTypedTemplateSlot, SlotContentType} from '../template'
 import {ComponentConstructor, RenderResult} from './types'
 import {Part, PartCallbackParameter} from '../types'
 import {SlotRange} from '../template/slot-range'
@@ -85,6 +85,9 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 */
 	static style: ComponentStyle | null = null
 
+	/** Compiler will add this variable after analysis render result. */
+	static ContentSlotType: SlotContentType | null = null
+
 	
 	/** 
 	 * Help to identify the create orders of component.
@@ -99,7 +102,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	connected: boolean = false
 
 	/** Help to patch render result to current element. */
-	protected contentSlot!: TemplateSlot
+	protected contentSlot!: TemplateSlot<any>
 
 	/**
 	 * Caches slot elements which are marked as `<... slot="slotName">`.
@@ -117,17 +120,21 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		super()
 
 		this.el = el
-		this.initContentSlot()
 		Object.assign(this, properties)
 
-		ensureComponentStyle(this.constructor as ComponentConstructor)
+		let Com = this.constructor as ComponentConstructor
+		ensureComponentStyle(Com)
+
+		let position = new SlotPosition<SlotPositionType.AfterContent>(SlotPositionType.AfterContent, this.el)
+		if (Com.ContentSlotType === null) {
+			this.contentSlot = new DynamicTypedTemplateSlot(position, this)
+		}
+		else {
+			this.contentSlot = new TemplateSlot(position, this, Com.ContentSlotType!)
+		}
+
 		addElementComponentMap(el, this)
 		ComponentCreatedReadyStates.set(this, 1)
-	}
-
-	/** Initialize content slot, can be overwritten to a fixed-type of `TemplateSlot`. */
-	protected initContentSlot() {
-		this.contentSlot = new DynamicTypedTemplateSlot(new SlotPosition(SlotPositionType.AfterContent, this.el), this)
 	}
 
 	/**
