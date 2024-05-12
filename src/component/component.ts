@@ -102,7 +102,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	connected: boolean = false
 
 	/** Help to patch render result to current element. */
-	protected contentSlot!: TemplateSlot<any>
+	protected readonly contentSlot!: TemplateSlot<any>
 
 	/**
 	 * Caches slot elements which are marked as `<... slot="slotName">`.
