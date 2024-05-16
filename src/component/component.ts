@@ -1,4 +1,4 @@
-import {DependencyTracker, EventFirer, UpdateQueue} from '@pucelle/ff'
+import { EventFirer, Observed, UpdateQueue, beginTrack, endTrack, onGet, onSet, untrack} from '@pucelle/ff'
 import {ensureComponentStyle, ComponentStyle} from './style'
 import {addElementComponentMap, getComponentFromElement} from './from-element'
 import {TemplateSlot, SlotPosition, SlotPositionType, CompiledTemplateResult, DynamicTypedTemplateSlot, SlotContentType} from '../template'
@@ -49,7 +49,7 @@ const ComponentCreatedReadyStates: WeakMap<object, 1 | 2> = new WeakMap()
  * - If instantiate from `new`, It **cant** be automatically connected or disconnected along it's element.
  * - If instantiate from custom element, It **can** be automatically connected or disconnected along it's element.
  */
-export class Component<E = any> extends EventFirer<E & ComponentEvents> implements Part {
+export class Component<E = any> extends EventFirer<E & ComponentEvents> implements Part, Observed {
 
 	/** 
 	 * Get component instance from an element.
@@ -212,7 +212,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 */
 	__applySlotElement(slotName: string, el: Element | null) {
 		this.slotElements[slotName] = el
-		DependencyTracker.onSet(this.slotElements, slotName)
+		onSet(this.slotElements, slotName)
 	}
 
 	/** 
@@ -221,7 +221,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * For inner usage only, and be called by compiled codes.
 	 */
 	__getSlotElement(slotName: string): Element | null {
-		DependencyTracker.onGet(this.slotElements, slotName)
+		onGet(this.slotElements, slotName)
 		return this.slotElements[slotName]
 	}
 
@@ -257,7 +257,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	}
 
 	beforeDisconnectCallback(this: Component, param: number): Promise<void> | void {
-		DependencyTracker.untrack(this.willUpdate, this)
+		untrack(this.willUpdate, this)
 
 		this.connected = false
 		this.onDisconnected()
@@ -294,7 +294,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 
 	/** Update and track rendering contents. */
 	protected updateRendering() {
-		DependencyTracker.beginTrack(this.willUpdate, this)
+		beginTrack(this.willUpdate, this)
 		let result: CompiledTemplateResult | CompiledTemplateResult[] | string | null
 
 		try {
@@ -305,7 +305,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 			console.warn(err)
 		}
 		finally {
-			DependencyTracker.endTrack()
+			endTrack()
 		}
 
 		this.contentSlot!.update(result)
