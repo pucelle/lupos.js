@@ -23,10 +23,10 @@ const NotConnectCallbackForFirstTime: WeakSet<TransitionBinding> = new WeakSet()
  * - `<el :transition.immediate=${...}>`: play transition immediately when element initialized.
  * 
  * `:transition` binding will dispatch 4 events on the target element:
- * - `enter-started`: After enter transition started.
- * - `enter-ended`: After enter transition ended.
- * - `leave-started`: After leave transition started.
- * - `leave-ended`: After leave transition ended.
+ * - `transition-enter-started`: After enter transition started.
+ * - `transition-enter-ended`: After enter transition ended.
+ * - `transition-leave-started`: After leave transition started.
+ * - `transition-leave-ended`: After leave transition ended.
  */
 export class TransitionBinding implements Binding, Part {
 
@@ -119,7 +119,7 @@ export class TransitionBinding implements Binding, Part {
 		
 		this.updateMixedTransition(props)
 
-		let enterStartedEvent = new CustomEvent('enter-started')
+		let enterStartedEvent = new CustomEvent('transition-enter-started')
 		this.el.dispatchEvent(enterStartedEvent)
 
 		if (this.mixedTransitionType === MixedTransitionType.PerFrame) {
@@ -132,7 +132,7 @@ export class TransitionBinding implements Binding, Part {
 			await (this.mixedTransition as WebTransition).playBetween(startFrame, endFrame)
 		}
 
-		let enterEndedEvent = new CustomEvent('enter-ended')
+		let enterEndedEvent = new CustomEvent('transition-enter-ended')
 		this.el.dispatchEvent(enterEndedEvent)
 	}
 
@@ -154,7 +154,7 @@ export class TransitionBinding implements Binding, Part {
 
 		this.updateMixedTransition(props)
 
-		let leaveStartedEvent = new CustomEvent('leave-started')
+		let leaveStartedEvent = new CustomEvent('transition-leave-started')
 		this.el.dispatchEvent(leaveStartedEvent)
 
 		if (this.mixedTransitionType === MixedTransitionType.PerFrame) {
@@ -167,7 +167,7 @@ export class TransitionBinding implements Binding, Part {
 			await (this.mixedTransition as WebTransition).playBetween(endFrame, startFrame)
 		}
 
-		let leaveEndedEvent = new CustomEvent('leave-ended')
+		let leaveEndedEvent = new CustomEvent('transition-leave-ended')
 		this.el.dispatchEvent(leaveEndedEvent)
 	}
 

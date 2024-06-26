@@ -1,4 +1,4 @@
-import {DependencyTracker, UpdateQueue} from '@pucelle/ff'
+import {UpdateQueue, onGet, onSet} from '@pucelle/ff'
 import {CompiledTemplateResult, Component, SlotBinding, SlotPositionType, TemplateMaker, SlotPosition, DynamicTypedTemplateSlot, createHTMLTemplateFn} from '../../src'
 import {SlotRange} from '../../src/template/slot-range'
 
@@ -169,7 +169,7 @@ describe('Test :slot', () => {
 
 			// Renders html`<Child>${this.prop ? html`<div :slot="slotName" />` : null}</Child>`
 			protected render() {
-				DependencyTracker.onGet(this, 'prop')
+				onGet(this, 'prop')
 				return new CompiledTemplateResult(maker1, [
 					this.prop ? new CompiledTemplateResult(maker2, []) : null
 				])
@@ -191,12 +191,12 @@ describe('Test :slot', () => {
 		expect(parent.el.querySelector('slot')?.textContent).toBe('Slot Content')
 
 		parent.prop = false
-		DependencyTracker.onSet(parent, 'prop')
+		onSet(parent, 'prop')
 		await UpdateQueue.untilComplete()
 		expect(parent.el.querySelector('slot')?.textContent).toEqual('Default Content')
 
 		parent.prop = true
-		DependencyTracker.onSet(parent, 'prop')
+		onSet(parent, 'prop')
 		await UpdateQueue.untilComplete()
 	
 		expect(parent.el.querySelector('slot')?.textContent).toBe('Slot Content')

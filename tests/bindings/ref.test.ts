@@ -1,4 +1,4 @@
-import {DependencyTracker, UpdateQueue} from '@pucelle/ff'
+import {UpdateQueue, onGet, onSet} from '@pucelle/ff'
 import {CompiledTemplateResult, Component, RefBinding, SlotPositionType, TemplateMaker, SlotPosition, createHTMLTemplateFn} from '../../src'
 
 
@@ -71,7 +71,7 @@ describe('Test :ref', () => {
 			prop: boolean = true
 
 			protected render() {
-				DependencyTracker.onGet(this, 'prop')
+				onGet(this, 'prop')
 				return this.prop ? new CompiledTemplateResult(maker, []) : null
 			}
 		}
@@ -84,12 +84,12 @@ describe('Test :ref', () => {
 		expect(c.ref).toBeInstanceOf(HTMLElement)
 
 		c.prop = false
-		DependencyTracker.onSet(c, 'prop')
+		onSet(c, 'prop')
 		await UpdateQueue.untilComplete()
 		expect(c.ref).toEqual(null)
 
 		c.prop = true
-		DependencyTracker.onSet(c, 'prop')
+		onSet(c, 'prop')
 		await UpdateQueue.untilComplete()
 		expect(c.ref).toBeInstanceOf(HTMLElement)
 	})

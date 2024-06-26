@@ -1,4 +1,4 @@
-import {DOMEvents, DependencyTracker, UpdateQueue, sleep} from '@pucelle/ff'
+import {DOMEvents, UpdateQueue, onGet, onSet, sleep} from '@pucelle/ff'
 import {CompiledTemplateResult, Component, TemplateMaker, SlotPosition, SlotPositionType, TransitionBinding, TransitionOptions, createHTMLTemplateFn, defineTransition} from '../../src'
 import {jest} from '@jest/globals'
 
@@ -40,7 +40,7 @@ describe('Test :transition', () => {
 			prop: boolean = false
 
 			protected render() {
-				DependencyTracker.onGet(this, 'prop')
+				onGet(this, 'prop')
 				return this.prop ? new CompiledTemplateResult(maker1, [this.slotElements.slotName]) : null
 			}
 		}
@@ -53,16 +53,16 @@ describe('Test :transition', () => {
 
 
 		com.prop = true
-		DependencyTracker.onSet(com, 'prop')
+		onSet(com, 'prop')
 		await UpdateQueue.untilComplete()
 
 		let div = com.el.firstElementChild as HTMLElement
 		let fn2 = jest.fn()
 		let fn3 = jest.fn()
 		let fn4 = jest.fn()
-		DOMEvents.on(div, 'enter-ended', fn2)
-		DOMEvents.on(div, 'leave-started', fn3)
-		DOMEvents.on(div, 'leave-ended', fn4)
+		DOMEvents.on(div, 'transition-enter-ended', fn2)
+		DOMEvents.on(div, 'transition-leave-started', fn3)
+		DOMEvents.on(div, 'transition-leave-ended', fn4)
 
 
 		await sleep(100)
@@ -75,7 +75,7 @@ describe('Test :transition', () => {
 
 
 		com.prop = false
-		DependencyTracker.onSet(com, 'prop')
+		onSet(com, 'prop')
 		await UpdateQueue.untilComplete()
 		expect(fn3).toHaveBeenCalledTimes(1)
 
