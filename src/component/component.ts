@@ -1,4 +1,4 @@
-import { EventFirer, Observed, UpdateQueue, beginTrack, endTrack, onGet, onSet, untrack} from '@pucelle/ff'
+import { EventFirer, Observed, UpdateQueue, beginTrack, endTrack, trackGet, trackSet, untrack} from '@pucelle/ff'
 import {ensureComponentStyle, ComponentStyle} from './style'
 import {addElementComponentMap, getComponentFromElement} from './from-element'
 import {TemplateSlot, SlotPosition, SlotPositionType, CompiledTemplateResult, DynamicTypedTemplateSlot, SlotContentType} from '../template'
@@ -212,7 +212,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 */
 	__applySlotElement(slotName: string, el: Element | null) {
 		this.slotElements[slotName] = el
-		onSet(this.slotElements, slotName)
+		trackSet(this.slotElements, slotName)
 	}
 
 	/** 
@@ -221,7 +221,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * For inner usage only, and be called by compiled codes.
 	 */
 	__getSlotElement(slotName: string): Element | null {
-		onGet(this.slotElements, slotName)
+		trackGet(this.slotElements, slotName)
 		return this.slotElements[slotName]
 	}
 
