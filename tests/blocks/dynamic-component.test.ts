@@ -1,4 +1,4 @@
-import {DependencyTracker, UpdateQueue} from '@pucelle/ff'
+import {trackGet, UpdateQueue} from '@pucelle/ff'
 import {ClassBinding, CompiledTemplateResult, Component, SlotPosition, SlotPositionType, SlotRange, TemplateMaker, DynamicTypedTemplateSlot, createDynamicComponentBlockFn, createHTMLTemplateFn} from '../../src'
 
 
@@ -48,7 +48,7 @@ describe('Test Dynamic Component', () => {
 			childClass: any = Child1
 
 			protected render() {
-				DependencyTracker.onGet(this, 'childClass')
+				trackGet(this, 'childClass')
 				return new CompiledTemplateResult(maker1, [this.childClass, 'className'])
 			}
 		}
@@ -66,7 +66,7 @@ describe('Test Dynamic Component', () => {
 		expect(parent.el.textContent).toBe('Component Content')
 
 		parent.childClass = Child2
-		DependencyTracker.onSet(parent, 'childClass')
+		trackGet(parent, 'childClass')
 		await UpdateQueue.untilComplete()
 		expect(child1.connected).toBe(false)
 		expect(Child2.from(parent.el.firstElementChild!)).toBeInstanceOf(Child2)

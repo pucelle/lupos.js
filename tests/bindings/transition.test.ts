@@ -1,4 +1,4 @@
-import {DOMEvents, UpdateQueue, onGet, onSet, sleep} from '@pucelle/ff'
+import {DOMEvents, UpdateQueue, trackGet, trackSet, sleep} from '@pucelle/ff'
 import {CompiledTemplateResult, Component, TemplateMaker, SlotPosition, SlotPositionType, TransitionBinding, TransitionOptions, createHTMLTemplateFn, defineTransition} from '../../src'
 import {jest} from '@jest/globals'
 
@@ -40,7 +40,7 @@ describe('Test :transition', () => {
 			prop: boolean = false
 
 			protected render() {
-				onGet(this, 'prop')
+				trackGet(this, 'prop')
 				return this.prop ? new CompiledTemplateResult(maker1, [this.slotElements.slotName]) : null
 			}
 		}
@@ -53,7 +53,7 @@ describe('Test :transition', () => {
 
 
 		com.prop = true
-		onSet(com, 'prop')
+		trackSet(com, 'prop')
 		await UpdateQueue.untilComplete()
 
 		let div = com.el.firstElementChild as HTMLElement
@@ -75,7 +75,7 @@ describe('Test :transition', () => {
 
 
 		com.prop = false
-		onSet(com, 'prop')
+		trackSet(com, 'prop')
 		await UpdateQueue.untilComplete()
 		expect(fn3).toHaveBeenCalledTimes(1)
 

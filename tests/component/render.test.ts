@@ -1,4 +1,4 @@
-import {DependencyTracker, UpdateQueue} from '@pucelle/ff'
+import {trackGet, trackSet, UpdateQueue} from '@pucelle/ff'
 import {CompiledTemplateResult, TemplateMaker, SlotPosition, SlotPositionType, createHTMLTemplateFn, render} from '../../src'
 
 
@@ -47,7 +47,7 @@ describe('Test render', () => {
 		let o = {value: 1}
 
 		let r = render(() => {
-			DependencyTracker.onGet(o, 'value')
+			trackGet(o, 'value')
 			return new CompiledTemplateResult(maker, [o.value])
 		})
 
@@ -56,7 +56,7 @@ describe('Test render', () => {
 		expect(r.el.innerHTML).toBe(`<div>1</div>`)
 
 		o.value = 2
-		DependencyTracker.onSet(o, 'value')
+		trackSet(o, 'value')
 		await UpdateQueue.untilComplete()
 		expect(r.el.innerHTML).toBe(`<div>2</div>`)
 	})
