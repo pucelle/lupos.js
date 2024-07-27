@@ -1,6 +1,7 @@
 import {createEffect} from '@pucelle/ff'
 import {TemplateResult} from '../template'
 import {ComponentConstructor} from './types'
+import {Component} from './component'
 
 
 /** Type of the values returned from `Component.style()`. */
@@ -18,6 +19,12 @@ const ComponentStyleAndTagMap: WeakSet<ComponentConstructor> = new WeakSet()
 export function ensureComponentStyle(Com: ComponentConstructor) {
 	if (Com.style && !ComponentStyleAndTagMap.has(Com)) {
 		createStyleElement(Com.style, Com.name)
+	}
+
+	// Ensure style of super component.
+	let superCom = Object.getPrototypeOf(Com)
+	if (superCom && superCom !== Component) {
+		ensureComponentStyle(superCom)
 	}
 
 	ComponentStyleAndTagMap.add(Com)
