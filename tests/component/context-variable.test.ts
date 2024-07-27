@@ -1,10 +1,10 @@
 import {UpdateQueue} from '@pucelle/ff'
-import {Component, addContextVariable, deleteContextVariables, getContextVariableDeclared} from '../../src'
+import {Component} from '../../src'
 
 
 describe('Test useContext', () => {
 
-	test('useContext', async () => {
+	test('useContext & setContext', async () => {
 		class Parent extends Component {
 
 			// @setContext
@@ -12,12 +12,12 @@ describe('Test useContext', () => {
 
 			protected onConnected() {
 				super.onConnected()
-				addContextVariable(this, 'prop')
+				Parent.setContextVariable(this, 'prop')
 			}
 
 			protected onDisconnected() {
 				super.onDisconnected()
-				deleteContextVariables(this)
+				Parent.deleteContextVariables(this)
 			}
 
 			protected render() {
@@ -36,13 +36,13 @@ describe('Test useContext', () => {
 
 			protected onConnected() {
 				super.onConnected()
-				this.#propDeclared = getContextVariableDeclared(this, 'prop')
+				this.#propDeclared = Parent.getContextVariableDeclared(this, 'prop')
 			}
 
 			protected onDisconnected() {
 				super.onDisconnected()
 				this.#propDeclared = undefined
-				deleteContextVariables(this)
+				Parent.deleteContextVariables(this)
 			}
 
 			protected render() {

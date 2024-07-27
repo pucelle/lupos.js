@@ -3,36 +3,16 @@ import {Component} from './component'
 
 
 /** 
- * Decorate a class property to declare a context variable,
- * this property can be shared with all descendant components,
- * just after descendant components declare `@useContext property`.
- */
-export declare function setContext(target: any, property: string): void
-
-/** 
- * Decorate a class property to reference a context variable,
- * this property was declared by any level of ancestral components
- * use `@setContext property`.
- */
-export declare function useContext(target: any, property: string): void
-
-
-/** 
  * Cache contextual variables of a component,
  * second key is the variable property name,
  * and the value is the source component where declare this property.
  */
 export const ContextVariableUnionMap: WeakDoubleKeysMap<Component, PropertyKey, Component> = new WeakDoubleKeysMap()
 
-/** After a source component connected, cache all it's context variables declare by `@setContext`. */
-export function addContextVariable(com: Component, prop: PropertyKey) {
+export function setContextVariable(com: Component, prop: PropertyKey) {
 	ContextVariableUnionMap.set(com, prop, com)
 }
 
-/** 
- * Get source component where declares `@setContext prop`,
- * from it's descendant component which declares `@useContext prop`.
- */
 export function getContextVariableDeclared(com: Component, prop: PropertyKey): Component | undefined {
 	let source = ContextVariableUnionMap.get(com, prop)
 	if (source) {
@@ -41,6 +21,8 @@ export function getContextVariableDeclared(com: Component, prop: PropertyKey): C
 
 	source = findContextVariableDeclared(com, prop)
 	if (source) {
+
+		// Also cache for current component as a bridge for external components' querying.
 		ContextVariableUnionMap.set(com, prop, source)
 		return source
 	}
@@ -69,7 +51,6 @@ function findContextVariableDeclared(com: Component, prop: PropertyKey): Compone
 	return undefined
 }
 
-/** After component disconnected, delete it's context variables. */
 export function deleteContextVariables(com: Component): any {
 	ContextVariableUnionMap.deleteOf(com)
 }

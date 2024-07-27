@@ -1,10 +1,11 @@
-import { EventFirer, Observed, UpdateQueue, beginTrack, endTrack, trackGet, trackSet, untrack} from '@pucelle/ff'
+import {ContextVariableConstructor, EventFirer, Observed, UpdateQueue, beginTrack, endTrack, trackGet, trackSet, untrack} from '@pucelle/ff'
 import {ensureComponentStyle, ComponentStyle} from './style'
 import {addElementComponentMap, getComponentFromElement} from './from-element'
 import {TemplateSlot, SlotPosition, SlotPositionType, CompiledTemplateResult, DynamicTypedTemplateSlot, SlotContentType} from '../template'
 import {ComponentConstructor, RenderResult} from './types'
 import {Part, PartCallbackParameter} from '../types'
 import {SlotRange} from '../template/slot-range'
+import {deleteContextVariables, getContextVariableDeclared, setContextVariable} from './context-variable'
 
 
 export interface ComponentEvents {
@@ -50,6 +51,27 @@ const ComponentCreatedReadyStates: WeakMap<object, 1 | 2> = new WeakMap()
  * - If instantiate from custom element, It **can** be automatically connected or disconnected along it's element.
  */
 export class Component<E = any> extends EventFirer<E & ComponentEvents> implements Part, Observed {
+
+	/** 
+	 * After a source component connected,
+	 * set context variables declared by `@setContext`.
+	 * Implemented from `ContextVariableConstructor`.
+	 */
+	static setContextVariable: ContextVariableConstructor['setContextVariable'] = setContextVariable
+
+	/**
+	 * Get source component where declares `@setContext prop`,
+	 * from it's descendant component which declares `@useContext prop`.
+	 * Implemented from `ContextVariableConstructor`.
+	 */
+	static getContextVariableDeclared: ContextVariableConstructor['getContextVariableDeclared'] = getContextVariableDeclared
+
+	/** 
+	 * After component disconnected,
+	 * delete it's context variables.
+	 * Implemented from `ContextVariableConstructor`.
+	 */
+	static deleteContextVariables: ContextVariableConstructor['deleteContextVariables'] = deleteContextVariables
 
 	/** 
 	 * Get component instance from an element.
