@@ -1,12 +1,6 @@
 import {Template, TemplateMaker, TemplateSlot} from '../template'
 
 
-/** Type of compiling statements like `<if>...`, `<switch>...`. */
-type IfBlock = (slot: TemplateSlot<null>, context: any) => {
-	update(values: any[]): void
-}
-
-
 /** 
  * Make it by compiling:
  * ```
@@ -15,27 +9,54 @@ type IfBlock = (slot: TemplateSlot<null>, context: any) => {
  * 	<else ${...}>...</else>
  * ```
  */
-export function createIfBlockFn(indexFn: (values: any[]) => number, makers: (TemplateMaker | null)[]): IfBlock
-{
-	return function(slot: TemplateSlot<null>, context: any) {
-		let index = -1
-		let template: Template | null = null
-	
-		return {
-			update(values: any[]) {
-				let newIndex = indexFn(values)
+export class IfBlockMaker {
 
-				if (newIndex !== index) {
-					let maker = newIndex >= 0 ? makers[newIndex] : null
-					template = maker ? maker.make(context) : null
-					slot.updateTemplateOnly(template, values)
-					
-					index = newIndex
-				}
-			}
+	readonly indexFn: (values: any[]) => number
+	readonly makers: (TemplateMaker | null)[]
+
+	constructor(indexFn: (values: any[]) => number, makers: (TemplateMaker | null)[]) {
+		this.indexFn = indexFn
+		this.makers = makers
+	}
+
+	make(slot: TemplateSlot<null>, context: any): IfBlock {
+		return new IfBlock(this.indexFn, this.makers, slot, context)
+	}
+}
+
+
+/** Help to update block like  `<if>...`, `<switch>...`. */
+class IfBlock {
+
+	readonly indexFn: (values: any[]) => number
+	readonly makers: (TemplateMaker | null)[]
+	readonly slot: TemplateSlot<null>
+	readonly context: any
+
+	private index = -1
+	private template: Template | null = null
+
+	constructor(indexFn: (values: any[]) => number, makers: (TemplateMaker | null)[], slot: TemplateSlot<null>, context: any) {
+		this.indexFn = indexFn
+		this.makers = makers
+		this.slot = slot
+		this.context = context
+	}
+
+	update(values: any[]) {
+		let newIndex = this.indexFn(values)
+
+		if (newIndex !== this.index) {
+			let maker = newIndex >= 0 ? this.makers[newIndex] : null
+			this.template = maker ? maker.make(this.context) : null
+			this.slot.updateTemplateOnly(this.template, values)
+			
+			this.index = newIndex
 		}
 	}
 }
+
+
 
 
 /** 
@@ -46,33 +67,57 @@ export function createIfBlockFn(indexFn: (values: any[]) => number, makers: (Tem
  * 	<else ${...}>...</else>
  * ```
  */
-export function createCacheableIfBlockFn(
-	indexFn: (values: any[]) => number,
-	makers: (TemplateMaker | null)[]
-): IfBlock
-{
-	return function(slot: TemplateSlot<null>, context: any) {
-		let index = -1
-		let templates: Map<number, Template | null> = new Map()
-	
-		return {
-			update(values: any[]) {
-				let newIndex = indexFn(values)
-				let template: Template | null = null
+export class CacheableIfBlockMaker {
 
-				if (newIndex !== index) {
-					if (newIndex >= 0 && templates.has(newIndex)) {
-						template = templates.get(newIndex)!
-					}
-					else if (newIndex >= 0) {
-						let maker = makers[newIndex]
-						template = maker ? maker.make(context) : null
-						templates.set(newIndex, template)
-					}
-					
-					slot.updateTemplateOnly(template, values)
-				}
-			}
+	readonly indexFn: (values: any[]) => number
+	readonly makers: (TemplateMaker | null)[]
+
+	constructor(indexFn: (values: any[]) => number, makers: (TemplateMaker | null)[]) {
+		this.indexFn = indexFn
+		this.makers = makers
+	}
+
+	make(slot: TemplateSlot<null>, context: any): CacheableIfBlock {
+		return new CacheableIfBlock(this.indexFn, this.makers, slot, context)
+	}
+}
+
+
+/** Help to update block like  `<if>...`, `<switch>...`. */
+class CacheableIfBlock {
+
+	readonly indexFn: (values: any[]) => number
+	readonly makers: (TemplateMaker | null)[]
+	readonly slot: TemplateSlot<null>
+	readonly context: any
+
+	private index = -1
+	private templates: Map<number, Template | null> = new Map()
+
+	constructor(indexFn: (values: any[]) => number, makers: (TemplateMaker | null)[], slot: TemplateSlot<null>, context: any) {
+		this.indexFn = indexFn
+		this.makers = makers
+		this.slot = slot
+		this.context = context
+	}
+
+	update(values: any[]) {
+		let newIndex = this.indexFn(values)
+		if (newIndex === this.index) {
+			return
 		}
+
+		let template: Template | null = null
+
+		if (newIndex >= 0 && this.templates.has(newIndex)) {
+			template = this.templates.get(newIndex)!
+		}
+		else if (newIndex >= 0) {
+			let maker = this.makers[newIndex]
+			template = maker ? maker.make(this.context) : null
+			this.templates.set(newIndex, template)
+		}
+		
+			this.slot.updateTemplateOnly(template, values)
 	}
 }

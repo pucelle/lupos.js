@@ -3,13 +3,12 @@ import {CompiledTemplateResult, Template, TemplateSlot} from '../template'
 import {PartCallbackParameter} from '../types'
 
 
-/** Type of compiling statements like `<for of=${...}>...`. */
-type ForBlock = (slot: TemplateSlot, context: any) => {
-	update(values: any[]): void
-}
-
-/** To render each item. */
-type ForRenderFn = (item: any, index: number) => CompiledTemplateResult
+/** 
+ * The render function to render each item,
+ * pass it directly from original template.
+ * This must be a fixed function, or it would can't be optimized.
+ */
+type ForBlockRenderFn = (item: any, index: number) => CompiledTemplateResult
 
 
 /** 
@@ -20,33 +19,34 @@ type ForRenderFn = (item: any, index: number) => CompiledTemplateResult
  * 	`}</for>
  * ```
  */
-export function createForBlockFn(renderFn: ForRenderFn): ForBlock {
-	return function(slot: TemplateSlot, context: any) {
-		let updater = new ForUpdater(slot, context, renderFn)
-	
-		return {
-			update(items: any[]) {
-				updater.update(items)
-			}
-		}
+export class ForBlockMaker{
+
+	renderFn: ForBlockRenderFn
+
+	constructor(renderFn: ForBlockRenderFn) {
+		this.renderFn = renderFn
+	}
+
+	make(slot: TemplateSlot, context: any): ForBlock {
+		return new ForBlock(this.renderFn, slot, context)
 	}
 }
 
 
-/** Help to update for data items. */
-class ForUpdater<T> {
+/** Help to update `<for>` block data items. */
+class ForBlock<T = any> {
 
-	private readonly slot: TemplateSlot
-	private readonly context: any
-	private readonly renderFn: ForRenderFn
+	readonly renderFn: ForBlockRenderFn
+	readonly slot: TemplateSlot
+	readonly context: any
 
 	private data: T[] = []
 	private templates: Template[] = []
 
-	constructor(slot: TemplateSlot, context: any, renderFn: ForRenderFn) {
+	constructor(renderFn: ForBlockRenderFn, slot: TemplateSlot, context: any) {
+		this.renderFn = renderFn
 		this.slot = slot		
 		this.context = context
-		this.renderFn = renderFn
 	}
 
 	/** Update data items. */

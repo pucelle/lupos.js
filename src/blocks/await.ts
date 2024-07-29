@@ -1,17 +1,6 @@
 import {Template, TemplateMaker, TemplateSlot} from '../template'
 
 
-/** Type of compiling statements like `<await>...`. */
-type AwaitBlock = (slot: TemplateSlot<null>, context: any) => {
-
-	/** 
-	 * Note update await block or resolve awaiting promise must wait
-	 * for a micro task tick, then template will begin to update.
-	 */
-	update(promise: Promise<any>, values: any[]): void
-}
-
-
 /** 
  * Make it by compiling:
  * ```
@@ -20,35 +9,63 @@ type AwaitBlock = (slot: TemplateSlot<null>, context: any) => {
  * 	<catch>...</catch>
  * ```
  */
-export function createAwaitBlockFn(makers: (TemplateMaker | null)[]): AwaitBlock {
-	return function(slot: TemplateSlot<null>, context: any) {
-		let promise: Promise<any> | null = null
-		let values: any[] | null = null
-		let template: Template | null = null
+export class AwaitBlockMaker {
 
-		function updateIndex(index: number) {
-			let maker = makers[index]
-			template = maker ? maker.make(context) : null
-			slot.updateTemplateOnly(template, values!)
+	readonly makers: (TemplateMaker | null)[]
+
+	constructor(makers: (TemplateMaker | null)[]) {
+		this.makers = makers
+	}
+
+	/** Make an `AwaitBlock`. */
+	make(slot: TemplateSlot<null>, context: any): AwaitBlock {
+		return new AwaitBlock(this.makers, slot, context)
+	}
+}
+
+
+
+/** An `AwaitBlock` help to update an `<await>...<then>...<catch>` block. */
+export class AwaitBlock {
+
+	readonly makers: (TemplateMaker | null)[]
+	readonly slot: TemplateSlot<null>
+	readonly context: any
+
+	private promise: Promise<any> | null = null
+	private values: any[] | null = null
+	private template: Template | null = null
+
+	constructor(makers: (TemplateMaker | null)[], slot: TemplateSlot<null>, context: any) {
+		this.makers = makers
+		this.slot = slot
+		this.context = context
+	}
+
+	/** 
+	 * Note update await block or resolve awaiting promise must wait
+	 * for a micro task tick, then template will begin to update.
+	 */
+	update(promise: Promise<any>, values: any[]) {
+		this.values = values
+
+		if (promise !== this.promise) {
+			this.updateIndex(0)
+			
+			promise.then(() => {
+				this.updateIndex(1)
+			})
+			.catch(() => {
+				this.updateIndex(2)
+			})
+
+			this.promise = promise
 		}
+	}
 	
-		return {
-			update(p: Promise<any>, vs: any[]) {
-				values = vs
-
-				if (p !== promise) {
-					updateIndex(0)
-					
-					p.then(function() {
-						updateIndex(1)
-					})
-					.catch(function() {
-						updateIndex(2)
-					})
-
-					promise = p
-				}
-			}
-		}
+	private updateIndex(index: number) {
+		let maker = this.makers[index]
+		this.template = maker ? maker.make(this.context) : null
+		this.slot.updateTemplateOnly(this.template, this.values!)
 	}
 }

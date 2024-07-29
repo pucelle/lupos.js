@@ -2,7 +2,7 @@ import {UpdateQueue} from '@pucelle/ff'
 import {Component} from '../../src'
 
 
-describe('Test useContext', () => {
+describe('Test Context Variable', () => {
 
 	test('useContext & setContext', async () => {
 		class Parent extends Component {
