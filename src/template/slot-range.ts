@@ -7,7 +7,7 @@ import {SlotPosition, SlotPositionType} from './slot-position'
  * 
  * Use it to remember rest slot range.
  * Compiler may need to insert a comment node in the end
- * to make the end inner node static, and avoid break the
+ * to make the end inner node static, and avoid breaking the
  * range after component-itself contents appended.
  */
 export class SlotRange {
