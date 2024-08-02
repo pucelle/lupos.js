@@ -1,5 +1,5 @@
 import {ObjectUtils, PerFrameTransition, WebTransition, WebTransitionOptions} from '@pucelle/ff'
-import {Binding, defineNamedBinding} from './define'
+import {Binding} from './types'
 import {PerFrameTransitionProperties, TransitionProperties, TransitionResult, WebTransitionProperties} from './transitions'
 import {Part, PartCallbackParameter} from '../types'
 
@@ -36,23 +36,24 @@ export class TransitionBinding implements Binding, Part {
 	 * A `local` transition as default action,
 	 * can only play when attached elements been directly inserted or removed.
 	 * A `global` transition can play when any level of ancestral element get inserted or removed.
-	 * Normally `global` property can only be set by compiler.
 	 */
-	global: boolean = false
+	private global: boolean = false
 
 	/** 
 	 * By default, transition cant play when get initialized.
 	 * But set `immediate` can make it play.
-	 * Normally `immediate` property can only be set by compiler.
 	 */
-	immediate: boolean = false
+	private immediate: boolean = false
 
 	private result: TransitionResult | null = null
 	private mixedTransitionType: MixedTransitionType | null = null
 	private mixedTransition: PerFrameTransition | WebTransition | null = null
 
-	constructor(el: Element) {
+	constructor(el: Element, _context: any, modifiers: string[]) {
 		this.el = el
+		this.global = modifiers.includes('global')
+		this.immediate = modifiers.includes('immediate')
+		
 		NotConnectCallbackForFirstTime.add(this)
 	}
 
@@ -208,5 +209,3 @@ export class TransitionBinding implements Binding, Part {
 		}
 	}
 }
-
-defineNamedBinding('transition', TransitionBinding)

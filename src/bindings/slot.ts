@@ -1,6 +1,6 @@
 import {Component} from '../component'
 import {Part, PartCallbackParameter} from '../types'
-import {Binding, defineNamedBinding} from './define'
+import {Binding} from './types'
 
 
 /**
@@ -53,5 +53,3 @@ export class SlotBinding implements Binding, Part {
 		}
 	}
 }
-
-defineNamedBinding('slot', SlotBinding)

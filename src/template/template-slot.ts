@@ -10,10 +10,12 @@ import {NodesTemplateMaker, TextTemplateMaker} from './template-makers'
  * in a template literal like `<tag>${...}<.tag>`.
  */
 export enum SlotContentType {
-	TemplateResult,
-	TemplateResultArray,
-	Text,
-	Node,
+	TemplateResult = 0,
+	TemplateResultArray = 1,
+	Text = 2,
+
+	// Normally for only internal usage.
+	Node = 3,
 
 	// Not identified types, use null instead so not present.
 	// NotIdentifiedTemplate,
@@ -31,7 +33,8 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 	readonly endOuterPosition: SlotPosition<SlotEndOuterPositionType>
 
 	protected context: any
-	protected readonly contentType: T | null = null
+	protected contentType: T | null = null
+	protected readonly knownContentType
 	protected content: Template | Template[] | ChildNode | null = null
 
 	constructor(
@@ -42,6 +45,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 		this.endOuterPosition = endOuterPosition
 		this.context = context
 		this.contentType = knownType as T
+		this.knownContentType = knownType !== null
 	}
 
 	afterConnectCallback(param: number) {
@@ -83,56 +87,76 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 		this.context = context
 	}
 
-	/** Get start inner node of the all the contents of current slot. */
-	getStartNode(): ChildNode | null {
-		if (this.contentType === SlotContentType.TemplateResult || this.contentType === SlotContentType.Text) {
-			if (this.content) {
-				return (this.content as Template).getFirstNode()
-			}
-		}
-		else if (this.contentType === SlotContentType.TemplateResultArray) {
-			if ((this.content as Template[]).length > 0) {
-				let len = (this.content as Template[]).length
-				for (let i = 0; i < len; i++) {
-					let node = (this.content as Template[])[i].getFirstNode()
-					if (node) {
-						return node
-					}
-				}
-			}
-		}
-		else if (this.contentType === SlotContentType.Node) {
-			return this.content as ChildNode
-		}
-	
-		return null
-	}
-
-	/** 
-	 * Try to get start inner node inside, if miss,
-	 * try to find outer next node exactly after current slot.
-	 */
-	getStartNodeClosest(): ChildNode | null {
-		return this.getStartNode() || this.endOuterPosition.getClosestOuterEndNode()
-	}
-
 	/** 
 	 * Update by value parameter after known it's type.
 	 * Note value must be strictly of the content type specified.
 	 */
 	update(value: unknown) {
+		if (!this.knownContentType) {
+			let newContentType = this.identifyContentType(value)
+			if (newContentType !== this.contentType) {
+				this.clearContent()
+			}
+
+			this.contentType = newContentType
+		}
+
 		if (this.contentType === SlotContentType.TemplateResult) {
 			this.updateTemplateResult(value as CompiledTemplateResult)
-		}
-		else if (this.contentType === SlotContentType.Text) {
-			this.updateText(value)
 		}
 		else if (this.contentType === SlotContentType.TemplateResultArray) {
 			this.updateTemplateResultArray(value as CompiledTemplateResult[])
 		}
+		else if (this.contentType === SlotContentType.Text) {
+			this.updateText(value)
+		}
 		else if (this.contentType === SlotContentType.Node) {
 			this.updateNode(value as ChildNode)
 		}
+	}
+	
+	/** Identify content type by value. */
+	protected identifyContentType(value: unknown): T | null {
+		if (value === null || value === undefined) {
+			return null
+		}
+		else if (value instanceof CompiledTemplateResult) {
+			return SlotContentType.TemplateResult as T
+		}
+		else if (Array.isArray(value)) {
+			return SlotContentType.TemplateResultArray as T
+		}
+		else if (value instanceof Node) {
+			return SlotContentType.Node as T
+		}
+		else {
+			return SlotContentType.Text as T
+		}
+	}
+
+	/** Clear current content, reset content and content type. */
+	protected clearContent() {
+		if (!this.content) {
+			return
+		}
+
+		if (this.contentType === SlotContentType.TemplateResult
+			|| this.contentType === SlotContentType.Text
+			|| this.contentType === SlotContentType.Node
+		) {
+			this.removeTemplate(this.content as Template)
+		}
+		else {
+			let ts = this.content as Template[]
+
+			for (let i = 0; i < ts.length; i++) {
+				let t = ts[i]
+				this.removeTemplate(t)
+			}
+		}
+
+		this.content = null
+		this.contentType = null
 	}
 
 	/** Update from a template result. */

@@ -1,4 +1,4 @@
-export * from './define'
+export * from './types'
 export * from './class'
 export * from './html'
 export * from './ref'

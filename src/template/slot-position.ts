@@ -1,15 +1,12 @@
-import {TemplateSlot} from './template-slot'
-
-
 /** 
  * Contents that can be included in a `<tag>${...}<.tag>`.
- * **Do not** change the numeric values of each enum item.
+ * **Do not** change the values of each enum item.
  */
 export enum SlotPositionType {
 
 	/** 
 	 * Start position collapse with start of container range.
-	 * If don't know about future parent, will insert a comment at the beginning.
+	 * If don't know about future parent, will insert a comment to locate.
 	 */
 	BeforeContent = 0,
 
@@ -21,24 +18,10 @@ export enum SlotPositionType {
 
 	/** Start position collapse with end of sibling node. */
 	// After = 3,
-
-	/** End position collapse with start of slot. */
-	BeforeSlot = 4,
-
-	/** Start position collapse with end of slot. */
-	// AfterSlot = 5,
 }
 
-export type SlotStartInnerPositionType = SlotPositionType.Before | SlotPositionType.BeforeSlot | SlotPositionType.BeforeContent
-export type SlotEndOuterPositionType = SlotPositionType.Before | SlotPositionType.BeforeSlot | SlotPositionType.AfterContent
-
-/** Target type by slot type. */
-interface TargetTypeMap {
-	[SlotPositionType.Before]: ChildNode
-	[SlotPositionType.BeforeSlot]: TemplateSlot
-	[SlotPositionType.BeforeContent]: Element
-	[SlotPositionType.AfterContent]: Element
-}
+export type SlotStartInnerPositionType = SlotPositionType.Before | SlotPositionType.BeforeContent
+export type SlotEndOuterPositionType = SlotPositionType.Before | SlotPositionType.AfterContent
 
 
 /** 
@@ -49,9 +32,9 @@ interface TargetTypeMap {
 export class SlotPosition<T = SlotPositionType> {
 
 	type: T
-	target: Element | ChildNode | TemplateSlot
+	target: Element | ChildNode
 
-	constructor(type: T, target: T extends keyof TargetTypeMap ? TargetTypeMap[T] : never) {
+	constructor(type: T, target: Element | ChildNode) {
 		this.type = type
 		this.target = target
 	}
@@ -64,25 +47,6 @@ export class SlotPosition<T = SlotPositionType> {
 		if (this.type === SlotPositionType.Before) {
 			return (this.target as ChildNode)
 		}
-		else if (this.type === SlotPositionType.BeforeSlot) {
-			return (this.target as TemplateSlot).getStartNode()
-		}
-		else {
-			return null
-		}
-	}
-
-	/** 
-	 * Try to find next node exactly after current slot position.
-	 * Available only when current position represents an ender outer position.
-	 */
-	getClosestOuterEndNode(this: SlotPosition<SlotEndOuterPositionType>): ChildNode | null {
-		if (this.type === SlotPositionType.Before) {
-			return (this.target as ChildNode)
-		}
-		else if (this.type === SlotPositionType.BeforeSlot) {
-			return (this.target as TemplateSlot).getStartNodeClosest()
-		}
 		else {
 			return null
 		}
@@ -93,17 +57,6 @@ export class SlotPosition<T = SlotPositionType> {
 		if (this.type === SlotPositionType.Before) {
 			let node = this.target as ChildNode
 			node.before(...newNodes)
-		}
-		else if (this.type === SlotPositionType.BeforeSlot) {
-			let slot = this.target as TemplateSlot
-			let node = slot.getStartNodeClosest()
-			
-			if (node) {
-				node.before(...newNodes)
-			}
-			else {
-				slot.endOuterPosition.insertNodesBefore(...newNodes)
-			}
 		}
 		else {
 			let parent = this.target as Element
@@ -118,9 +71,6 @@ export class SlotPosition<T = SlotPositionType> {
 
 		if (this.type === SlotPositionType.Before) {
 			untilBeforeNode = this.target as ChildNode
-		}
-		else if (this.type === SlotPositionType.BeforeSlot) {
-			untilBeforeNode = (this.target as TemplateSlot).getStartNodeClosest()
 		}
 		else {
 			untilBeforeNode = null

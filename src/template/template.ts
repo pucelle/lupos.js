@@ -1,5 +1,4 @@
 import {SlotPosition, SlotStartInnerPositionType, SlotPositionType} from './slot-position'
-import {TemplateSlot} from './template-slot'
 import {TemplateMaker, TemplateInitResult} from './template-maker'
 import {noop} from '@pucelle/ff'
 import {Part, PartCallbackParameter} from '../types'
@@ -90,9 +89,6 @@ export class Template<A extends any[] = any[]> implements Part {
 		}
 		else if (this.startInnerPosition.type === SlotPositionType.Before) {
 			return this.startInnerPosition.target as ChildNode
-		}
-		else if (this.startInnerPosition.type === SlotPositionType.BeforeSlot) {
-			return (this.startInnerPosition.target as TemplateSlot).getStartNode()
 		}
 		else {
 			return this.startInnerPosition.target as Element

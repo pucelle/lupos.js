@@ -7,33 +7,15 @@ import {makeComponentTemplate} from '../template/template-makers'
  * After compiling all the properties applied to a component,
  * get this binder as a function.
  */
-type DynamicComponentBinder = (com: Component, context: any) => {
-	update(values: any[]): void
-}
+type DynamicComponentBinder = (com: Component) => void
 
 
 /** 
- * Make it by compiling:
+ * Compiled by:
  * ```
  * 	<${DynamicComponent} ...>
  * ```
  */
-export class DynamicComponentBlockMaker {
-
-	readonly binder: DynamicComponentBinder
-
-	constructor(bindFn: DynamicComponentBinder) {
-		this.binder = bindFn
-	}
-
-	/** Update with new Component Constructor. */
-	make(slot: TemplateSlot<null>, contentRange: SlotRange, context: any): DynamicComponentBlock {
-		return new DynamicComponentBlock(this.binder, slot, contentRange, context)
-	}
-}
-
-
-/** Help to update a dynamic component. */
 export class DynamicComponentBlock {
 
 	readonly binder: DynamicComponentBinder
@@ -42,7 +24,6 @@ export class DynamicComponentBlock {
 	readonly context: any
 
 	private Com: ComponentConstructor | null = null
-	private bindUpdater: ReturnType<DynamicComponentBinder> | null = null
 
 	constructor(binder: DynamicComponentBinder, slot: TemplateSlot<null>, contentRange: SlotRange, context: any) {
 		this.binder = binder
@@ -52,20 +33,20 @@ export class DynamicComponentBlock {
 	}
 
 	/** Update with new Component Constructor. */
-	update(NewCom: ComponentConstructor, values: any[]) {
-		if (NewCom !== this.Com) {
-			let com = new NewCom()
-			this.bindUpdater = this.binder(com, this.context)
-
-			com.el.prepend(...this.contentRange.walkNodes())
-			com.__applyRestSlotRange(this.contentRange)
-
-			let template = makeComponentTemplate(com)
-			this.slot.updateTemplateOnly(template, null)
-
-			this.Com = NewCom
+	update(NewCom: ComponentConstructor) {
+		if (NewCom === this.Com) {
+			return
 		}
 
-		this.bindUpdater!.update(values)
+		let com = new NewCom()
+		this.binder(com)
+
+		com.el.prepend(...this.contentRange.walkNodes())
+		com.__applyRestSlotRange(this.contentRange)
+
+		let template = makeComponentTemplate(com)
+		this.slot.updateTemplateOnly(template, null)
+
+		this.Com = NewCom
 	}
 }

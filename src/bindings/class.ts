@@ -1,4 +1,4 @@
-import {Binding, defineNamedBinding} from './define'
+import {Binding} from './types'
 
 
 /** Object used for `:class=${{class1: value1, class2: value2}}` */
@@ -83,5 +83,3 @@ export class ClassBinding implements Binding {
 		this.classNames = value
 	}
 }
-
-defineNamedBinding('class', ClassBinding)

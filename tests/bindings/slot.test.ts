@@ -1,5 +1,5 @@
 import {UpdateQueue, trackGet, trackSet} from '@pucelle/ff'
-import {CompiledTemplateResult, Component, SlotBinding, SlotPositionType, TemplateMaker, SlotPosition, DynamicTypedTemplateSlot, createHTMLTemplateFn} from '../../src'
+import {CompiledTemplateResult, Component, SlotBinding, SlotPositionType, TemplateMaker, SlotPosition, DynamicTypedTemplateSlot, createHTMLTemplateFn, TemplateSlot} from '../../src'
 import {SlotRange} from '../../src/template/slot-range'
 
 
@@ -87,7 +87,7 @@ describe('Test :slot', () => {
 			let c = document.createComment('')
 			let child = new Child()
 
-			let slot = new DynamicTypedTemplateSlot(
+			let slot = new TemplateSlot(
 
 				// End of component cant be located, because may append new contents.
 				new SlotPosition(SlotPositionType.Before, c),

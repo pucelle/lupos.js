@@ -1,7 +1,7 @@
 import {ContextVariableConstructor, EventFirer, Observed, UpdateQueue, beginTrack, endTrack, trackGet, trackSet, untrack} from '@pucelle/ff'
 import {ensureComponentStyle, ComponentStyle} from './style'
 import {addElementComponentMap, getComponentFromElement} from './from-element'
-import {TemplateSlot, SlotPosition, SlotPositionType, CompiledTemplateResult, DynamicTypedTemplateSlot, SlotContentType} from '../template'
+import {TemplateSlot, SlotPosition, SlotPositionType, CompiledTemplateResult, SlotContentType} from '../template'
 import {ComponentConstructor, RenderResult} from './types'
 import {Part, PartCallbackParameter} from '../types'
 import {SlotRange} from '../template/slot-range'
@@ -148,12 +148,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		ensureComponentStyle(Com)
 
 		let position = new SlotPosition<SlotPositionType.AfterContent>(SlotPositionType.AfterContent, this.el)
-		if (Com.ContentSlotType === null) {
-			this.contentSlot = new DynamicTypedTemplateSlot(position, this)
-		}
-		else {
-			this.contentSlot = new TemplateSlot(position, this, Com.ContentSlotType!)
-		}
+		this.contentSlot = new TemplateSlot(position, this, Com.ContentSlotType!)
 
 		addElementComponentMap(el, this)
 		ComponentCreatedReadyStates.set(this, 1)
@@ -326,11 +321,10 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 			result = null
 			console.warn(err)
 		}
-		finally {
-			endTrack()
-		}
 
+		// May read slot elements when updating, which process should be tracked.
 		this.contentSlot!.update(result)
+		endTrack()
 	}
 
 	/** 

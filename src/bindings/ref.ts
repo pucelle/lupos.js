@@ -1,6 +1,6 @@
 import {Component} from '../component'
 import {Part, PartCallbackParameter} from '../types'
-import {Binding, defineNamedBinding} from './define'
+import {Binding} from './types'
 
 
 /**
@@ -13,17 +13,15 @@ export class RefBinding implements Binding, Part {
 
 	private readonly el: Element
 	
-	/** 
-	 * Whether reference only element, not component.
-	 * For `:ref.el`, compiler will set this property to `true`.
-	 */
-	refElement: boolean = false
+	/** Whether reference only element, not component. */
+	private refAsElement: boolean = false
 
 	private refFn: ((value: any) => void) | null = null
 
 	/** Modifier `el` will be replaced by compiler. */
-	constructor(el: Element) {
+	constructor(el: Element, _context: any, modifiers: string[]) {
 		this.el = el
+		this.refAsElement = modifiers.includes('el')
 	}
 
 	update(refFn: (value: Component | Element | null) => void) {
@@ -31,7 +29,7 @@ export class RefBinding implements Binding, Part {
 	}
 
 	private doReference() {
-		if (this.refElement) {
+		if (this.refAsElement) {
 			this.refFn!(this.el)
 		}
 		else {
@@ -65,5 +63,3 @@ export class RefBinding implements Binding, Part {
 		}
 	}
 }
-
-defineNamedBinding('ref', RefBinding)

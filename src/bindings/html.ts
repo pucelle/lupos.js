@@ -1,5 +1,5 @@
 import {HTMLUtils} from '@pucelle/ff'
-import {Binding, defineNamedBinding} from './define'
+import {Binding} from './types'
 
 
 /**
@@ -20,5 +20,3 @@ export class HTMLBinding implements Binding {
 			: HTMLUtils.cleanUnsafeHTML(String(value))
 	}
 }
-
-defineNamedBinding('html', HTMLBinding)

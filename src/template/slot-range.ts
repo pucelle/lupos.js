@@ -12,10 +12,10 @@ import {SlotPosition, SlotPositionType} from './slot-position'
  */
 export class SlotRange {
 
-	private startInnerPosition: SlotPosition<SlotPositionType.Before | SlotPositionType.BeforeSlot>
+	private startInnerPosition: SlotPosition<SlotPositionType.Before>
 	private endInnerNode: ChildNode
 
-	constructor(startInnerPosition: SlotPosition<SlotPositionType.Before | SlotPositionType.BeforeSlot>, endInnerNode: ChildNode) {
+	constructor(startInnerPosition: SlotPosition<SlotPositionType.Before>, endInnerNode: ChildNode) {
 		this.startInnerPosition = startInnerPosition
 		this.endInnerNode = endInnerNode
 	}

@@ -1,4 +1,4 @@
-import {Binding, defineNamedBinding} from './define'
+import {Binding} from './types'
 
 
 /**
@@ -17,7 +17,7 @@ export class StyleBinding implements Binding {
 
 	private readonly el: HTMLElement | SVGElement
 
-	/** Modifiers `px`, `percent`, `url` was replaced by compiler. */
+	/** Modifiers like `px`, `percent`, `url` was replaced by compiler. */
 	constructor(el: Element) {
 		this.el = el as HTMLElement | SVGElement
 	}
@@ -32,7 +32,7 @@ export class StyleBinding implements Binding {
 	}
 
 	/** 
-	 * For compiling:
+	 * For compiling from:
 	 * - `:style="abc"`.
 	 * - `:style=${value}` and `value` is inferred as object type.
 	 */
@@ -46,7 +46,7 @@ export class StyleBinding implements Binding {
 	}
 
 	/** 
-	 * For compiling:
+	 * For compiling from:
 	 * - `:style.style-name=${booleanLike}`.
 	 * - `:style=${value}` and `value` is inferred as array type.
 	 */
@@ -56,5 +56,3 @@ export class StyleBinding implements Binding {
 		}
 	}
 }
-
-defineNamedBinding('style', StyleBinding)
