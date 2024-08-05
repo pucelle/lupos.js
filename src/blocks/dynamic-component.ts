@@ -1,10 +1,10 @@
 import {Component, ComponentConstructor} from '../component'
-import {SlotRange, TemplateSlot} from '../template'
-import {makeComponentTemplate} from '../template/template-makers'
+import {SlotRange, TemplateSlot, makeTemplateByComponent} from '../template'
 
 
 /** 
  * After compiling all the properties applied to a component,
+ * and update latest component reference.
  * get this binder as a function.
  */
 type DynamicComponentBinder = (com: Component) => void
@@ -13,19 +13,20 @@ type DynamicComponentBinder = (com: Component) => void
 /** 
  * Compiled by:
  * ```
- * 	<${DynamicComponent} ...>
+ * 	<${DynamicComponent}>
  * ```
  */
 export class DynamicComponentBlock {
 
 	readonly binder: DynamicComponentBinder
 	readonly slot: TemplateSlot<null>
-	readonly contentRange: SlotRange
+	readonly contentRange: SlotRange | null
 	readonly context: any
 
 	private Com: ComponentConstructor | null = null
+	private com: Component | null = null
 
-	constructor(binder: DynamicComponentBinder, slot: TemplateSlot<null>, contentRange: SlotRange, context: any) {
+	constructor(binder: DynamicComponentBinder, slot: TemplateSlot<null>, contentRange: SlotRange | null, context: any) {
 		this.binder = binder
 		this.slot = slot
 		this.contentRange = contentRange
@@ -41,12 +42,14 @@ export class DynamicComponentBlock {
 		let com = new NewCom()
 		this.binder(com)
 
-		com.el.prepend(...this.contentRange.walkNodes())
-		com.__applyRestSlotRange(this.contentRange)
+		if (this.com) {
+			this.com.__transferSlotContents(com)
+		}
 
-		let template = makeComponentTemplate(com)
+		let template = makeTemplateByComponent(com)
 		this.slot.updateTemplateOnly(template, null)
 
 		this.Com = NewCom
+		this.com = com
 	}
 }

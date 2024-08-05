@@ -12,15 +12,17 @@ import {Binding} from './types'
 export class RefBinding implements Binding, Part {
 
 	private readonly el: Element
-	
+	private readonly context: any
+
 	/** Whether reference only element, not component. */
 	private refAsElement: boolean = false
-
+	
+	/** Compiler will compile `this.prop` -> `r => this.prop = r` */
 	private refFn: ((value: any) => void) | null = null
 
-	/** Modifier `el` will be replaced by compiler. */
-	constructor(el: Element, _context: any, modifiers: string[]) {
+	constructor(el: Element, context: any, modifiers: string[]) {
 		this.el = el
+		this.context = context
 		this.refAsElement = modifiers.includes('el')
 	}
 
@@ -30,15 +32,15 @@ export class RefBinding implements Binding, Part {
 
 	private doReference() {
 		if (this.refAsElement) {
-			this.refFn!(this.el)
+			this.refFn!.call(this.context, this.el)
 		}
 		else {
 			let com = Component.from(this.el)
 			if (com) {
-				this.refFn!(com)
+				this.refFn!.call(this.context, com)
 			}
 			else {
-				this.refFn!(this.el)
+				this.refFn!.call(this.context, this.el)
 			}
 		}
 	}
@@ -59,7 +61,7 @@ export class RefBinding implements Binding, Part {
 		}
 
 		if (this.refFn) {
-			this.refFn(null)
+			this.refFn.call(this.context, null)
 		}
 	}
 }

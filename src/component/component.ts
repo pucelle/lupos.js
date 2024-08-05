@@ -120,7 +120,10 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	/** The root element of component. */
 	readonly el: HTMLElement
 
-	/** Whether current component was connected into a document. */
+	/** 
+	 * Whether current component was connected into a document.
+	 * Readonly outside of component.
+	 */
 	connected: boolean = false
 
 	/** Help to patch render result to current element. */
@@ -130,7 +133,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * Caches slot elements which are marked as `<... slot="slotName">`.
 	 * You should re-define the detailed type like `{name1: Element, ...}` in derived components.
 	 */
-	protected readonly slotElements: Record<string, Element | null> = {}
+	protected slotElements: Record<string, Element | null> = {}
 
 	/** 
 	 * Cache range of rest slot content,
@@ -223,11 +226,20 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	}
 
 	/** 
+	 * When a dynamic component is replaced by another,
+	 * transfer all the slot contents to it.
+	 */
+	__transferSlotContents(toCom: Component) {
+		toCom.slotElements = this.slotElements
+		toCom.restSlotRange = this.restSlotRange
+	}
+
+	/** 
 	 * For `:slot=slotName` binding to apply slot elements,
 	 * which may be used later to fill `<slot name=slotName>` inside current component context.
 	 * For inner usage only.
 	 */
-	__applySlotElement(slotName: string, el: Element | null) {
+	__setSlotElement(slotName: string, el: Element | null) {
 		this.slotElements[slotName] = el
 		trackSet(this.slotElements, slotName)
 	}

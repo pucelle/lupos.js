@@ -1,6 +1,3 @@
-import {SlotPosition, SlotPositionType} from './slot-position'
-
-
 /** 
  * Locate the start and end position of a node range.
  * So later can pick nodes within the range and move them.
@@ -12,17 +9,17 @@ import {SlotPosition, SlotPositionType} from './slot-position'
  */
 export class SlotRange {
 
-	private startInnerPosition: SlotPosition<SlotPositionType.Before>
+	private startInnerNode: ChildNode
 	private endInnerNode: ChildNode
 
-	constructor(startInnerPosition: SlotPosition<SlotPositionType.Before>, endInnerNode: ChildNode) {
-		this.startInnerPosition = startInnerPosition
+	constructor(startInnerNode: ChildNode, endInnerNode: ChildNode) {
+		this.startInnerNode = startInnerNode
 		this.endInnerNode = endInnerNode
 	}
 
 	/** Walk nodes in the range. */
 	*walkNodes(): Iterable<ChildNode> {
-		let node = this.startInnerPosition.getStartNode()
+		let node: ChildNode | null = this.startInnerNode
 
 		while (node) {
 			yield node

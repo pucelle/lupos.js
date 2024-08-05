@@ -1,9 +1,9 @@
-import {createHTMLTemplateFn} from "./html-template-fn"
-import {TemplateInitResult, TemplateMaker} from "./template-maker"
-import {SlotPosition, SlotPositionType, SlotStartInnerPositionType} from "./slot-position"
-import {Component} from "../component"
-import {PartCallbackParameter} from "../types"
-import {Template} from "./template"
+import {createHTMLTemplateFn} from './html-template-fn'
+import {TemplateInitResult, TemplateMaker} from './template-maker'
+import {SlotPosition, SlotPositionType, SlotStartInnerPositionType} from './slot-position'
+import {Component} from '../component'
+import {PartCallbackParameter} from '../types'
+import {Template} from './template'
 
 
 /** Template has only a text node inside. */
@@ -32,7 +32,7 @@ export const TextTemplateMaker = new TemplateMaker(function() {
 /** 
  * Template maker to update nodes inside.
  * Note the parts inside of `nodes` are not included in the returned template,
- * so cant automatically call their connect and disconnect callbacks.
+ * so can't automatically call their connect and disconnect callbacks.
  * Fit for containing nodes which have been registered as parts, like slot elements.
  */
 export const NodesTemplateMaker = new TemplateMaker(function() {
@@ -71,10 +71,10 @@ export const NodesTemplateMaker = new TemplateMaker(function() {
 
 
 /** 
- * Make a template to contain a component inside.
+ * Make a template to contain only a component inside as it's part.
  * It can automatically call the connect and disconnect callbacks of the component.
  */
-export function makeComponentTemplate(com: Component): Template {
+export function makeTemplateByComponent(com: Component): Template {
 	let el = document.createElement('template')
 	let position = new SlotPosition<SlotStartInnerPositionType>(SlotPositionType.Before, com.el)
 
