@@ -20,7 +20,7 @@ export class RefBinding implements Binding, Part {
 	/** Compiler will compile `this.prop` -> `r => this.prop = r` */
 	private refFn: ((value: any) => void) | null = null
 
-	constructor(el: Element, context: any, modifiers: string[]) {
+	constructor(el: Element, context: any, modifiers: 'el'[]) {
 		this.el = el
 		this.context = context
 		this.refAsElement = modifiers.includes('el')
