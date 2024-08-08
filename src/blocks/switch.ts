@@ -1,4 +1,4 @@
-import {CacheableIfBlockMaker, IfBlockMaker} from './if'
+import {CacheableIfBlock, IfBlock} from './if'
 
 
 /** 
@@ -11,7 +11,7 @@ import {CacheableIfBlockMaker, IfBlockMaker} from './if'
  *  </switch>
  * ```
  */
-export const SwitchBlockMaker = IfBlockMaker
+export const SwitchBlock = IfBlock
 
 
 /** 
@@ -24,4 +24,4 @@ export const SwitchBlockMaker = IfBlockMaker
  *  </switch>
  * ```
  */
-export const CacheableSwitchBlockMaker = CacheableIfBlockMaker
+export const CacheableSwitchBlock = CacheableIfBlock

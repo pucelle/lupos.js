@@ -9,34 +9,17 @@ import {Template, TemplateMaker, TemplateSlot} from '../template'
  * 	<catch>...</catch>
  * ```
  */
-export class AwaitBlockMaker {
-
-	readonly makers: (TemplateMaker | null)[]
-
-	constructor(makers: (TemplateMaker | null)[]) {
-		this.makers = makers
-	}
-
-	/** Make an `AwaitBlock`. */
-	make(slot: TemplateSlot<null>, context: any): AwaitBlock {
-		return new AwaitBlock(this.makers, slot, context)
-	}
-}
-
-
-
-/** An `AwaitBlock` help to update an `<await>...<then>...<catch>` block. */
 export class AwaitBlock {
 
 	readonly makers: (TemplateMaker | null)[]
-	readonly slot: TemplateSlot<null>
+	readonly slot: TemplateSlot
 	readonly context: any
 
 	private promise: Promise<any> | null = null
 	private values: any[] | null = null
 	private template: Template | null = null
 
-	constructor(makers: (TemplateMaker | null)[], slot: TemplateSlot<null>, context: any) {
+	constructor(makers: (TemplateMaker | null)[], slot: TemplateSlot, context: any) {
 		this.makers = makers
 		this.slot = slot
 		this.context = context
@@ -48,7 +31,7 @@ export class AwaitBlock {
 	 */
 	update(promise: Promise<any>, values: any[]) {
 		this.values = values
-
+		
 		if (promise !== this.promise) {
 			this.updateIndex(0)
 			
@@ -61,11 +44,14 @@ export class AwaitBlock {
 
 			this.promise = promise
 		}
+		else if (this.template) {
+			this.template.update(values)
+		}
 	}
 	
 	private updateIndex(index: number) {
 		let maker = this.makers[index]
 		this.template = maker ? maker.make(this.context) : null
-		this.slot.updateTemplateOnly(this.template, this.values!)
+		this.slot.updateTemplateOnly(this.template, this.values)
 	}
 }

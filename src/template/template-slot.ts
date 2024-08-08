@@ -264,26 +264,39 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 
 	/** 
 	 * Update template manually without compare template maker.
-	 * When use this method, ensure current content type is `null`.
 	 * Use this when template is been managed and cached outside.
 	 */
-	updateTemplateOnly(this: TemplateSlot<null>, t: Template | null, values: any[] | null) { 
+	updateTemplateOnly(this: TemplateSlot, t: Template | null, values: any[] | null) {
 		let oldT = this.content as Template | null
 
 		if (oldT === t) {
-			return
+			if (t && values) {
+				t.update(values)
+			}
 		}
+		else {
+			if (oldT && !t) {
+				this.contentType = null
+			}
+			else if (!oldT && t) {
+				this.contentType = SlotContentType.TemplateResult
+			}
 
-		if (oldT) {
-			this.removeTemplate(oldT)
+			if (oldT) {
+				this.removeTemplate(oldT)
+			}
+
+			if (t) {
+				t.insertNodesBefore(this.endOuterPosition)
+
+				if (values) {
+					t.update(values)
+				}
+
+				t.afterConnectCallback(PartCallbackParameter.HappenInCurrentContext | PartCallbackParameter.DirectNodeToMove)
+			}
+
+			this.content = t
 		}
-
-		if (t) {
-			t.insertNodesBefore(this.endOuterPosition)
-			t.update(values!)
-			t.afterConnectCallback(PartCallbackParameter.HappenInCurrentContext | PartCallbackParameter.DirectNodeToMove)
-		}
-
-		this.content = t
 	}
 }

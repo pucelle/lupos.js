@@ -19,14 +19,14 @@ type DynamicComponentBinder = (com: Component) => void
 export class DynamicComponentBlock {
 
 	readonly binder: DynamicComponentBinder
-	readonly slot: TemplateSlot<null>
+	readonly slot: TemplateSlot
 	readonly contentRange: SlotRange | null
 	readonly context: any
 
 	private Com: ComponentConstructor | null = null
 	private com: Component | null = null
 
-	constructor(binder: DynamicComponentBinder, slot: TemplateSlot<null>, contentRange: SlotRange | null, context: any) {
+	constructor(binder: DynamicComponentBinder, slot: TemplateSlot, contentRange: SlotRange | null, context: any) {
 		this.binder = binder
 		this.slot = slot
 		this.contentRange = contentRange

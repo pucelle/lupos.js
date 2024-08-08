@@ -14,27 +14,12 @@ type ForBlockRenderFn = (item: any, index: number) => CompiledTemplateResult
 /** 
  * Make it by compiling:
  * ```
- * 	<for of=${...}>${(item) => html`
+ * 	<for ${...}>${(item) => html`
  * 		...
  * 	`}</for>
  * ```
  */
-export class ForBlockMaker{
-
-	renderFn: ForBlockRenderFn
-
-	constructor(renderFn: ForBlockRenderFn) {
-		this.renderFn = renderFn
-	}
-
-	make(slot: TemplateSlot, context: any): ForBlock {
-		return new ForBlock(this.renderFn, slot, context)
-	}
-}
-
-
-/** Help to update `<for>` block data items. */
-class ForBlock<T = any> {
+export class ForBlock<T = any> {
 
 	readonly renderFn: ForBlockRenderFn
 	readonly slot: TemplateSlot

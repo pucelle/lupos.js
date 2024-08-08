@@ -7,30 +7,17 @@ import {Template, TemplateMaker, TemplateSlot} from '../template'
  * 	<keyed ${...}>...</keyed>
  * ```
  */
-export class KeyedBlockMaker {
-
-	readonly maker: TemplateMaker | null
-
-	constructor(maker: TemplateMaker | null) {
-		this.maker = maker
-	}
-
-	make(slot: TemplateSlot<null>, context: any) {
-		return new KeyedBlock(this.maker, slot, context)
-	}
-}
-
 /** Help to update block like `<keyed>`. */
-class KeyedBlock {
+export class KeyedBlock {
 
 	readonly maker: TemplateMaker | null
-	readonly slot: TemplateSlot<null>
+	readonly slot: TemplateSlot
 	readonly context: any
 
 	private key: any = undefined
 	private template: Template | null = null
 	
-	constructor(maker: TemplateMaker | null, slot: TemplateSlot<null>, context: any) {
+	constructor(maker: TemplateMaker | null, slot: TemplateSlot, context: any) {
 		this.maker = maker
 		this.slot = slot
 		this.context = context
@@ -41,6 +28,9 @@ class KeyedBlock {
 			this.template = this.maker ? this.maker.make(this.context) : null
 			this.slot.updateTemplateOnly(this.template, values)
 			this.key = newKey
+		}
+		else if (this.template) {
+			this.template.update(values)
 		}
 	}
 }
@@ -53,51 +43,40 @@ class KeyedBlock {
  * 	<keyed ${...} cache>...</keyed>
  * ```
  */
-export class CacheableKeyedBlockMaker {
+export class CacheableKeyedBlock {
 
 	readonly maker: TemplateMaker | null
-
-	constructor(maker: TemplateMaker | null) {
-		this.maker = maker
-	}
-
-	make(slot: TemplateSlot<null>, context: any) {
-		return new CacheableKeyedBlock(this.maker, slot, context)
-	}
-}
-
-/** Help to update block like `<keyed cache>`. */
-class CacheableKeyedBlock {
-
-	readonly maker: TemplateMaker | null
-	readonly slot: TemplateSlot<null>
+	readonly slot: TemplateSlot
 	readonly context: any
 
 	private key: any = undefined
 	private templates: Map<number, Template | null> = new Map()
-	
-	constructor(maker: TemplateMaker | null, slot: TemplateSlot<null>, context: any) {
+	private template: Template | null = null
+
+	constructor(maker: TemplateMaker | null, slot: TemplateSlot, context: any) {
 		this.maker = maker
 		this.slot = slot
 		this.context = context
 	}
 
 	update(newKey: any, values: any[]) {
-		if (newKey === this.key) {
-			return
-		}
+		if (newKey !== this.key) {
+			let template: Template | null = null
 
-		let template: Template | null = null
+			if (this.templates.has(newKey)) {
+				template = this.templates.get(newKey)!
+			}
+			else {
+				template = this.maker ? this.maker.make(this.context) : null
+				this.templates.set(newKey, template)
+			}
 
-		if (this.templates.has(newKey)) {
-			template = this.templates.get(newKey)!
+			this.slot.updateTemplateOnly(template, values)
+			this.key = newKey
+			this.template = template
 		}
-		else {
-			template = this.maker ? this.maker.make(this.context) : null
-			this.templates.set(newKey, template)
+		else if (this.template) {
+			this.template.update(values)
 		}
-
-		this.slot.updateTemplateOnly(template, values)
-		this.key = newKey
 	}
 }
