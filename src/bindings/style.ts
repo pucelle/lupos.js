@@ -40,8 +40,8 @@ export class StyleBinding implements Binding {
 
 		// Parse value so no need to cache original `cssText`.
 		for (let item of value.split(/\s*;\s*/)) {
-			let [k, v] = item.split(/\s*:\s*/)
-			;(this.el.style as any)[k] = v
+			let [k, v] = item.split(/\s*:\s*/);
+			(this.el.style as any)[k] = v
 		}
 	}
 

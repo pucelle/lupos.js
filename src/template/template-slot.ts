@@ -1,7 +1,7 @@
 import {SlotPosition, SlotEndOuterPositionType} from './slot-position'
 import {Template} from './template'
 import {CompiledTemplateResult} from './template-result-compiled'
-import {Part, PartCallbackParameter} from '../types'
+import {Part, PartCallbackParameterMask} from '../types'
 import {NodesTemplateMaker, TextTemplateMaker} from './template-makers'
 
 
@@ -48,7 +48,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 		this.knownContentType = knownType !== null
 	}
 
-	afterConnectCallback(param: number) {
+	afterConnectCallback(param: PartCallbackParameterMask) {
 		if (this.contentType === SlotContentType.TemplateResult) {
 			(this.content as Template).afterConnectCallback(param)
 		}
@@ -59,7 +59,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 		}
 	}
 
-	beforeDisconnectCallback(param: number): Promise<void> | void {
+	beforeDisconnectCallback(param: PartCallbackParameterMask): Promise<void> | void {
 		if (this.contentType === SlotContentType.TemplateResult) {
 			return (this.content as Template).beforeDisconnectCallback(param)
 		}
@@ -173,7 +173,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 			let newT = tr.maker.make(this.context)
 			newT.insertNodesBefore(this.endOuterPosition)
 			newT.update(tr.values)
-			newT.afterConnectCallback(PartCallbackParameter.HappenInCurrentContext | PartCallbackParameter.DirectNodeToMove)
+			newT.afterConnectCallback(PartCallbackParameterMask.HappenInCurrentContext | PartCallbackParameterMask.DirectNodeToMove)
 			
 			this.content = newT
 		}
@@ -204,7 +204,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 				
 				this.insertTemplate(newT, nextOldT)
 				newT.update(tr.values)
-				newT.afterConnectCallback(PartCallbackParameter.HappenInCurrentContext | PartCallbackParameter.DirectNodeToMove)
+				newT.afterConnectCallback(PartCallbackParameterMask.HappenInCurrentContext | PartCallbackParameterMask.DirectNodeToMove)
 
 				oldTs[i] = newT
 			}
@@ -221,7 +221,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 
 	/** Insert a template before another one. */
 	protected insertTemplate(t: Template, nextT: Template | null) {
-		let position = nextT?.startInnerPosition || this.endOuterPosition
+		let position = nextT?.startInnerPosition ?? this.endOuterPosition
 		t.insertNodesBefore(position)
 	}
 
@@ -293,7 +293,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 					t.update(values)
 				}
 
-				t.afterConnectCallback(PartCallbackParameter.HappenInCurrentContext | PartCallbackParameter.DirectNodeToMove)
+				t.afterConnectCallback(PartCallbackParameterMask.HappenInCurrentContext | PartCallbackParameterMask.DirectNodeToMove)
 			}
 
 			this.content = t

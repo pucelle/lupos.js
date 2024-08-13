@@ -12,8 +12,8 @@ export function addElementComponentMap(el: Element, com: Component) {
 
 
 /** Get component instance from an associated element. */
-export function getComponentFromElement(el: Element): Component | null {
-	return ElementComponentMap.get(el) || null
+export function getComponentFromElement(el: Element): Component | undefined {
+	return ElementComponentMap.get(el)
 }
 
 

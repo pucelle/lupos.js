@@ -1,6 +1,6 @@
 import {getComponentFromElement} from './from-element'
 import {ComponentConstructor} from './types'
-import {PartCallbackParameter} from '../types'
+import {PartCallbackParameterMask} from '../types'
 
 
 /** Map custom element property to component property. */
@@ -100,7 +100,7 @@ function makeProperties(el: HTMLElement, propertyMap: PropertyMapOf<any>): Recor
 function onDisconnected(el: HTMLElement) {
 	let com = getComponentFromElement(el)
 	if (com && com.connected) {
-		com.beforeDisconnectCallback(PartCallbackParameter.RemoveImmediately)
+		com.beforeDisconnectCallback(PartCallbackParameterMask.RemoveImmediately)
 		console.warn(`Suggest you DON'T remove custom element directly, which will cause disconnect action cant work as expected! We suggest you to remove component instead.`, 'CustomElementDisconnectActionWarning')
 	}
 }

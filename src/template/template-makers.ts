@@ -1,21 +1,21 @@
-import {createHTMLTemplateFn} from './html-template-fn'
+import {HTMLMaker} from './html-maker'
 import {TemplateInitResult, TemplateMaker} from './template-maker'
 import {SlotPosition, SlotPositionType, SlotStartInnerPositionType} from './slot-position'
 import {Component} from '../component'
-import {PartCallbackParameter} from '../types'
+import {PartCallbackParameterMask} from '../types'
 import {Template} from './template'
 
 
 /** Template has only a text node inside. */
-const TextTemplateFn = createHTMLTemplateFn(' ')
+const TextMaker = new HTMLMaker(' ')
 
 /** Template has only a comment node inside. */
-const CommentTemplateFn = createHTMLTemplateFn('<!---->')
+const CommentMaker = new HTMLMaker('<!---->')
 
 
 /** Template maker to create a text node to update text content. */
 export const TextTemplateMaker = new TemplateMaker(function() {
-	let el = TextTemplateFn()
+	let el = TextMaker.make()
 	let textNode = el.content.firstChild as Text
 	let position = new SlotPosition<SlotStartInnerPositionType>(SlotPositionType.Before, textNode)
 
@@ -36,7 +36,7 @@ export const TextTemplateMaker = new TemplateMaker(function() {
  * Fit for containing nodes which have been registered as parts, like slot elements.
  */
 export const NodesTemplateMaker = new TemplateMaker(function() {
-	let el = CommentTemplateFn()
+	let el = CommentMaker.make()
 	let comment = el.content.firstChild as Comment
 	let position = new SlotPosition<SlotStartInnerPositionType>(SlotPositionType.Before, comment)
 	let endNode: ChildNode | null = null
@@ -83,6 +83,6 @@ export function makeTemplateByComponent(com: Component): Template {
 	return new Template({
 		el,
 		position,
-		parts: [[com, PartCallbackParameter.DirectNodeToMove & PartCallbackParameter.HappenInCurrentContext]],
+		parts: [[com, PartCallbackParameterMask.DirectNodeToMove & PartCallbackParameterMask.HappenInCurrentContext]],
 	})
 }

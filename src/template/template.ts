@@ -1,7 +1,7 @@
 import {SlotPosition, SlotStartInnerPositionType, SlotPositionType} from './slot-position'
 import {TemplateMaker, TemplateInitResult} from './template-maker'
 import {noop} from '@pucelle/ff'
-import {Part, PartCallbackParameter} from '../types'
+import {Part, PartCallbackParameterMask} from '../types'
 import {SlotPositionMap} from './slot-position-map'
 
 
@@ -17,7 +17,7 @@ export class Template<A extends any[] = any[]> implements Part {
 
 	readonly el: HTMLTemplateElement
 	readonly maker: TemplateMaker | null
-	readonly startInnerPosition: SlotPosition<SlotStartInnerPositionType>
+	readonly startInnerPosition: SlotPosition<SlotStartInnerPositionType> | null
 	readonly update: (values: A) => void
 	private readonly parts: [Part, number][]
 
@@ -40,12 +40,12 @@ export class Template<A extends any[] = any[]> implements Part {
 		this.maker = maker
 
 		this.el = initResult.el
-		this.startInnerPosition = initResult.position
-		this.parts = initResult.parts || []
-		this.update = initResult.update || noop
+		this.startInnerPosition = initResult.position ?? null
+		this.parts = initResult.parts ?? []
+		this.update = initResult.update ?? noop
 	}
 
-	afterConnectCallback(param: number) {
+	afterConnectCallback(param: PartCallbackParameterMask) {
 		if (this.connected) {
 			return
 		}
@@ -57,7 +57,7 @@ export class Template<A extends any[] = any[]> implements Part {
 		}
 	}
 
-	beforeDisconnectCallback(param: number): Promise<void> | void {
+	beforeDisconnectCallback(param: PartCallbackParameterMask): Promise<void> | void {
 		if (!this.connected) {
 			return
 		}
@@ -113,8 +113,8 @@ export class Template<A extends any[] = any[]> implements Part {
 	 */
 	async recycleNodes() {
 		await this.beforeDisconnectCallback(
-			PartCallbackParameter.HappenInCurrentContext
-			| PartCallbackParameter.DirectNodeToMove
+			PartCallbackParameterMask.HappenInCurrentContext
+			| PartCallbackParameterMask.DirectNodeToMove
 		)
 
 		// Note here postpone recycling nodes for at least a micro task tick.

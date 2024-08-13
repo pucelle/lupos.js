@@ -1,4 +1,4 @@
-export * from './html-template-fn'
+export * from './html-maker'
 export * from './slot-position'
 export * from './slot-range'
 export * from './template'

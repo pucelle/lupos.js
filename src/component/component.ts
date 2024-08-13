@@ -3,7 +3,7 @@ import {ensureComponentStyle, ComponentStyle} from './style'
 import {addElementComponentMap, getComponentFromElement} from './from-element'
 import {TemplateSlot, SlotPosition, SlotPositionType, CompiledTemplateResult, SlotContentType} from '../template'
 import {ComponentConstructor, RenderResult} from './types'
-import {Part, PartCallbackParameter} from '../types'
+import {Part, PartCallbackParameterMask} from '../types'
 import {SlotRange} from '../template/slot-range'
 import {deleteContextVariables, getContextVariableDeclared, setContextVariable} from './context-variable'
 
@@ -271,7 +271,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		return this.restSlotRange ? [...this.restSlotRange.walkNodes()] : []
 	}
 
-	afterConnectCallback(this: Component, _param: number) {
+	afterConnectCallback(this: Component, _param: PartCallbackParameterMask) {
 		if (ComponentCreatedReadyStates.get(this) === 1) {
 			ComponentCreatedReadyStates.set(this, 2)
 			this.onCreated()
@@ -285,7 +285,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		this.contentSlot.afterConnectCallback(0)
 	}
 
-	beforeDisconnectCallback(this: Component, param: number): Promise<void> | void {
+	beforeDisconnectCallback(this: Component, param: PartCallbackParameterMask): Promise<void> | void {
 		untrack(this.willUpdate, this)
 
 		this.connected = false
@@ -293,7 +293,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		this.fire('disconnected')
 
 		// Only `RemoveImmediately` parameter passes.
-		return this.contentSlot.beforeDisconnectCallback(param & PartCallbackParameter.RemoveImmediately)
+		return this.contentSlot.beforeDisconnectCallback(param & PartCallbackParameterMask.RemoveImmediately)
 	}
 
 	/** After any tracked data change, enqueue it to update in next animation frame. */
@@ -381,7 +381,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		
 		// Not wait for leave transition.
 		if (this.connected) {
-			this.beforeDisconnectCallback(PartCallbackParameter.RemoveImmediately)
+			this.beforeDisconnectCallback(PartCallbackParameterMask.RemoveImmediately)
 		}
 		
 		this.el.remove()

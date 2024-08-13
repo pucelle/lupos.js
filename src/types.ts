@@ -1,5 +1,7 @@
 /** Values of Part Callback Parameter. */
-export enum PartCallbackParameter {
+export enum PartCallbackParameterMask {
+
+	None = 0,
 
 	/** 
 	 * If current part will be connected or disconnected from current context,
@@ -49,7 +51,7 @@ export interface Part {
 
 	 * - `param`: AND byte operate of `PartCallbackParameter`.
 	 */
-	afterConnectCallback(param: number): void
+	afterConnectCallback(param: PartCallbackParameterMask): void
 
 	/** 
 	 * Before nodes or any ancestral nodes of current part are going to be removed.
@@ -58,5 +60,5 @@ export interface Part {
 	 * 
 	 * - `param`: AND byte operate of `PartCallbackParameter`.
 	 */
-	beforeDisconnectCallback(param: number): Promise<void> | void
+	beforeDisconnectCallback(param: PartCallbackParameterMask): Promise<void> | void
 }

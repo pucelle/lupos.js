@@ -1,6 +1,6 @@
 import {EditType, getEditRecord} from '@pucelle/ff'
 import {CompiledTemplateResult, Template, TemplateSlot} from '../template'
-import {PartCallbackParameter} from '../types'
+import {PartCallbackParameterMask} from '../types'
 
 
 /** 
@@ -84,7 +84,7 @@ export class ForBlock<T = any> {
 
 		this.insertTemplate(t, nextOldT)
 		t.update(result.values)
-		t.afterConnectCallback(PartCallbackParameter.HappenInCurrentContext | PartCallbackParameter.DirectNodeToMove)
+		t.afterConnectCallback(PartCallbackParameterMask.HappenInCurrentContext | PartCallbackParameterMask.DirectNodeToMove)
 
 		this.templates.push(t)
 	}
@@ -93,7 +93,7 @@ export class ForBlock<T = any> {
 		let result = this.renderFn(item, index)
 
 		t.update(result.values)
-		t.afterConnectCallback(PartCallbackParameter.HappenInCurrentContext | PartCallbackParameter.DirectNodeToMove)
+		t.afterConnectCallback(PartCallbackParameterMask.HappenInCurrentContext | PartCallbackParameterMask.DirectNodeToMove)
 		
 		this.templates.push(t)
 	}
@@ -103,12 +103,12 @@ export class ForBlock<T = any> {
 	}
 
 	private async moveTemplate(t: Template, nextOldT: Template | null) {
-		let position = nextOldT?.startInnerPosition || this.slot.endOuterPosition
+		let position = nextOldT?.startInnerPosition ?? this.slot.endOuterPosition
 		t.moveNodesBefore(position)
 	}
 
 	private insertTemplate(t: Template, nextOldT: Template | null) {
-		let position = nextOldT?.startInnerPosition || this.slot.endOuterPosition
+		let position = nextOldT?.startInnerPosition ?? this.slot.endOuterPosition
 		t.insertNodesBefore(position)
 	}
 }
