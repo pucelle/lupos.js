@@ -1,6 +1,5 @@
 /** Values of Part Callback Parameter. */
 export enum PartCallbackParameterMask {
-
 	None = 0,
 
 	/** 
@@ -8,8 +7,8 @@ export enum PartCallbackParameterMask {
 	 * this value is unioned.
 	 * 
 	 * E.g., `<if {...}><div :binding /><ChildCom />...`, after `<if>` state change.
-	 * - for `:binding`, the source of connect or disconnect action "HappenInCurrentContext".
-	 * - for `<ChildCom>`, the source of connect or disconnect action happen in parent context.
+	 * - for `:binding`, the connect or disconnect action "HappenInCurrentContext".
+	 * - for `<ChildCom>`, the connect or disconnect action happen in parent context.
 	 */
 	HappenInCurrentContext = 1,
 
@@ -17,8 +16,9 @@ export enum PartCallbackParameterMask {
 	 * If nodes of current part will be inserted or removed directly from their parent,
 	 * this value is unioned.
 	 * 
-	 * E.g., `<if {...}><div :transition>...`,
-	 * the transition can play after `<if>` state change because `div` is "DirectNodeToMove" .
+	 * E.g., `<if {...}><div :transition><div :transition>...`.
+	 * The first transition can play after `<if>` state change because it is "DirectNodeToMove" .
+	 * The second transition can't play after `<if>` state change because it is not directly moved.
 	 */
 	DirectNodeToMove = 2,
 
@@ -49,7 +49,7 @@ export interface Part {
 	 * 
 	 * Will also broadcast calling recursively for all descendant parts.
 
-	 * - `param`: AND byte operate of `PartCallbackParameter`.
+	 * - `param`: AND byte operate of `PartCallbackParameterMask`.
 	 */
 	afterConnectCallback(param: PartCallbackParameterMask): void
 
@@ -58,7 +58,7 @@ export interface Part {
 	 * 
 	 * Will also broadcast calling recursively for all descendant parts.
 	 * 
-	 * - `param`: AND byte operate of `PartCallbackParameter`.
+	 * - `param`: AND byte operate of `PartCallbackParameterMask`.
 	 */
 	beforeDisconnectCallback(param: PartCallbackParameterMask): Promise<void> | void
 }

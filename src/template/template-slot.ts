@@ -2,7 +2,7 @@ import {SlotPosition, SlotEndOuterPositionType} from './slot-position'
 import {Template} from './template'
 import {CompiledTemplateResult} from './template-result-compiled'
 import {Part, PartCallbackParameterMask} from '../types'
-import {NodesTemplateMaker, TextTemplateMaker} from './template-makers'
+import {NodeTemplateMaker, TextTemplateMaker} from './template-makers'
 
 
 /** 
@@ -34,7 +34,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 
 	protected context: any
 	protected contentType: T | null = null
-	protected readonly knownContentType
+	protected readonly knownContentType: boolean
 	protected content: Template | Template[] | ChildNode | null = null
 
 	constructor(
@@ -244,12 +244,12 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 	}
 
 	/** Update from a node. */
-	protected updateNode(node: ChildNode) {
+	protected updateNode(node: ChildNode | null) {
 		let t = this.content as Template<ChildNode[]> | null
 
 		if (node) {
 			if (!t) {
-				t = this.content = NodesTemplateMaker.make(null)
+				t = this.content = NodeTemplateMaker.make(null)
 				t.insertNodesBefore(this.endOuterPosition)
 			}
 

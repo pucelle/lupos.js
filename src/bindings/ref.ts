@@ -20,7 +20,7 @@ export class RefBinding implements Binding, Part {
 	/** Compiler will compile `this.prop` -> `r => this.prop = r` */
 	private refFn: ((value: any) => void) | null = null
 
-	constructor(el: Element, context: any, modifiers: 'el'[]) {
+	constructor(el: Element, context: any, modifiers: 'el'[] = []) {
 		this.el = el
 		this.context = context
 		this.refAsElement = modifiers.includes('el')
@@ -46,7 +46,7 @@ export class RefBinding implements Binding, Part {
 	}
 
 	afterConnectCallback(param: PartCallbackParameterMask) {
-		if (!(param & PartCallbackParameterMask.HappenInCurrentContext)) {
+		if ((param & PartCallbackParameterMask.HappenInCurrentContext) === 0) {
 			return
 		}
 
@@ -56,7 +56,7 @@ export class RefBinding implements Binding, Part {
 	}
 
 	beforeDisconnectCallback(param: PartCallbackParameterMask) {
-		if (!(param & PartCallbackParameterMask.HappenInCurrentContext)) {
+		if ((param & PartCallbackParameterMask.HappenInCurrentContext) === 0) {
 			return
 		}
 

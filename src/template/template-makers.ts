@@ -2,7 +2,6 @@ import {HTMLMaker} from './html-maker'
 import {TemplateInitResult, TemplateMaker} from './template-maker'
 import {SlotPosition, SlotPositionType, SlotStartInnerPositionType} from './slot-position'
 import {Component} from '../component'
-import {PartCallbackParameterMask} from '../types'
 import {Template} from './template'
 
 
@@ -30,41 +29,34 @@ export const TextTemplateMaker = new TemplateMaker(function() {
 
 
 /** 
- * Template maker to update nodes inside.
+ * Template maker to update a single node inside.
  * Note the parts inside of `nodes` are not included in the returned template,
  * so can't automatically call their connect and disconnect callbacks.
  * Fit for containing nodes which have been registered as parts, like slot elements.
  */
-export const NodesTemplateMaker = new TemplateMaker(function() {
+export const NodeTemplateMaker = new TemplateMaker(function() {
 	let el = CommentMaker.make()
 	let comment = el.content.firstChild as Comment
 	let position = new SlotPosition<SlotStartInnerPositionType>(SlotPositionType.Before, comment)
-	let endNode: ChildNode | null = null
+	let lastNode: ChildNode | null = null
 
 	return {
 		el,
 		position,
-		update(nodes: ChildNode[]) {
-			let node = endNode
-
-			while (node) {
-				let nextNode = node.previousSibling
-				node.remove()
-
-				if (nextNode === comment) {
-					break
-				}
-
-				node = nextNode
+		update([node]: [ChildNode | null]) {
+			if (node === lastNode) {
+				return
 			}
 
-			if (nodes.length > 0) {
-				comment.after(...nodes)
-				endNode = nodes[nodes.length - 1]
+			if (lastNode) {
+				lastNode.remove()
 			}
-			else {
-				endNode = null
+
+			if (node) {
+				comment.after(node)
 			}
+			
+			lastNode = node
 		},
 	} as TemplateInitResult
 })
@@ -83,6 +75,6 @@ export function makeTemplateByComponent(com: Component): Template {
 	return new Template({
 		el,
 		position,
-		parts: [[com, PartCallbackParameterMask.DirectNodeToMove & PartCallbackParameterMask.HappenInCurrentContext]],
+		parts: [com],
 	})
 }

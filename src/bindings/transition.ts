@@ -49,7 +49,7 @@ export class TransitionBinding implements Binding, Part {
 	private mixedTransitionType: MixedTransitionType | null = null
 	private mixedTransition: PerFrameTransition | WebTransition | null = null
 
-	constructor(el: Element, _context: any, modifiers: ('global' | 'local' | 'immediate')[]) {
+	constructor(el: Element, _context: any, modifiers: ('global' | 'local' | 'immediate')[] = []) {
 		this.el = el
 		this.global = modifiers.includes('global')
 		this.immediate = modifiers.includes('immediate')

@@ -1,6 +1,6 @@
 import {SlotPosition, SlotStartInnerPositionType} from './slot-position'
 import {Template} from './template'
-import {Part, PartCallbackParameterMask} from '../types'
+import {Part} from '../types'
 
 
 /** Compiler compile a html`<div>...` to a `TemplateMaker(TemplateInitFn)`. */
@@ -13,7 +13,7 @@ export interface TemplateInitResult {
 	el: HTMLTemplateElement
 
 	/** Start inner position, indicate the start edge of content inside. */
-	position?: SlotPosition<SlotStartInnerPositionType>
+	position: SlotPosition<SlotStartInnerPositionType>
 
 	/** 
 	 * Update and apply new values.
@@ -23,11 +23,9 @@ export interface TemplateInitResult {
 
 	/** 
 	 * List of all the parts inside.
-	 * Second value is the AND operate of each `PartCallbackParameter`,
-	 * can either be `1` or `3`,
 	 * If no parts inside, ignores this property.
 	 */
-	parts?: [Part, PartCallbackParameterMask][]
+	parts?: Part[]
 }
 
 
