@@ -1,12 +1,12 @@
 import {UpdateQueue} from '@pucelle/ff'
-import {Component, TemplateMaker, DynamicTypedTemplateSlot, SlotPosition, SlotPositionType, createAwaitBlockFn, createHTMLTemplateFn} from '../../src'
+import {Component, TemplateMaker, DynamicTypedTemplateSlot, SlotPosition, SlotPositionType, createAwaitBlockFn, HTMLMaker} from '../../src'
 
 
 describe('Test Await Block', () => {
 	test('Await Block', async () => {
-		let t1 = createHTMLTemplateFn('<div>1</div>')
-		let t2 = createHTMLTemplateFn('<div>2</div>')
-		let t3 = createHTMLTemplateFn('<div>3</div>')
+		let t1 = new HTMLMaker('<div>1</div>')
+		let t2 = HTMLMaker('<div>2</div>')
+		let t3 = HTMLMaker('<div>3</div>')
 
 		// Compile from `<div>...</div>`
 		let maker1 = new TemplateMaker((_context: Component) => {

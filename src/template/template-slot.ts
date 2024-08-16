@@ -11,7 +11,7 @@ import {NodeTemplateMaker, TextTemplateMaker} from './template-makers'
  */
 export enum SlotContentType {
 	TemplateResult = 0,
-	TemplateResultArray = 1,
+	TemplateResultList = 1,
 	Text = 2,
 
 	// Normally for only internal usage.
@@ -52,7 +52,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 		if (this.contentType === SlotContentType.TemplateResult) {
 			(this.content as Template).afterConnectCallback(param)
 		}
-		else if (this.contentType === SlotContentType.TemplateResultArray) {
+		else if (this.contentType === SlotContentType.TemplateResultList) {
 			for (let t of this.content as Template[]) {
 				t.afterConnectCallback(param)
 			}
@@ -63,7 +63,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 		if (this.contentType === SlotContentType.TemplateResult) {
 			return (this.content as Template).beforeDisconnectCallback(param)
 		}
-		else if (this.contentType === SlotContentType.TemplateResultArray) {
+		else if (this.contentType === SlotContentType.TemplateResultList) {
 			let promises: Promise<void>[] = []
 			
 			for (let t of this.content as Template[]) {
@@ -104,8 +104,8 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 		if (this.contentType === SlotContentType.TemplateResult) {
 			this.updateTemplateResult(value as CompiledTemplateResult)
 		}
-		else if (this.contentType === SlotContentType.TemplateResultArray) {
-			this.updateTemplateResultArray(value as CompiledTemplateResult[])
+		else if (this.contentType === SlotContentType.TemplateResultList) {
+			this.updateTemplateResultList(value as CompiledTemplateResult[])
 		}
 		else if (this.contentType === SlotContentType.Text) {
 			this.updateText(value)
@@ -124,7 +124,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 			return SlotContentType.TemplateResult as T
 		}
 		else if (Array.isArray(value)) {
-			return SlotContentType.TemplateResultArray as T
+			return SlotContentType.TemplateResultList as T
 		}
 		else if (value instanceof Node) {
 			return SlotContentType.Node as T
@@ -180,7 +180,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 	}
 
 	/** Update from a template result list. */
-	protected updateTemplateResultArray(trs: CompiledTemplateResult[]) {
+	protected updateTemplateResultList(trs: CompiledTemplateResult[]) {
 		let oldTs = this.content as Template[] | null
 		if (!oldTs) {
 			oldTs = this.content = []

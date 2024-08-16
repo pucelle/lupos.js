@@ -1,15 +1,15 @@
 import {UpdateQueue} from '@pucelle/ff'
-import {SlotPositionType, TemplateMaker, SlotPosition, createHTMLTemplateFn, CompiledTemplateResult, DynamicTypedTemplateSlot} from '../../src'
+import {SlotPositionType, TemplateMaker, SlotPosition, HTMLMaker, CompiledTemplateResult, DynamicTypedTemplateSlot} from '../../src'
 
 
 describe('Test DynamicTypedTemplateSlot', () => {
 
 	test('DynamicTypedTemplateSlot', async () => {
-		let t1 = createHTMLTemplateFn('<div>1</div>')
+		let t1 = new HTMLMaker('<div>1</div>')
 
 		// Compile from html`<div>1</div>`
 		let maker1 = new TemplateMaker((_context: any) => {
-			let t = t1()
+			let t = t1.make()
 			let div = t.content.firstElementChild!
 
 			return {
