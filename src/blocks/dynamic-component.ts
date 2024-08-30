@@ -21,16 +21,14 @@ export class DynamicComponentBlock {
 	readonly binder: DynamicComponentBinder
 	readonly slot: TemplateSlot
 	readonly contentRange: SlotRange | null
-	readonly context: any
 
 	private Com: ComponentConstructor | null = null
 	private com: Component | null = null
 
-	constructor(binder: DynamicComponentBinder, slot: TemplateSlot, contentRange: SlotRange | null, context: any) {
+	constructor(binder: DynamicComponentBinder, slot: TemplateSlot, contentRange: SlotRange | null = null) {
 		this.binder = binder
 		this.slot = slot
 		this.contentRange = contentRange
-		this.context = context
 	}
 
 	/** Update with new Component Constructor. */
@@ -44,6 +42,9 @@ export class DynamicComponentBlock {
 
 		if (this.com) {
 			this.com.__transferSlotContents(com)
+		}
+		else if (this.contentRange) {
+			com.__applyRestSlotRange(this.contentRange)
 		}
 
 		let template = makeTemplateByComponent(com)

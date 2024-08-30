@@ -54,13 +54,13 @@ export class ClassBinding implements Binding {
 	updateObject(value: ClassObject) {
 		let names: string[] = []
 
-			for (let key of Object.keys(value as any)) {
-				if ((value as any)[key]) {
-					names.push(key)
-				}
+		for (let key of Object.keys(value as any)) {
+			if ((value as any)[key]) {
+				names.push(key)
 			}
+		}
 
-			this.updateList(names)
+		this.updateList(names)
 	}
 
 	/** 

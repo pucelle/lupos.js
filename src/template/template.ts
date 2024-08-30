@@ -19,7 +19,7 @@ export class Template<A extends any[] = any[]> implements Part {
 	readonly maker: TemplateMaker | null
 	readonly startInnerPosition: SlotPosition<SlotStartInnerPositionType>
 	readonly update: (values: A) => void
-	private readonly parts: Part[]
+	private readonly parts: Part[] | (() => Part[])
 
 	/** 
 	 * Required, can avoid call connect callbacks repeatedly.
@@ -50,11 +50,13 @@ export class Template<A extends any[] = any[]> implements Part {
 			return
 		}
 
-		this.connected = true
+		let parts = typeof this.parts === 'function' ? this.parts() : this.parts
 
-		for (let part of this.parts) {
+		for (let part of parts) {
 			part.afterConnectCallback(param)
 		}
+		
+		this.connected = true
 	}
 
 	beforeDisconnectCallback(param: PartCallbackParameterMask): Promise<void> | void {
@@ -65,8 +67,9 @@ export class Template<A extends any[] = any[]> implements Part {
 		this.connected = false
 
 		let promises: Promise<void>[] = []
+		let parts = typeof this.parts === 'function' ? this.parts() : this.parts
 
-		for (let part of this.parts) {
+		for (let part of parts) {
 			let p = part.beforeDisconnectCallback(param)
 			if (p) {
 				promises.push(p)

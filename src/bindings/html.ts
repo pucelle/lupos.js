@@ -16,7 +16,8 @@ export class HTMLBinding implements Binding {
 	}
 
 	update(value: string | number | null | undefined) {
-		this.el.innerHTML = value === null || value === undefined ? ''
+		this.el.innerHTML = value === null || value === undefined
+			? ''
 			: HTMLUtils.cleanUnsafeHTML(String(value))
 	}
 }
