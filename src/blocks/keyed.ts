@@ -17,10 +17,10 @@ export class KeyedBlock {
 	private key: any = undefined
 	private template: Template | null = null
 	
-	constructor(maker: TemplateMaker | null, slot: TemplateSlot, context: any) {
+	constructor(maker: TemplateMaker | null, slot: TemplateSlot) {
 		this.maker = maker
 		this.slot = slot
-		this.context = context
+		this.context = slot.context
 	}
 
 	update(newKey: any, values: any[]) {

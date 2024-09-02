@@ -33,12 +33,15 @@ export interface ComponentEvents {
 /** Current of `component.incrementalId`. */
 let IncrementalId = 1
 
-/** 
- * Record components that is not ready.
- * - 1: Wait for Created
- * - 2: Wait for Ready
- */
-const ComponentCreatedReadyStates: WeakMap<object, 1 | 2> = new WeakMap()
+
+/** Record components that is not ready. */
+const ComponentCreatedReadyStates: WeakMap<object, ComponentCreatedReadyState> = new WeakMap()
+
+/** Components state. */
+enum ComponentCreatedReadyState {
+	WaitForCreated = 1,
+	WaitForReady = 2,
+}
 
 
 /** 
@@ -147,14 +150,19 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		this.el = el
 		Object.assign(this, properties)
 
-		let Com = this.constructor as ComponentConstructor
-		ensureComponentStyle(Com)
-
-		let position = new SlotPosition<SlotPositionType.AfterContent>(SlotPositionType.AfterContent, this.el)
-		this.contentSlot = new TemplateSlot(position, this, Com.ContentSlotType!)
+		ensureComponentStyle(this.constructor as ComponentConstructor)
+		this.contentSlot = this.initContentSlot()
 
 		addElementComponentMap(el, this)
-		ComponentCreatedReadyStates.set(this, 1)
+		ComponentCreatedReadyStates.set(this, ComponentCreatedReadyState.WaitForCreated)
+	}
+
+	/** Init `contentSlot`. */
+	protected initContentSlot(): TemplateSlot {
+		let position = new SlotPosition<SlotPositionType.AfterContent>(SlotPositionType.AfterContent, this.el)
+		let Com = this.constructor as ComponentConstructor
+
+		return new TemplateSlot(position, this, Com.ContentSlotType!)
 	}
 
 	/**
@@ -272,8 +280,8 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	}
 
 	afterConnectCallback(this: Component, _param: PartCallbackParameterMask) {
-		if (ComponentCreatedReadyStates.get(this) === 1) {
-			ComponentCreatedReadyStates.set(this, 2)
+		if (ComponentCreatedReadyStates.get(this) === ComponentCreatedReadyState.WaitForCreated) {
+			ComponentCreatedReadyStates.set(this, ComponentCreatedReadyState.WaitForReady)
 			this.onCreated()
 		}
 
@@ -315,7 +323,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		this.onUpdated()
 		this.fire('updated')
 
-		if (ComponentCreatedReadyStates.get(this) === 1) {
+		if (ComponentCreatedReadyStates.get(this) === ComponentCreatedReadyState.WaitForCreated) {
 			ComponentCreatedReadyStates.delete(this)
 			this.onReady()
 		}

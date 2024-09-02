@@ -31,8 +31,8 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 
 	/** End outer position, indicates where to put new content. */
 	readonly endOuterPosition: SlotPosition<SlotEndOuterPositionType>
+	readonly context: any
 
-	protected context: any
 	protected contentType: T | null = null
 	protected readonly knownContentType: boolean
 	protected content: Template | Template[] | ChildNode | null = null
@@ -77,14 +77,6 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 				return Promise.all(promises) as Promise<any>
 			}
 		}
-	}
-
-	/** 
-	 * Replace context after initialized.
-	 * Only for internal usage.
-	 */
-	replaceContext(context: any) {
-		this.context = context
 	}
 
 	/** 

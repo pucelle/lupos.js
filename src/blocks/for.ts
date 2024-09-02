@@ -28,14 +28,18 @@ export class ForBlock<T = any> {
 	private data: T[] = []
 	private templates: Template[] = []
 
-	constructor(renderFn: ForBlockRenderFn, slot: TemplateSlot, context: any) {
+	constructor(renderFn: ForBlockRenderFn, slot: TemplateSlot) {
 		this.renderFn = renderFn
 		this.slot = slot		
-		this.context = context
+		this.context = slot.context
 	}
 
 	/** Update data items. */
-	async update(newData: T[]) {
+	update(data: Iterable<T>) {
+
+		// Must clone data items.
+		let newData = [...data]
+
 		let oldData = this.data
 		let oldTs = this.templates
 		let editRecord = getEditRecord(oldData, newData, true)
@@ -52,11 +56,7 @@ export class ForBlock<T = any> {
 			if (type === EditType.Leave) {
 				this.reuseTemplate(fromT!, newItem!, toIndex)
 			}
-			else if (type === EditType.Move) {
-				this.moveTemplate(fromT!, nextOldT)
-				this.reuseTemplate(fromT!, newItem!, toIndex)
-			}
-			else if (type === EditType.MoveModify) {
+			else if (type === EditType.Move || type === EditType.MoveModify) {
 				this.moveTemplate(fromT!, nextOldT)
 				this.reuseTemplate(fromT!, newItem!, toIndex)
 			}
@@ -102,7 +102,7 @@ export class ForBlock<T = any> {
 		t.recycleNodes()
 	}
 
-	private async moveTemplate(t: Template, nextOldT: Template | null) {
+	private moveTemplate(t: Template, nextOldT: Template | null) {
 		let position = nextOldT?.startInnerPosition ?? this.slot.endOuterPosition
 		t.moveNodesBefore(position)
 	}

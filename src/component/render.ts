@@ -1,4 +1,4 @@
-import {TemplateResult, CompiledTemplateResult} from '../template'
+import {TemplateResult, CompiledTemplateResult, TemplateSlot, SlotPosition, SlotPositionType} from '../template'
 import {Component} from './component'
 import {RenderResult} from './types'
 
@@ -32,7 +32,12 @@ class AttachedComponent<E = any> extends Component<E> {
 		
 		this.renderer = renderer
 		this.context = context
-		this.contentSlot.replaceContext(context)
+	}
+	
+	/** Replace context of content slot. */
+	protected initContentSlot(): TemplateSlot {
+		let position = new SlotPosition<SlotPositionType.AfterContent>(SlotPositionType.AfterContent, this.el)
+		return new TemplateSlot(position, this.context)
 	}
 
 	protected render(): RenderResult {

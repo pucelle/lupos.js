@@ -19,11 +19,11 @@ export class IfBlock {
 	private index = -1
 	private template: Template | null = null
 
-	constructor(indexFn: (values: any[]) => number, makers: (TemplateMaker | null)[], slot: TemplateSlot, context: any) {
+	constructor(indexFn: (values: any[]) => number, makers: (TemplateMaker | null)[], slot: TemplateSlot) {
 		this.indexFn = indexFn
 		this.makers = makers
 		this.slot = slot
-		this.context = context
+		this.context = slot.context
 	}
 
 	update(values: any[]) {
