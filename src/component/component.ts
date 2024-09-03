@@ -111,7 +111,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	static style: ComponentStyle | null = null
 
 	/** Compiler will add this variable after analysis render result. */
-	static ContentSlotType: SlotContentType | null = null
+	static SlotContentType: SlotContentType | null = null
 
 	
 	/** 
@@ -162,7 +162,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		let position = new SlotPosition<SlotPositionType.AfterContent>(SlotPositionType.AfterContent, this.el)
 		let Com = this.constructor as ComponentConstructor
 
-		return new TemplateSlot(position, this, Com.ContentSlotType!)
+		return new TemplateSlot(position, this, Com.SlotContentType!)
 	}
 
 	/**

@@ -6,7 +6,7 @@ import {ComponentStyle} from './style'
 /** Constructor of component. */
 export interface ComponentConstructor {
 	style: ComponentStyle | null
-	ContentSlotType: SlotContentType | null
+	SlotContentType: SlotContentType | null
 	new(props?: Record<string, any>, el?: HTMLElement): Component
 }
 
