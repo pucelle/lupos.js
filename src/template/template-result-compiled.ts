@@ -7,8 +7,8 @@ import {TemplateMaker} from './template-maker'
  */
 export class CompiledTemplateResult {
 
-	maker: TemplateMaker
-	values: any[]
+	readonly maker: TemplateMaker
+	readonly values: any[]
 
 	constructor(maker: TemplateMaker, values: any[]) {
 		this.maker = maker

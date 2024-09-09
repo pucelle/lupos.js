@@ -4,23 +4,14 @@
  */
 export enum SlotPositionType {
 
-	/** 
-	 * Start position collapse with start of container range.
-	 * If don't know about future parent, will insert a comment to locate.
-	 */
-	BeforeContent = 0,
+	/** End position collapse with end of parent container range. */
+	AfterContent = 0,
 
-	/** End position collapse with end of container range. */
-	AfterContent = 1,
-
-	/** End position collapse with start of sibling node. */
-	Before = 2,
-
-	/** Start position collapse with end of sibling node. */
-	// After = 3,
+	/** End position collapse with start of next sibling node. */
+	Before = 1,
 }
 
-export type SlotStartInnerPositionType = SlotPositionType.Before | SlotPositionType.BeforeContent
+export type SlotStartInnerPositionType = SlotPositionType.Before
 export type SlotEndOuterPositionType = SlotPositionType.Before | SlotPositionType.AfterContent
 
 

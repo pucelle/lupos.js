@@ -16,9 +16,6 @@ export enum SlotContentType {
 
 	// Normally for only internal usage.
 	Node = 3,
-
-	// Not identified types, use null instead of it so not present.
-	// NotIdentifiedTemplate,
 }
 
 

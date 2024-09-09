@@ -4,8 +4,8 @@
  * 
  * Use it to remember rest slot range.
  * Compiler may need to insert a comment node in the end
- * to make the end inner node static, and avoid breaking the
- * range after component-itself contents appended.
+ * to make the end inner node stable, and avoid breaking the
+ * range after contents of component-itself appended.
  */
 export class SlotRange {
 

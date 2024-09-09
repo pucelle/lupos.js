@@ -1,6 +1,6 @@
-import {ObjectUtils, PerFrameTransition, WebTransition, WebTransitionOptions} from '@pucelle/ff'
+import {DeepReadonly, ObjectUtils, PerFrameTransition, WebTransition, WebTransitionOptions} from '@pucelle/ff'
 import {Binding} from './types'
-import {PerFrameTransitionProperties, TransitionProperties, TransitionResult, WebTransitionProperties} from './transitions'
+import {PerFrameTransitionProperties, TransitionOptions, TransitionProperties, TransitionResult, WebTransitionProperties} from './transitions'
 import {Part, PartCallbackParameterMask} from '../types'
 
 
@@ -108,7 +108,7 @@ export class TransitionBinding implements Binding, Part {
 			return
 		}
 
-		let direction = this.result.options
+		let {direction} = this.result.options as DeepReadonly<TransitionOptions>
 		if (direction === 'leave' || direction === 'none') {
 			return
 		}
@@ -143,7 +143,7 @@ export class TransitionBinding implements Binding, Part {
 			return
 		}
 
-		let direction = this.result.options
+		let {direction} = this.result.options as DeepReadonly<TransitionOptions>
 		if (direction === 'enter' || direction === 'none') {
 			return
 		}

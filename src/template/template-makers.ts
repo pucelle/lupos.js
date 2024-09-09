@@ -37,12 +37,12 @@ export const TextTemplateMaker = new TemplateMaker(function() {
 export const NodeTemplateMaker = new TemplateMaker(function() {
 	let el = CommentMaker.make()
 	let comment = el.content.firstChild as Comment
-	let position = new SlotPosition<SlotStartInnerPositionType>(SlotPositionType.Before, comment)
+	let startInnerPosition = new SlotPosition<SlotStartInnerPositionType>(SlotPositionType.Before, comment)
 	let lastNode: ChildNode | null = null
 
 	return {
 		el,
-		position,
+		position: startInnerPosition,
 		update([node]: [ChildNode | null]) {
 			if (node === lastNode) {
 				return

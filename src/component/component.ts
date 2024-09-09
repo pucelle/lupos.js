@@ -280,7 +280,8 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	}
 
 	afterConnectCallback(this: Component, _param: PartCallbackParameterMask) {
-		if (ComponentCreatedReadyStates.get(this) === ComponentCreatedReadyState.WaitForCreated) {
+		let waitForCreated = ComponentCreatedReadyStates.get(this) === ComponentCreatedReadyState.WaitForCreated
+		if (waitForCreated) {
 			ComponentCreatedReadyStates.set(this, ComponentCreatedReadyState.WaitForReady)
 			this.onCreated()
 		}
@@ -290,7 +291,9 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		this.onConnected()
 		this.fire('connected')
 
-		this.contentSlot.afterConnectCallback(0)
+		if (!waitForCreated) {
+			this.contentSlot.afterConnectCallback(0)
+		}
 	}
 
 	beforeDisconnectCallback(this: Component, param: PartCallbackParameterMask): Promise<void> | void {

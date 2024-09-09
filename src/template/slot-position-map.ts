@@ -9,7 +9,7 @@ import {SlotPosition} from './slot-position'
 export class SlotPositionMap {
 
 	/** 
-	 * Template <=> It's after position.
+	 * Template <=> position just after it.
 	 * It's equivalent to a double linked list.
 	 * Can also use `TwoWayMap`, but use two maps independently can avoid some useless operations.
 	 */
@@ -35,7 +35,7 @@ export class SlotPositionMap {
 
 	/** 
 	 * Delete a template and it's cached position.
-	 * - `position`: position just after template.
+	 * - `position`: the position just after template.
 	 */
 	deletePosition(template: Template<any>, position: SlotPosition) {
 		let prevT = this.ptMap.get(template.startInnerPosition)

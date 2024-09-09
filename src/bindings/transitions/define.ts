@@ -1,4 +1,4 @@
-import {PerFrameTransitionOptions, WebTransitionKeyFrame} from '@pucelle/ff'
+import {DeepReadonly, PerFrameTransitionOptions, WebTransitionKeyFrame} from '@pucelle/ff'
 
 
 export interface TransitionOptions extends PerFrameTransitionOptions {
@@ -71,7 +71,7 @@ export type TransitionPropertiesGetter<E extends Element, O extends TransitionOp
  */
 export function defineTransition<E extends Element, O extends TransitionOptions>(
 	getter: TransitionPropertiesGetter<E, O>
-): (options?: O) => TransitionResult
+): (options?: O) => TransitionResult<E, O>
 {
 	return function(options: O | undefined) {
 		return new TransitionResult(getter, options)
@@ -83,13 +83,13 @@ export function defineTransition<E extends Element, O extends TransitionOptions>
  * Class used to play specified transition on an element.
  * Transition types includes class name, css properties, and registered js transition.
  */
-export class TransitionResult {
+export class TransitionResult<E extends Element = Element, O extends TransitionOptions = any>{
 
-	readonly getter: TransitionPropertiesGetter<any, any>
-	readonly options: any
+	readonly getter: TransitionPropertiesGetter<E, O>
+	readonly options: DeepReadonly<O>
 
-	constructor(getter: TransitionPropertiesGetter<any, any>, options: any) {
+	constructor(getter: TransitionPropertiesGetter<E, O>, options: O = {} as any) {
 		this.getter = getter
-		this.options = options
+		this.options = options as DeepReadonly<O>
 	}
 }
