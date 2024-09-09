@@ -34,13 +34,13 @@ export interface ComponentEvents {
 let IncrementalId = 1
 
 
-/** Record components that is not ready. */
-const ComponentCreatedReadyStates: WeakMap<object, ComponentCreatedReadyState> = new WeakMap()
-
 /** Components state. */
-enum ComponentCreatedReadyState {
-	WaitForCreated = 1,
-	WaitForReady = 2,
+enum ComponentStateMask {
+	None = 0,
+	Created = 2 ** 0,
+	Ready = 2 ** 1,
+	Connected = 2 ** 2,
+	ConnectCallbackCalled = 2 ** 3,
 }
 
 
@@ -123,11 +123,8 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	/** The root element of component. */
 	readonly el: HTMLElement
 
-	/** 
-	 * Whether current component was connected into a document.
-	 * Readonly outside of component.
-	 */
-	connected: boolean = false
+	/** State of current component, byte mask type. */
+	protected state: ComponentStateMask = ComponentStateMask.None
 
 	/** Help to patch render result to current element. */
 	protected readonly contentSlot!: TemplateSlot<any>
@@ -154,7 +151,14 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		this.contentSlot = this.initContentSlot()
 
 		addElementComponentMap(el, this)
-		ComponentCreatedReadyStates.set(this, ComponentCreatedReadyState.WaitForCreated)
+	}
+
+	/** 
+	 * Whether current component was connected into document.
+	 * Readonly outside of component.
+	 */
+	get connected(): boolean {
+		return (this.state & ComponentStateMask.Connected) > 0
 	}
 
 	/** Init `contentSlot`. */
@@ -223,7 +227,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * If is ready already, resolve the promise immediately.
 	 */
 	protected untilReady(this: Component): Promise<void> {
-		if (ComponentCreatedReadyStates.has(this)) {
+		if ((this.state & ComponentStateMask.Ready) === 0) {
 			return new Promise(resolve => {
 				this.once('updated', resolve)
 			}) as Promise<void>
@@ -280,31 +284,39 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	}
 
 	afterConnectCallback(this: Component, _param: PartCallbackParameterMask) {
-		let waitForCreated = ComponentCreatedReadyStates.get(this) === ComponentCreatedReadyState.WaitForCreated
-		if (waitForCreated) {
-			ComponentCreatedReadyStates.set(this, ComponentCreatedReadyState.WaitForReady)
+		if (this.connected) {
+			return
+		}
+
+		if ((this.state & ComponentStateMask.Created) === 0) {
+			this.state |= ComponentStateMask.Created
 			this.onCreated()
 		}
 
-		this.connected = true
+		this.state |= ComponentStateMask.Connected
+		this.state &= ~ComponentStateMask.ConnectCallbackCalled
+		
 		this.willUpdate()
 		this.onConnected()
 		this.fire('connected')
-
-		if (!waitForCreated) {
-			this.contentSlot.afterConnectCallback(0)
-		}
 	}
 
 	beforeDisconnectCallback(this: Component, param: PartCallbackParameterMask): Promise<void> | void {
+		if (!this.connected) {
+			return
+		}
+
 		untrack(this.willUpdate, this)
 
-		this.connected = false
+		this.state &= ~ComponentStateMask.Connected
 		this.onDisconnected()
 		this.fire('disconnected')
 
+		// Only call when called connect callback.
 		// Only `RemoveImmediately` parameter passes.
-		return this.contentSlot.beforeDisconnectCallback(param & PartCallbackParameterMask.RemoveImmediately)
+		if ((this.state & ComponentStateMask.ConnectCallbackCalled) > 0) {
+			return this.contentSlot.beforeDisconnectCallback(param & PartCallbackParameterMask.RemoveImmediately)
+		}
 	}
 
 	/** After any tracked data change, enqueue it to update in next animation frame. */
@@ -326,9 +338,14 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		this.onUpdated()
 		this.fire('updated')
 
-		if (ComponentCreatedReadyStates.get(this) === ComponentCreatedReadyState.WaitForCreated) {
-			ComponentCreatedReadyStates.delete(this)
+		if ((this.state & ComponentStateMask.Ready) === 0) {
+			this.state |= ComponentStateMask.Ready
 			this.onReady()
+		}
+
+		if ((this.state & ComponentStateMask.ConnectCallbackCalled) === 0) {
+			this.state |= ComponentStateMask.ConnectCallbackCalled
+			this.contentSlot.afterConnectCallback(0)
 		}
 	}
 
@@ -387,7 +404,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		}
 	}
 
-	/** Remove element from document, and disconnect. */
+	/** Remove element from document, and disconnect immediately. */
 	remove() {
 		
 		// Not wait for leave transition.

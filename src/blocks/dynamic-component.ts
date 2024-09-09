@@ -22,11 +22,14 @@ export class DynamicComponentBlock {
 	readonly slot: TemplateSlot
 	readonly contentRange: SlotRange | null
 
+	originalEl: HTMLElement | undefined
+
 	private Com: ComponentConstructor | null = null
 	private com: Component | null = null
 
-	constructor(binder: DynamicComponentBinder, slot: TemplateSlot, contentRange: SlotRange | null = null) {
+	constructor(binder: DynamicComponentBinder, originalEl: HTMLElement, slot: TemplateSlot, contentRange: SlotRange | null = null) {
 		this.binder = binder
+		this.originalEl = originalEl
 		this.slot = slot
 		this.contentRange = contentRange
 	}
@@ -37,16 +40,22 @@ export class DynamicComponentBlock {
 			return
 		}
 
-		let com = new NewCom()
+		let com = new NewCom({}, this.originalEl)
 		this.binder(com)
 
 		if (this.com) {
 			this.com.__transferSlotContents(com)
 		}
-		else if (this.contentRange) {
-			com.__applyRestSlotRange(this.contentRange)
-		}
 
+		// First time updating.
+		else {
+			this.originalEl = undefined
+
+			if (this.contentRange) {
+				com.__applyRestSlotRange(this.contentRange)
+			}
+		}
+	
 		let template = makeTemplateByComponent(com)
 		this.slot.updateTemplateOnly(template, null)
 

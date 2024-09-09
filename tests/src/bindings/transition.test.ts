@@ -4,7 +4,9 @@ import {jest} from '@jest/globals'
 
 
 describe('Test :transition', () => {
-	const fade = defineTransition(function(el: HTMLElement, options: TransitionOptions = {}) {
+
+	// Jest env has no web animation API.
+	const perFrameFade = defineTransition(function(el: HTMLElement, options: TransitionOptions = {}) {
 		return {
 			...options,
 			perFrame: (progress: number) => {
@@ -19,7 +21,7 @@ describe('Test :transition', () => {
 			prop: boolean = false
 
 			protected render() {
-				return this.prop ? html`<div :transition.immediate=${fade}>Transition...` : null
+				return this.prop ? html`<div :transition.immediate=${perFrameFade()}>Transition...` : null
 			}
 		}
 
@@ -41,24 +43,27 @@ describe('Test :transition', () => {
 		DOMEvents.on(div, 'transition-leave-started', fn3)
 		DOMEvents.on(div, 'transition-leave-ended', fn4)
 
-
+		// Enter transition from 0 to 1
 		await sleep(100)
 		expect(Number(div.style.opacity)).toBeGreaterThan(0)
 		expect(Number(div.style.opacity)).toBeLessThan(1)
 
+		// Enter Transition end
 		await sleep(120)
 		expect(Number(div.style.opacity)).toEqual(1)
 		expect(fn2).toHaveBeenCalledTimes(1)
 
-
+		// Leave transition started
 		com.prop = false
 		await UpdateQueue.untilComplete()
 		expect(fn3).toHaveBeenCalledTimes(1)
 
+		// Leave transition from 1 to 0
 		await sleep(100)
 		expect(Number(div.style.opacity)).toBeGreaterThan(0)
 		expect(Number(div.style.opacity)).toBeLessThan(1)
 
+		// Leave transition end
 		await sleep(120)
 		expect(com.el.firstElementChild).toBe(null)
 		expect(fn4).toHaveBeenCalledTimes(1)
