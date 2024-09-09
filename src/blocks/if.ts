@@ -31,7 +31,7 @@ export class IfBlock {
 
 		if (newIndex !== this.index) {
 			let maker = newIndex >= 0 ? this.makers[newIndex] : null
-			this.template = maker ? maker.make(this.context) : null
+			this.template = maker ? maker.make(this.context, values) : null
 			this.slot.updateTemplateOnly(this.template, values)
 			this.index = newIndex
 		}
@@ -79,7 +79,7 @@ export class CacheableIfBlock {
 			}
 			else if (newIndex >= 0) {
 				let maker = this.makers[newIndex]
-				template = maker ? maker.make(this.context) : null
+				template = maker ? maker.make(this.context, values) : null
 				this.templates.set(newIndex, template)
 			}
 			

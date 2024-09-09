@@ -80,7 +80,7 @@ export class ForBlock<T = any> {
 
 	private createTemplate(item: T, index: number, nextOldT: Template | null) {
 		let result = this.renderFn(item, index)
-		let t = result.maker.make(this.context)
+		let t = result.maker.make(this.context, result.values)
 
 		this.insertTemplate(t, nextOldT)
 		t.update(result.values)

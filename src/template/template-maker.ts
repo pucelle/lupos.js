@@ -4,7 +4,7 @@ import {Part} from '../types'
 
 
 /** Compiler compile a html`<div>...` to a `TemplateMaker(TemplateInitFn)`. */
-export type TemplateInitFn = (context: any) => TemplateInitResult
+export type TemplateInitFn = (context: any, values: any[] | null) => TemplateInitResult
 
 /** Part of contents compiled from a template literal. */
 export interface TemplateInitResult {
@@ -39,7 +39,7 @@ export class TemplateMaker {
 	}
 
 	/** Bind with a context to create a Template. */
-	make(context: any): Template {
-		return new Template(this.init(context), this)
+	make(context: any, values: any[] | null): Template {
+		return new Template(this.init(context, values), this)
 	}
 }

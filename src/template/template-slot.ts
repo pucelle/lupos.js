@@ -159,7 +159,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 				this.removeTemplate(oldT)
 			}
 
-			let newT = tr.maker.make(this.context)
+			let newT = tr.maker.make(this.context, tr.values)
 			newT.insertNodesBefore(this.endOuterPosition)
 			newT.update(tr.values)
 			newT.afterConnectCallback(PartCallbackParameterMask.HappenInCurrentContext | PartCallbackParameterMask.DirectNodeToMove)
@@ -184,7 +184,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 				oldT.update(tr.values)
 			}
 			else {
-				let newT = tr.maker.make(this.context)
+				let newT = tr.maker.make(this.context, tr.values)
 				let nextOldT = i < oldTs.length - 1 ? oldTs[i + 1] : null
 
 				if (oldT) {
@@ -225,7 +225,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 		let t = this.content as Template<[string]> | null
 
 		if (!t) {
-			t = this.content = TextTemplateMaker.make(null)
+			t = this.content = TextTemplateMaker.make(null, null)
 			t.insertNodesBefore(this.endOuterPosition)
 		}
 
@@ -238,7 +238,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 
 		if (node) {
 			if (!t) {
-				t = this.content = NodeTemplateMaker.make(null)
+				t = this.content = NodeTemplateMaker.make(null, null)
 				t.insertNodesBefore(this.endOuterPosition)
 			}
 

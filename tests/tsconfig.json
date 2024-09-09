@@ -26,5 +26,5 @@
 	"references": [
         { "path": "../" }
     ],
-	"include": ["./**/transition.test.ts"],
+	"include": ["./**/*.test.ts"],
 }
