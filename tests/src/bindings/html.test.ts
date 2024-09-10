@@ -1,10 +1,10 @@
-import {HTMLBinding} from '../../../'
+import * as lupos from '../../../'
 
 
 describe('Test :html', () => {
 	test(':html=${...}', () => {
 		let div = document.createElement('div')
-		let b = new HTMLBinding(div)
+		let b = new lupos.HTMLBinding(div)
 
 		b.update('<div>123</div>')
 		expect(div.innerHTML).toEqual('<div>123</div>')

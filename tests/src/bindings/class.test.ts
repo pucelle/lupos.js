@@ -1,11 +1,11 @@
-import {ClassBinding} from "../../../"
+import * as lupos from '../../../'
 
 
 describe('Test :class', () => {
 	test(':class=${...}', () => {
 		let div = document.createElement('div')
 		div.className = 'c'
-		let b = new ClassBinding(div)
+		let b = new lupos.ClassBinding(div)
 
 		b.update('c1')
 		expect(div.className).toEqual('c c1')
@@ -18,7 +18,7 @@ describe('Test :class', () => {
 	test(':class=${[...]}', () => {
 		let div = document.createElement('div')
 		div.className = 'c'
-		let b = new ClassBinding(div)
+		let b = new lupos.ClassBinding(div)
 
 		b.update(['c1', 'c2'])
 		expect(div.className).toEqual('c c1 c2')
@@ -31,7 +31,7 @@ describe('Test :class', () => {
 	test(':class=${{...}}', () => {
 		let div = document.createElement('div')
 		div.className = 'c'
-		let b = new ClassBinding(div)
+		let b = new lupos.ClassBinding(div)
 
 		b.update({c1: true, c2: true})
 		expect(div.className).toEqual('c c1 c2')
@@ -44,7 +44,7 @@ describe('Test :class', () => {
 	test(':class.name=${...}', () => {
 		let div = document.createElement('div')
 		div.className = 'c'
-		let b = new ClassBinding(div)
+		let b = new lupos.ClassBinding(div)
 
 		b.update({c1: true})
 		expect(div.className).toEqual('c c1')

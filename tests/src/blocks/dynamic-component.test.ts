@@ -1,26 +1,26 @@
 import {UpdateQueue} from '@pucelle/ff'
-import {Component, html, RenderResult} from '../../../'
+import * as lupos from '../../../'
 
 
 describe('Test Dynamic Component Block', () => {
 	test('Dynamic Child Component', async () => {
-		class Parent extends Component {
+		class Parent extends lupos.Component {
 
 			ChildCom: any = Child1
 
 			protected render() {
-				return html`<${this.ChildCom} :class="${'className'}">Child Component Content</>`
+				return lupos.html`<${this.ChildCom} :class="${'className'}">Child Component Content</>`
 			}
 		}
 
-		class Child1 extends Component {
+		class Child1 extends lupos.Component {
 			protected render() {
-				return html`<slot />`
+				return lupos.html`<slot />`
 			}
 		}
-		class Child2 extends Component {
+		class Child2 extends lupos.Component {
 			protected render() {
-				return html`<slot />`
+				return lupos.html`<slot />`
 			}
 		}
 

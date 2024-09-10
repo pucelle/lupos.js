@@ -1,17 +1,17 @@
 import {UpdateQueue} from '@pucelle/ff'
-import {Component, html} from '../../../'
+import * as lupos from '../../../'
 
 
 describe('Test :ref', () => {
 	test(':ref component', async () => {
-		class Parent extends Component {
+		class Parent extends lupos.Component {
 			ref!: Child
 			protected render() {
-				return html`<Child :ref=${this.ref} />`
+				return lupos.html`<Child :ref=${this.ref} />`
 			}
 		}
 
-		class Child extends Component {}
+		class Child extends lupos.Component {}
 
 
 		let p = new Parent()
@@ -23,12 +23,12 @@ describe('Test :ref', () => {
 
 
 	test(':ref element & toggling', async () => {
-		class Com extends Component {
+		class Com extends lupos.Component {
 			ref!: HTMLElement | null
 			prop: boolean = true
 
 			protected render() {
-				return this.prop ? html`<div :ref=${this.ref} />` : null
+				return this.prop ? lupos.html`<div :ref=${this.ref} />` : null
 			}
 		}
 

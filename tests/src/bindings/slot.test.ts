@@ -1,19 +1,19 @@
 import {UpdateQueue} from '@pucelle/ff'
-import {Component, html} from '../../../'
+import * as lupos from '../../../'
 
 
 describe('Test :slot', () => {
 
 	test('Named :slot', async () => {
-		class Parent extends Component {
+		class Parent extends lupos.Component {
 			protected render() {
-				return html`<Child><div :slot="slotName">Slot Default Content</div></Child>`
+				return lupos.html`<Child><div :slot="slotName">Slot Default Content</div></Child>`
 			}
 		}
 		
-		class Child extends Component {
+		class Child extends lupos.Component {
 			protected render() {
-				return html`<slot name="slotName" />`
+				return lupos.html`<slot name="slotName" />`
 			}
 		}
 
@@ -26,16 +26,16 @@ describe('Test :slot', () => {
 
 
 	test('Named :slot toggling', async () => {
-		class Parent extends Component {
+		class Parent extends lupos.Component {
 			prop: boolean = true
 			protected render() {
-				return html`<Child>${this.prop ? html`<div :slot="slotName">Slot Content</div>` : null}</Child>`
+				return lupos.html`<Child>${this.prop ? lupos.html`<div :slot="slotName">Slot Content</div>` : null}</Child>`
 			}
 		}
 
-		class Child extends Component {
+		class Child extends lupos.Component {
 			protected render() {
-				return html`<slot name="slotName">Default Slot Content</slot>`
+				return lupos.html`<slot name="slotName">Default Slot Content</slot>`
 			}
 		}
 
@@ -57,16 +57,16 @@ describe('Test :slot', () => {
 
 
 	test('Rest Slot', async () => {
-		class Parent extends Component {
+		class Parent extends lupos.Component {
 			protected render() {
-				return html`<Child><div>Slot Content</div></Child>`
+				return lupos.html`<Child><div>Slot Content</div></Child>`
 			}
 		}
 
-		class Child extends Component {
+		class Child extends lupos.Component {
 
 			protected render() {
-				return html`<slot />`
+				return lupos.html`<slot />`
 			}
 		}
 

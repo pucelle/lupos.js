@@ -1,12 +1,12 @@
 import {DOMEvents, UpdateQueue, sleep} from '@pucelle/ff'
-import {Component, TransitionOptions, defineTransition, html} from '../../../'
+import * as lupos from '../../../'
 import {jest} from '@jest/globals'
 
 
 describe('Test :transition', () => {
 
 	// Jest env has no web animation API.
-	const perFrameFade = defineTransition(function(el: HTMLElement, options: TransitionOptions = {}) {
+	const perFrameFade = lupos.defineTransition(function(el: HTMLElement, options: lupos.TransitionOptions = {}) {
 		return {
 			...options,
 			perFrame: (progress: number) => {
@@ -16,12 +16,12 @@ describe('Test :transition', () => {
 	})
 
 	test(':transition=${...}', async () => {
-		class Com extends Component {
+		class Com extends lupos.Component {
 
 			prop: boolean = false
 
 			protected render() {
-				return this.prop ? html`<div :transition.immediate=${perFrameFade()}>Transition...` : null
+				return this.prop ? lupos.html`<div :transition.immediate=${perFrameFade()}>Transition...` : null
 			}
 		}
 

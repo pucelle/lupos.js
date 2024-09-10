@@ -1,23 +1,23 @@
 import {UpdateQueue} from '@pucelle/ff'
-import {Component, css, html} from '../../../'
+import * as lupos from '../../../'
 import {jest} from '@jest/globals'
 
 
 describe('Test Component', () => {
 
 	test('Component Apis', async () => {
-		class Parent extends Component {
+		class Parent extends lupos.Component {
 
 			static style() {
-				return css`.className{color: red;}`
+				return lupos.css`.className{color: red;}`
 			}
 
 			protected render() {
-				return html`<Child />`
+				return lupos.html`<Child />`
 			}
 		}
 
-		class Child extends Component {}
+		class Child extends lupos.Component {}
 
 
 		let parent = new Parent()
@@ -37,10 +37,10 @@ describe('Test Component', () => {
 		expect(fn1).toHaveBeenCalledTimes(1)
 		expect(fn2).toHaveBeenCalledTimes(1)
 
-		expect(Component.from(parent.el)).toBe(parent)
-		expect(Component.from(child.el)).toBe(child)
+		expect(lupos.Component.from(parent.el)).toBe(parent)
+		expect(lupos.Component.from(child.el)).toBe(child)
 
-		expect(Component.fromClosest(child.el)).toBe(child)
+		expect(lupos.Component.fromClosest(child.el)).toBe(child)
 		expect(Child.fromClosest(child.el)).toBe(child)
 		expect(Parent.fromClosest(child.el)).toBe(parent)
 
