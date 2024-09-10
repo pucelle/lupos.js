@@ -15,10 +15,10 @@
 	"sideEffects": false,
 	"scripts": {
 		"build": "tsc -b",
-		"build-tests": "cd tests && tspc",
 		"watch": "tsc -b -w",
 		"prepublish": "tsc -b",
-		"test": "npm run build && npm run build-test && node --experimental-vm-modules node_modules/jest/bin/jest.js"
+		"build-tests": "cd tests && tspc",
+		"test": "npm run build && npm run build-tests && node --experimental-vm-modules node_modules/jest/bin/jest.js"
 	},
 	"dependencies": {
 		"@pucelle/ff": "^2.0.0"
@@ -29,12 +29,7 @@
 		"fork-ts-checker-webpack-plugin": "^9.0.2",
 		"jest": "^29.7.0",
 		"jest-environment-jsdom": "^29.7.0",
-		"ts-jest": "^29.1.2",
-		"ts-loader": "^9.5.1",
 		"ts-patch": "^3.2.1",
-		"typescript": "^5.4.5",
-		"webpack": "^5.74.0",
-		"webpack-cli": "^5.1.4",
-		"webpack-dev-server": "^4.10.0"
+		"typescript": "^5.4.5"
 	}
 }
