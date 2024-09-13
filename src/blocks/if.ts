@@ -32,7 +32,7 @@ export class IfBlock {
 		if (newIndex !== this.index) {
 			let maker = newIndex >= 0 ? this.makers[newIndex] : null
 			this.template = maker ? maker.make(this.context, values) : null
-			this.slot.updateTemplateOnly(this.template, values)
+			this.slot.updateTemplateDirectly(this.template, values)
 			this.index = newIndex
 		}
 		else if (this.template) {
@@ -83,7 +83,7 @@ export class CacheableIfBlock {
 				this.templates.set(newIndex, template)
 			}
 			
-			this.slot.updateTemplateOnly(template, values)
+			this.slot.updateTemplateDirectly(template, values)
 			this.template = template
 		}
 		else if (this.template) {

@@ -196,7 +196,10 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 				
 				this.insertTemplate(newT, nextOldT)
 				newT.update(tr.values)
-				newT.afterConnectCallback(PartCallbackParameterMask.HappenInCurrentContext | PartCallbackParameterMask.DirectNodeToMove)
+
+				if (!hasConnectCallbackParameter(this)) {
+					newT.afterConnectCallback(PartCallbackParameterMask.HappenInCurrentContext | PartCallbackParameterMask.DirectNodeToMove)
+				}
 
 				oldTs[i] = newT
 			}
@@ -255,10 +258,10 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 	}
 
 	/** 
-	 * Update template manually without compare template maker.
+	 * Update template manually and directly without comparing template maker.
 	 * Use this when template is been managed and cached outside.
 	 */
-	updateTemplateOnly(this: TemplateSlot, t: Template | null, values: any[] | null) {
+	updateTemplateDirectly(this: TemplateSlot, t: Template | null, values: any[]) {
 		let oldT = this.content as Template | null
 
 		if (oldT === t) {
@@ -267,28 +270,28 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 			}
 		}
 		else {
-			if (oldT && !t) {
-				this.contentType = null
-			}
-			else if (!oldT && t) {
-				this.contentType = SlotContentType.TemplateResult
-			}
-
 			if (oldT) {
 				this.removeTemplate(oldT)
 			}
 
 			if (t) {
 				t.insertNodesBefore(this.endOuterPosition)
+				t.update(values!)
 
-				if (values) {
-					t.update(values)
+				if (!hasConnectCallbackParameter(this)) {
+					t.afterConnectCallback(PartCallbackParameterMask.HappenInCurrentContext | PartCallbackParameterMask.DirectNodeToMove)
 				}
-
-				t.afterConnectCallback(PartCallbackParameterMask.HappenInCurrentContext | PartCallbackParameterMask.DirectNodeToMove)
 			}
 
 			this.content = t
 		}
+	}
+
+	/** 
+	 * Update template list manually and directly without comparing template maker.
+	 * Use this when template list is been managed and cached outside.
+	 */
+	updateTemplateListDirectly(list: Template[]) {
+		this.content = list
 	}
 }

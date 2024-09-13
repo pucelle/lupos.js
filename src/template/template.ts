@@ -24,13 +24,8 @@ export class Template<A extends any[] = any[]> implements Part {
 	private readonly parts: [Part, PartPositionType][] | (() => [Part, PartPositionType][])
 
 	/** 
-	 * Required, can avoid call connect callbacks repeatedly.
-	 * 
-	 * E.g.,
-	 * - template1 was updated, cause inner slot to append template2.
-	 * - template2 was updated and connected.
-	 * - call template1 connect callback.
-	 * - cause template2's connect callback to be called repeatedly.
+	 * Required, a template may be appended and wait to call connect callback.
+	 * It may be then updated to be removed and call disconnect callback immediately.
 	 */
 	private connected: boolean = false
 	

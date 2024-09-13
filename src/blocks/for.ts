@@ -1,6 +1,6 @@
 import {EditType, getEditRecord} from '@pucelle/ff'
 import {CompiledTemplateResult, Template, TemplateSlot} from '../template'
-import {PartCallbackParameterMask} from '../part'
+import {hasConnectCallbackParameter, PartCallbackParameterMask} from '../part'
 
 
 /** 
@@ -67,6 +67,8 @@ export class ForBlock<T = any> {
 				this.removeTemplate(fromT!)
 			}
 		}
+
+		this.slot.updateTemplateListDirectly(this.templates)
 	}
 
 	private getItemAtIndex<T>(items: T[], index: number): T | null {
@@ -84,7 +86,10 @@ export class ForBlock<T = any> {
 
 		this.insertTemplate(t, nextOldT)
 		t.update(result.values)
-		t.afterConnectCallback(PartCallbackParameterMask.HappenInCurrentContext | PartCallbackParameterMask.DirectNodeToMove)
+
+		if (!hasConnectCallbackParameter(this.slot)) {
+			t.afterConnectCallback(PartCallbackParameterMask.HappenInCurrentContext | PartCallbackParameterMask.DirectNodeToMove)
+		}
 
 		this.templates.push(t)
 	}
@@ -93,8 +98,11 @@ export class ForBlock<T = any> {
 		let result = this.renderFn(item, index)
 
 		t.update(result.values)
-		t.afterConnectCallback(PartCallbackParameterMask.HappenInCurrentContext | PartCallbackParameterMask.DirectNodeToMove)
-		
+
+		if (!hasConnectCallbackParameter(this.slot)) {
+			t.afterConnectCallback(PartCallbackParameterMask.HappenInCurrentContext | PartCallbackParameterMask.DirectNodeToMove)
+		}
+
 		this.templates.push(t)
 	}
 

@@ -26,7 +26,7 @@ export class KeyedBlock {
 	update(newKey: any, values: any[]) {
 		if (newKey !== this.key) {
 			this.template = this.maker ? this.maker.make(this.context, values) : null
-			this.slot.updateTemplateOnly(this.template, values)
+			this.slot.updateTemplateDirectly(this.template, values)
 			this.key = newKey
 		}
 		else if (this.template) {
@@ -71,7 +71,7 @@ export class CacheableKeyedBlock {
 				this.templates.set(newKey, template)
 			}
 
-			this.slot.updateTemplateOnly(template, values)
+			this.slot.updateTemplateDirectly(template, values)
 			this.key = newKey
 			this.template = template
 		}
