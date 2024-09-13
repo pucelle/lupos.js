@@ -1,7 +1,7 @@
 import {SlotPosition, SlotStartInnerPositionType, SlotPositionType} from './slot-position'
 import {TemplateMaker, TemplateInitResult} from './template-maker'
 import {noop} from '@pucelle/ff'
-import {Part, PartCallbackParameterMask} from '../types'
+import {getTemplatePartParameter, Part, PartCallbackParameterMask, PartPositionType} from '../part'
 import {SlotPositionMap} from './slot-position-map'
 
 
@@ -19,7 +19,9 @@ export class Template<A extends any[] = any[]> implements Part {
 	readonly maker: TemplateMaker | null
 	readonly startInnerPosition: SlotPosition<SlotStartInnerPositionType>
 	readonly update: (values: A) => void
-	private readonly parts: Part[] | (() => Part[])
+
+	/** Part and it's position. */
+	private readonly parts: [Part, PartPositionType][] | (() => [Part, PartPositionType][])
 
 	/** 
 	 * Required, can avoid call connect callbacks repeatedly.
@@ -45,21 +47,22 @@ export class Template<A extends any[] = any[]> implements Part {
 		this.update = initResult.update ?? noop
 	}
 
-	afterConnectCallback(param: PartCallbackParameterMask) {
+	afterConnectCallback(param: PartCallbackParameterMask | 0) {
 		if (this.connected) {
 			return
 		}
 
 		let parts = typeof this.parts === 'function' ? this.parts() : this.parts
 
-		for (let part of parts) {
-			part.afterConnectCallback(param)
+		for (let [part, position] of parts) {
+			let partParam = getTemplatePartParameter(param, position)
+			part.afterConnectCallback(partParam)
 		}
 		
 		this.connected = true
 	}
 
-	beforeDisconnectCallback(param: PartCallbackParameterMask): Promise<void> | void {
+	beforeDisconnectCallback(param: PartCallbackParameterMask | 0): Promise<void> | void {
 		if (!this.connected) {
 			return
 		}
@@ -69,8 +72,10 @@ export class Template<A extends any[] = any[]> implements Part {
 		let promises: Promise<void>[] = []
 		let parts = typeof this.parts === 'function' ? this.parts() : this.parts
 
-		for (let part of parts) {
-			let p = part.beforeDisconnectCallback(param)
+		for (let [part, position] of parts) {
+			let partParam = getTemplatePartParameter(param, position)
+			let p = part.beforeDisconnectCallback(partParam)
+
 			if (p) {
 				promises.push(p)
 			}
@@ -87,10 +92,7 @@ export class Template<A extends any[] = any[]> implements Part {
 	 * If cant find a node, returns `null`.
 	 */
 	getFirstNode(): ChildNode | null {
-		if (!this.startInnerPosition) {
-			return null
-		}
-		else if (this.startInnerPosition.type === SlotPositionType.Before) {
+		if (this.startInnerPosition.type === SlotPositionType.Before) {
 			return this.startInnerPosition.target as ChildNode
 		}
 		else {
@@ -115,10 +117,7 @@ export class Template<A extends any[] = any[]> implements Part {
 	 * Will call disconnect callback before recycling nodes.
 	 */
 	async recycleNodes() {
-		let promise = this.beforeDisconnectCallback(
-			PartCallbackParameterMask.HappenInCurrentContext
-			| PartCallbackParameterMask.DirectNodeToMove
-		)
+		let promise = this.beforeDisconnectCallback(PartCallbackParameterMask.HappenInCurrentContext | PartCallbackParameterMask.DirectNodeToMove)
 
 		// Ensure be able to recycle nodes immediately if possible.
 		if (promise) {

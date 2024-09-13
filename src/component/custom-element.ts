@@ -1,6 +1,6 @@
 import {getComponentFromElement} from './from-element'
 import {ComponentConstructor} from './types'
-import {PartCallbackParameterMask} from '../types'
+import {PartCallbackParameterMask} from '../part'
 
 
 /** Map custom element property to component property. */

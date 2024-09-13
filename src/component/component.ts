@@ -3,7 +3,7 @@ import {ensureComponentStyle, ComponentStyle} from './style'
 import {addElementComponentMap, getComponentFromElement} from './from-element'
 import {TemplateSlot, SlotPosition, SlotPositionType, CompiledTemplateResult, SlotContentType} from '../template'
 import {ComponentConstructor, RenderResult} from './types'
-import {Part, PartCallbackParameterMask} from '../types'
+import {getComponentSlotParameter, getConnectCallbackParameter, holdConnectCallbackParameter, Part, PartCallbackParameterMask} from '../part'
 import {SlotRange} from '../template/slot-range'
 import {deleteContextVariables, getContextVariableDeclared, setContextVariable} from './context-variable'
 
@@ -36,7 +36,6 @@ let IncrementalId = 1
 
 /** Components state. */
 enum ComponentStateMask {
-	None = 0,
 	Created = 2 ** 0,
 	Ready = 2 ** 1,
 	Connected = 2 ** 2,
@@ -46,7 +45,7 @@ enum ComponentStateMask {
 
 /** 
  * Super class of all the components.
- * - `E`: Event interface in `{eventName: (...args) => void}` format.
+ * @typeparam `E`: Event interface in `{eventName: (...args) => void}` format.
  * 
  * Note about:
  * - If instantiate from being part of a template, It **can** be connected or disconnected after it's parent component insert or delete it.
@@ -79,15 +78,15 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	/** 
 	 * Get component instance from an element.
 	 * Returned result will be auto-inferred as instance of current constructor, so please ensure they are.
-	 * - `el`: The element to get component instance at.
+	 * @param element: The element to get component instance at.
 	 */
-	static from<C extends {new (...args: any): any}>(this: C, el: Element): InstanceType<C> | null {
-		return getComponentFromElement(el) as any
+	static from<C extends {new (...args: any): any}>(this: C, element: Element): InstanceType<C> | null {
+		return getComponentFromElement(element) as any
 	}
 
 	/** 
 	 * Get closest ancestor element (or self) which is the instance of specified component constructor.
-	 * - `el`: The element from which to check component instance.
+	 * @param element: The element from which to check component instance.
 	 */
 	static fromClosest<C extends {new (...args: any): any}>(this: C, element: Element): InstanceType<C> | null {
 		let el: Element | null = element
@@ -113,7 +112,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	/** Compiler will add this variable after analysis render result. */
 	static SlotContentType: SlotContentType | null = null
 
-	
+
 	/** 
 	 * Help to identify the create orders of component.
 	 * Only for internal usages.
@@ -124,7 +123,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	readonly el: HTMLElement
 
 	/** State of current component, byte mask type. */
-	protected state: ComponentStateMask = ComponentStateMask.None
+	protected state: ComponentStateMask | 0 = 0
 
 	/** Help to patch render result to current element. */
 	protected readonly contentSlot!: TemplateSlot<any>
@@ -283,7 +282,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		return this.restSlotRange ? [...this.restSlotRange.walkNodes()] : []
 	}
 
-	afterConnectCallback(this: Component, _param: PartCallbackParameterMask) {
+	afterConnectCallback(this: Component, param: PartCallbackParameterMask | 0) {
 		if (this.connected) {
 			return
 		}
@@ -294,14 +293,14 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		}
 
 		this.state |= ComponentStateMask.Connected
-		this.state &= ~ComponentStateMask.ConnectCallbackCalled
-		
-		this.willUpdate()
 		this.onConnected()
 		this.fire('connected')
+
+		holdConnectCallbackParameter(this.contentSlot, getComponentSlotParameter(param))
+		this.willUpdate()
 	}
 
-	beforeDisconnectCallback(this: Component, param: PartCallbackParameterMask): Promise<void> | void {
+	beforeDisconnectCallback(this: Component, param: PartCallbackParameterMask | 0): Promise<void> | void {
 		if (!this.connected) {
 			return
 		}
@@ -312,17 +311,16 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		this.onDisconnected()
 		this.fire('disconnected')
 
-		// Only call when called connect callback.
-		// Only `RemoveImmediately` parameter passes.
+		// If haven't called connect callback, not call disconnect callback also.
 		if ((this.state & ComponentStateMask.ConnectCallbackCalled) > 0) {
-			return this.contentSlot.beforeDisconnectCallback(param & PartCallbackParameterMask.RemoveImmediately)
+			return this.contentSlot.beforeDisconnectCallback(getComponentSlotParameter(param))
 		}
 	}
 
 	/** After any tracked data change, enqueue it to update in next animation frame. */
 	protected willUpdate() {
 		
-		// Create earlier, update earlier.
+		// Component create earlier, update earlier.
 		UpdateQueue.enqueue(this.update, this, this.incrementalId)
 	}
 	
@@ -332,20 +330,21 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 			return
 		}
 
-		// May provide an `onBeforeUpdate` here.
-		
 		this.updateRendering()
 		this.onUpdated()
 		this.fire('updated')
 
+		
+		// Call connect callback if not yet.
+		if ((this.state & ComponentStateMask.ConnectCallbackCalled) === 0) {
+			this.state |= ComponentStateMask.ConnectCallbackCalled
+			this.contentSlot.afterConnectCallback(getConnectCallbackParameter(this.contentSlot)!)
+		}
+
+		// Call ready if not yet.
 		if ((this.state & ComponentStateMask.Ready) === 0) {
 			this.state |= ComponentStateMask.Ready
 			this.onReady()
-		}
-
-		if ((this.state & ComponentStateMask.ConnectCallbackCalled) === 0) {
-			this.state |= ComponentStateMask.ConnectCallbackCalled
-			this.contentSlot.afterConnectCallback(0)
 		}
 	}
 
@@ -377,30 +376,42 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		return null
 	}
 	
-	/** Append current element into a container, and connect. */
+	/** Append current element into a container, and do connect. */
 	appendTo(container: Element) {
+		if (this.connected) {
+			this.remove()
+		}
+		
 		container.append(this.el)
 		
 		if (this.el.ownerDocument) {
-			this.afterConnectCallback(0)
+			this.afterConnectCallback(PartCallbackParameterMask.DirectNodeToMove | PartCallbackParameterMask.HappenInCurrentContext)
 		}
 	}
 
-	/** Insert current element before an element, and connect. */
+	/** Insert current element before an element, and do connect. */
 	insertBefore(sibling: Element) {
+		if (this.connected) {
+			this.remove()
+		}
+
 		sibling.before(this.el)
 
 		if (this.el.ownerDocument) {
-			this.afterConnectCallback(0)
+			this.afterConnectCallback(PartCallbackParameterMask.DirectNodeToMove | PartCallbackParameterMask.HappenInCurrentContext)
 		}
 	}
 
-	/** Insert current element after an element, and connect. */
+	/** Insert current element after an element, and do connect. */
 	insertAfter(sibling: Element) {
+		if (this.connected) {
+			this.remove()
+		}
+
 		sibling.after(this.el)
 
 		if (this.el.ownerDocument) {
-			this.afterConnectCallback(0)
+			this.afterConnectCallback(PartCallbackParameterMask.DirectNodeToMove | PartCallbackParameterMask.HappenInCurrentContext)
 		}
 	}
 
@@ -409,7 +420,11 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		
 		// Not wait for leave transition.
 		if (this.connected) {
-			this.beforeDisconnectCallback(PartCallbackParameterMask.RemoveImmediately)
+			this.beforeDisconnectCallback(
+				PartCallbackParameterMask.RemoveImmediately
+				| PartCallbackParameterMask.DirectNodeToMove
+				| PartCallbackParameterMask.HappenInCurrentContext
+			)
 		}
 		
 		this.el.remove()

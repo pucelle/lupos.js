@@ -33,10 +33,7 @@ export class SlotPositionMap {
 		return this.tpMap.get(template)
 	}
 
-	/** 
-	 * Delete a template and it's cached position.
-	 * - `position`: the position just after template.
-	 */
+	/** Delete a template and it's cached position. */
 	deletePosition(template: Template<any>, position: SlotPosition) {
 		let prevT = this.ptMap.get(template.startInnerPosition)
 

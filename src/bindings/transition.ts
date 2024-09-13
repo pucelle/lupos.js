@@ -1,7 +1,7 @@
 import {DeepReadonly, ObjectUtils, PerFrameTransition, WebTransition, WebTransitionOptions} from '@pucelle/ff'
 import {Binding} from './types'
 import {PerFrameTransitionProperties, TransitionOptions, TransitionProperties, TransitionResult, WebTransitionProperties} from './transitions'
-import {Part, PartCallbackParameterMask} from '../types'
+import {Part, PartCallbackParameterMask} from '../part'
 
 
 /** Transition type, enum of two. */
@@ -57,7 +57,7 @@ export class TransitionBinding implements Binding, Part {
 		NotConnectCallbackForFirstTime.add(this)
 	}
 
-	afterConnectCallback(param: PartCallbackParameterMask) {
+	afterConnectCallback(param: PartCallbackParameterMask | 0) {
 		if (NotConnectCallbackForFirstTime.has(this)) {
 			NotConnectCallbackForFirstTime.delete(this)
 
@@ -67,19 +67,19 @@ export class TransitionBinding implements Binding, Part {
 			}
 		}
 
-		if (this.global || param & PartCallbackParameterMask.DirectNodeToMove) {
+		if (this.global || (param & PartCallbackParameterMask.DirectNodeToMove) > 0) {
 			this.enter()
 		}
 	}
 
-	beforeDisconnectCallback(param: PartCallbackParameterMask): Promise<void> | void {
+	beforeDisconnectCallback(param: PartCallbackParameterMask | 0): Promise<void> | void {
 
 		// Ancestral element has been removed immediately, no need to play transition.
-		if (param & PartCallbackParameterMask.RemoveImmediately) {
+		if ((param & PartCallbackParameterMask.RemoveImmediately) > 0) {
 			return
 		}
 
-		if (this.global || param & PartCallbackParameterMask.DirectNodeToMove) {
+		if (this.global || (param & PartCallbackParameterMask.DirectNodeToMove) > 0) {
 			return this.leave()
 		}
 	}

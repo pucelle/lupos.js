@@ -1,6 +1,6 @@
 import {SlotPosition, SlotStartInnerPositionType} from './slot-position'
 import {Template} from './template'
-import {Part} from '../types'
+import {Part, PartPositionType} from '../part'
 
 
 /** Compiler compile a html`<div>...` to a `TemplateMaker(TemplateInitFn)`. */
@@ -25,7 +25,7 @@ export interface TemplateInitResult {
 	 * List of all the parts inside.
 	 * If no parts inside, ignores this property.
 	 */
-	parts?: Part[] | (() => Part[])
+	parts?: [Part, PartPositionType][] | (() => [Part, PartPositionType][])
 }
 
 

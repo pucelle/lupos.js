@@ -3,6 +3,7 @@ import {TemplateInitResult, TemplateMaker} from './template-maker'
 import {SlotPosition, SlotPositionType, SlotStartInnerPositionType} from './slot-position'
 import {Component} from '../component'
 import {Template} from './template'
+import {PartPositionType} from '../part'
 
 
 /** Template has only a text node inside. */
@@ -75,6 +76,6 @@ export function makeTemplateByComponent(com: Component): Template {
 	return new Template({
 		el,
 		position,
-		parts: [com],
+		parts: [[com, PartPositionType.DirectNode]],
 	})
 }

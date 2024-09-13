@@ -1,5 +1,5 @@
 import {Component} from '../component'
-import {Part, PartCallbackParameterMask} from '../types'
+import {Part, PartCallbackParameterMask} from '../part'
 import {Binding} from './types'
 
 
@@ -45,7 +45,7 @@ export class RefBinding implements Binding, Part {
 		}
 	}
 
-	afterConnectCallback(param: PartCallbackParameterMask) {
+	afterConnectCallback(param: PartCallbackParameterMask | 0) {
 		if ((param & PartCallbackParameterMask.HappenInCurrentContext) === 0) {
 			return
 		}
@@ -55,7 +55,7 @@ export class RefBinding implements Binding, Part {
 		}
 	}
 
-	beforeDisconnectCallback(param: PartCallbackParameterMask) {
+	beforeDisconnectCallback(param: PartCallbackParameterMask | 0) {
 		if ((param & PartCallbackParameterMask.HappenInCurrentContext) === 0) {
 			return
 		}

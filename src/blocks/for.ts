@@ -1,6 +1,6 @@
 import {EditType, getEditRecord} from '@pucelle/ff'
 import {CompiledTemplateResult, Template, TemplateSlot} from '../template'
-import {PartCallbackParameterMask} from '../types'
+import {PartCallbackParameterMask} from '../part'
 
 
 /** 

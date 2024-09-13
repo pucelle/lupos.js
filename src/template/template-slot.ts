@@ -1,7 +1,7 @@
 import {SlotPosition, SlotEndOuterPositionType} from './slot-position'
 import {Template} from './template'
 import {CompiledTemplateResult} from './template-result-compiled'
-import {Part, PartCallbackParameterMask} from '../types'
+import {hasConnectCallbackParameter, Part, PartCallbackParameterMask} from '../part'
 import {NodeTemplateMaker, TextTemplateMaker} from './template-makers'
 
 
@@ -30,9 +30,9 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 	readonly endOuterPosition: SlotPosition<SlotEndOuterPositionType>
 	readonly context: any
 
-	protected contentType: T | null = null
-	protected readonly knownContentType: boolean
-	protected content: Template | Template[] | ChildNode | null = null
+	private contentType: T | null = null
+	private readonly knownContentType: boolean
+	private content: Template | Template[] | null = null
 
 	constructor(
 		endOuterPosition: SlotPosition<SlotEndOuterPositionType>,
@@ -45,18 +45,18 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 		this.knownContentType = knownType !== null
 	}
 
-	afterConnectCallback(param: PartCallbackParameterMask) {
-		if (this.contentType === SlotContentType.TemplateResult) {
-			(this.content as Template).afterConnectCallback(param)
-		}
-		else if (this.contentType === SlotContentType.TemplateResultList) {
+	afterConnectCallback(param: PartCallbackParameterMask | 0) {
+		if (this.contentType === SlotContentType.TemplateResultList) {
 			for (let t of this.content as Template[]) {
 				t.afterConnectCallback(param)
 			}
 		}
+		else if (this.contentType !== null) {
+			(this.content as Template).afterConnectCallback(param)
+		}
 	}
 
-	beforeDisconnectCallback(param: PartCallbackParameterMask): Promise<void> | void {
+	beforeDisconnectCallback(param: PartCallbackParameterMask | 0): Promise<void> | void {
 		if (this.contentType === SlotContentType.TemplateResult) {
 			return (this.content as Template).beforeDisconnectCallback(param)
 		}
@@ -105,7 +105,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 	}
 	
 	/** Identify content type by value. */
-	protected identifyContentType(value: unknown): T | null {
+	private identifyContentType(value: unknown): T | null {
 		if (value === null || value === undefined) {
 			return null
 		}
@@ -124,7 +124,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 	}
 
 	/** Clear current content, reset content and content type. */
-	protected clearContent() {
+	private clearContent() {
 		if (!this.content) {
 			return
 		}
@@ -149,7 +149,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 	}
 
 	/** Update from a template result. */
-	protected updateTemplateResult(tr: CompiledTemplateResult) {
+	private updateTemplateResult(tr: CompiledTemplateResult) {
 		let oldT = this.content as Template | null
 		if (oldT && oldT.maker === tr.maker) {
 			oldT.update(tr.values)
@@ -162,14 +162,17 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 			let newT = tr.maker.make(this.context, tr.values)
 			newT.insertNodesBefore(this.endOuterPosition)
 			newT.update(tr.values)
-			newT.afterConnectCallback(PartCallbackParameterMask.HappenInCurrentContext | PartCallbackParameterMask.DirectNodeToMove)
+
+			if (!hasConnectCallbackParameter(this)) {
+				newT.afterConnectCallback(PartCallbackParameterMask.HappenInCurrentContext | PartCallbackParameterMask.DirectNodeToMove)
+			}
 			
 			this.content = newT
 		}
 	}
 
 	/** Update from a template result list. */
-	protected updateTemplateResultList(trs: CompiledTemplateResult[]) {
+	private updateTemplateResultList(trs: CompiledTemplateResult[]) {
 		let oldTs = this.content as Template[] | null
 		if (!oldTs) {
 			oldTs = this.content = []
@@ -209,18 +212,18 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 	}
 
 	/** Insert a template before another one. */
-	protected insertTemplate(t: Template, nextT: Template | null) {
+	private insertTemplate(t: Template, nextT: Template | null) {
 		let position = nextT?.startInnerPosition ?? this.endOuterPosition
 		t.insertNodesBefore(position)
 	}
 
 	/** Remove a template. */
-	protected removeTemplate(t: Template) {
+	private removeTemplate(t: Template) {
 		t.recycleNodes()
 	}
 
 	/** Update from a text-like value. */
-	protected updateText(value: unknown) {
+	private updateText(value: unknown) {
 		let text = value === null || value === undefined ? '' : String(value).trim()
 		let t = this.content as Template<[string]> | null
 
@@ -233,7 +236,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 	}
 
 	/** Update from a node. */
-	protected updateNode(node: ChildNode | null) {
+	private updateNode(node: ChildNode | null) {
 		let t = this.content as Template<ChildNode[]> | null
 
 		if (node) {
