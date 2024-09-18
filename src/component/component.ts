@@ -11,22 +11,28 @@ import {deleteContextVariables, getContextVariableDeclared, setContextVariable} 
 export interface ComponentEvents {
 
 	/** 
-	 * After component's element was inserted into document.
-	 * Will be dispatched after every time the component's element entered into document.
+	 * After component's element was inserted into document,
+	 * and component itself haven't been updated, but have been enqueued to update.
+	 * Will be dispatched every time the component's element entered into document.
+	 * 
+	 * You may assign some properties or register events here.
 	 */
-	connected: () => void
+	'connected': () => void
 
 	/** 
-	 * After component's element was removed from document.
-	 * Will be dispatched after every time the component's element was removed from document.
+	 * After component's element will soon be removed from document.
+	 * Will be dispatched every time the component's element will be removed from document.
+	 * 
+	 * You may cache some dom properties or release events here.
 	 */
-	disconnected: () => void
+	'will-disconnect': () => void
 
 	/** 
-	 * After every time the component's all the data and child nodes updated.
-	 * All the child components have dispatched `updated` event now.
+	 * After every time the component get updated.
+	 * Right now all data has been assigned, content parts have been updated.
+	 * but descendant components haven't dispatched updated event.
 	 */
-	updated: () => void
+	'updated': () => void
 }
 
 
@@ -192,40 +198,38 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	protected onUpdated() {}
 
 	/** 
-	 * Called after component's element was inserted into document.
-	 * This will be called each time you inserting the element into document.
+	 * After component's element was inserted into document,
+	 * and component itself haven't been updated, but have been enqueued to update.
+	 * Will be dispatched every time the component's element entered into document.
+	 * 
+	 * You may assign some properties or register events here.
 	 * 
 	 * If you need to register global listeners like `resize` when element exist in document,
 	 * or watch non-self properties, you should register them here.
 	 * 
 	 * If choose to overwrite `onConnected`, Never forget to call `super.onConnected()`.
 	 */
-	protected onConnected() {
-		// After compiled by `@pucelle/lupos.compiler`:
-		// - Will track all the `@computed` values here.
-		// - Will start `@watch` properties here.
-	}
+	protected onConnected() {}
 
-	/**
-	 * Called after component's element was removed from document.
-	 * This will be called for each time you removing the element from document.
+	/** 
+	 * After component's element will soon be removed from document.
+	 * Will be dispatched every time the component's element will be removed from document.
+	 * 
+	 * You may cache some dom properties or release events here.
 	 * 
 	 * If you need to register global listeners like `resize` when element exist in document,
 	 * or watch non-self properties, you should unregister them here.
 	 * 
-	 * If choose to overwrite `onDisconnected`, Never forget to call `super.onDisconnected()`.
+	 * If choose to overwrite `onWillDisconnect`, Never forget to call `super.onWillDisconnect()`.
 	 */
-	protected onDisconnected() {
-		// After compiled by `@pucelle/lupos.compiler`:
-		// - Will clear and untrack all the `@computed` values here.
-		// - Will stop `@watch` properties here.
-	}
+	protected onWillDisconnect() {}
 
 	/** 
 	 * Returns a promise which will be resolved after the component is ready,
+	 * `ready` means first time updated.
 	 * If is ready already, resolve the promise immediately.
 	 */
-	protected untilReady(this: Component): Promise<void> {
+	protected untilReady(this: Component<{}>): Promise<void> {
 		if ((this.state & ComponentStateMask.Ready) === 0) {
 			return new Promise(resolve => {
 				this.once('updated', resolve)
@@ -282,7 +286,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		return this.restSlotRange ? [...this.restSlotRange.walkNodes()] : []
 	}
 
-	afterConnectCallback(this: Component, param: PartCallbackParameterMask | 0) {
+	afterConnectCallback(this: Component<{}>, param: PartCallbackParameterMask | 0) {
 		if (this.connected) {
 			return
 		}
@@ -297,10 +301,12 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		this.fire('connected')
 
 		holdConnectCallbackParameter(this.contentSlot, getComponentSlotParameter(param))
+		
+		// onConnected will enqueue something, here should ensure enqueuing update later than it.
 		this.willUpdate()
 	}
 
-	beforeDisconnectCallback(this: Component, param: PartCallbackParameterMask | 0): Promise<void> | void {
+	beforeDisconnectCallback(this: Component<{}>, param: PartCallbackParameterMask | 0): Promise<void> | void {
 		if (!this.connected) {
 			return
 		}
@@ -308,8 +314,8 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		untrack(this.willUpdate, this)
 
 		this.state &= ~ComponentStateMask.Connected
-		this.onDisconnected()
-		this.fire('disconnected')
+		this.onWillDisconnect()
+		this.fire('will-disconnect')
 
 		// If haven't called connect callback, not call disconnect callback also.
 		if ((this.state & ComponentStateMask.ConnectCallbackCalled) > 0) {
@@ -325,7 +331,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	}
 	
 	/** Doing update immediately. */
-	update(this: Component) {
+	update(this: Component<{}>) {
 		if (!this.connected) {
 			return
 		}

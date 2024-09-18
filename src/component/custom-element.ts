@@ -59,13 +59,13 @@ function defineCallbacks(name: string) {
 	}, {extends: 'div'})
 }
 
-/** Connect callback for an element. */
+/** Connect callback of custom element. */
 function onConnected(el: HTMLElement) {
 	let com = getComponentFromElement(el)
 
 	// Component instance is created.
 	if (com) {
-		com.afterConnectCallback(0)
+		com.afterConnectCallback(PartCallbackParameterMask.HappenInCurrentContext | PartCallbackParameterMask.DirectNodeToMove)
 	}
 	else {
 		let {Com, propertyMap} = CustomElementConstructorMap.get(el.localName)!
@@ -96,11 +96,16 @@ function makeProperties(el: HTMLElement, propertyMap: PropertyMapOf<any>): Recor
 	return props
 }
 
-/** Disconnect callback for an element. */
+/** Disconnect callback of custom element. */
 function onDisconnected(el: HTMLElement) {
 	let com = getComponentFromElement(el)
 	if (com && com.connected) {
-		com.beforeDisconnectCallback(PartCallbackParameterMask.RemoveImmediately)
+		com.beforeDisconnectCallback(
+			PartCallbackParameterMask.HappenInCurrentContext
+			| PartCallbackParameterMask.DirectNodeToMove
+			| PartCallbackParameterMask.RemoveImmediately
+		)
+		
 		console.warn(`Suggest you DON'T remove custom element directly, which will cause disconnect action cant work as expected! We suggest you to remove component instead.`, 'CustomElementDisconnectActionWarning')
 	}
 }

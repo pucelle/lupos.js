@@ -261,7 +261,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 	 * Update template manually and directly without comparing template maker.
 	 * Use this when template is been managed and cached outside.
 	 */
-	updateTemplateDirectly(this: TemplateSlot, t: Template | null, values: any[]) {
+	updateTemplateDirectly(t: Template | null, values: any[]) {
 		let oldT = this.content as Template | null
 
 		if (oldT === t) {

@@ -34,7 +34,7 @@ export class SlotPosition<T = SlotPositionType> {
 	 * Get first node of the all the contents that inside of current slot.
 	 * Available only when current position represents a start inner position.
 	 */
-	getStartNode(this: SlotPosition<SlotStartInnerPositionType>): ChildNode | null {
+	getStartNode(): ChildNode | null {
 		if (this.type === SlotPositionType.Before) {
 			return (this.target as ChildNode)
 		}
