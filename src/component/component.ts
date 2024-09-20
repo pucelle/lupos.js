@@ -1,4 +1,4 @@
-import {ContextVariableConstructor, EventFirer, Observed, UpdateQueue, beginTrack, endTrack, trackGet, trackSet, untrack} from '@pucelle/ff'
+import {ContextVariableConstructor, EventFirer, Observed, enqueue, beginTrack, endTrack, trackGet, trackSet, untrack} from '@pucelle/ff'
 import {ensureComponentStyle, ComponentStyle} from './style'
 import {addElementComponentMap, getComponentFromElement} from './from-element'
 import {TemplateSlot, SlotPosition, SlotPositionType, CompiledTemplateResult, SlotContentType} from '../template'
@@ -12,10 +12,11 @@ export interface ComponentEvents {
 
 	/** 
 	 * After component's element was inserted into document,
-	 * and component itself haven't been updated, but have been enqueued to update.
+	 * and component itself has been assigned properties.
+	 * Component hasn't updated, but have been enqueued to update.
 	 * Will be dispatched every time the component's element entered into document.
 	 * 
-	 * You may assign some properties or register events here.
+	 * You may assign some more properties or register events here.
 	 */
 	'connected': () => void
 
@@ -327,7 +328,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	protected willUpdate() {
 		
 		// Component create earlier, update earlier.
-		UpdateQueue.enqueue(this.update, this, this.incrementalId)
+		enqueue(this.update, this, this.incrementalId)
 	}
 	
 	/** Doing update immediately. */

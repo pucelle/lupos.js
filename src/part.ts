@@ -1,4 +1,5 @@
-import {UpdateQueue} from "@pucelle/ff"
+import {onComplete} from '@pucelle/ff'
+
 
 /** Values of Part Callback Parameter. */
 export enum PartCallbackParameterMask {
@@ -140,7 +141,7 @@ function cleanShortHeldPartCallbackParameters() {
 export function holdConnectCallbackParameter(part: Part, param: PartCallbackParameterMask | 0) {
 	HeldPartCallbackParameters.set(part, param)
 	if (!enqueuedShortHeldClean) {
-		UpdateQueue.onComplete(cleanShortHeldPartCallbackParameters)
+		onComplete(cleanShortHeldPartCallbackParameters)
 		enqueuedShortHeldClean = true
 	}
 }
