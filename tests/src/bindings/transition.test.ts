@@ -1,4 +1,4 @@
-import {DOMEvents, untilComplete, sleep} from '@pucelle/ff'
+import {DOMEvents, untilComplete, sleep, TransitionOptions, Transition} from '@pucelle/ff'
 import * as lupos from '../../../'
 import {jest} from '@jest/globals'
 
@@ -6,7 +6,7 @@ import {jest} from '@jest/globals'
 describe('Test :transition', () => {
 
 	// Jest env has no web animation API.
-	const perFrameFade = lupos.defineTransition(function(el: HTMLElement, options: lupos.TransitionOptions = {}) {
+	const perFrameFade = Transition.define(function(el: HTMLElement, options: TransitionOptions = {}) {
 		return {
 			...options,
 			perFrame: (progress: number) => {

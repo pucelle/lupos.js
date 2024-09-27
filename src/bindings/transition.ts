@@ -1,14 +1,23 @@
-import {DeepReadonly, ObjectUtils, PerFrameTransition, WebTransition, WebTransitionOptions} from '@pucelle/ff'
+import {Transition, TransitionOptions, TransitionResult} from '@pucelle/ff'
 import {Binding} from './types'
-import {PerFrameTransitionProperties, TransitionOptions, TransitionProperties, TransitionResult, WebTransitionProperties} from './transitions'
 import {Part, PartCallbackParameterMask} from '../part'
 
 
-/** Transition type, enum of two. */
-enum MixedTransitionType {
-	PerFrame,
-	Web,
+export interface TransitionBindingOptions extends TransitionOptions {
+
+	/** 
+	 * Specifies transition direction.
+	 * E.g., if specifies to `enter` and need to play leave transition, nothing happens.
+	 * Default value is `both`.
+	 */
+	direction?: TransitionDirection
 }
+
+/** 
+ * Transition direction, includes enter and leave part.
+ * Only direction is allowed the transition can play.
+ */
+export type TransitionDirection = 'enter' | 'leave' | 'both' | 'none'
 
 
 /** Cache those bindings that haven't trigger connect callback yet. */
@@ -46,13 +55,13 @@ export class TransitionBinding implements Binding, Part {
 	private immediate: boolean = false
 
 	private result: TransitionResult | null = null
-	private mixedTransitionType: MixedTransitionType | null = null
-	private mixedTransition: PerFrameTransition | WebTransition | null = null
+	private transition: Transition
 
 	constructor(el: Element, _context: any, modifiers: ('global' | 'local' | 'immediate')[] = []) {
 		this.el = el
 		this.global = modifiers.includes('global')
 		this.immediate = modifiers.includes('immediate')
+		this.transition = new Transition(this.el)
 
 		NotConnectCallbackForFirstTime.add(this)
 	}
@@ -80,7 +89,7 @@ export class TransitionBinding implements Binding, Part {
 		}
 
 		if (this.global || (param & PartCallbackParameterMask.DirectNodeToMove) > 0) {
-			return this.leave()
+			return this.leave() as Promise<void> | void
 		}
 	}
 
@@ -89,123 +98,25 @@ export class TransitionBinding implements Binding, Part {
 
 		// Cancel transition immediately if transition value becomes `null`.
 		if (!this.result) {
-			this.clearTransition()
-		}
-	}
-
-	private clearTransition() {
-		this.mixedTransitionType = null
-
-		if (this.mixedTransition) {
-			this.mixedTransition.cancel()
-			this.mixedTransition = null
+			this.transition.cancel()
 		}
 	}
 
 	/** Called after the attached element is connected into document. */
-	async enter() {
+	enter(): Promise<boolean | null> | void {
 		if (!this.result) {
 			return
 		}
 
-		let {direction} = this.result.options as DeepReadonly<TransitionOptions>
-		if (direction === 'leave' || direction === 'none') {
-			return
-		}
-
-		let props = await this.result.getter(this.el, this.result.options, 'enter')
-		if (!props) {
-			return
-		}
-		
-		this.updateMixedTransition(props)
-
-		let enterStartedEvent = new CustomEvent('transition-enter-started')
-		this.el.dispatchEvent(enterStartedEvent)
-
-		if (this.mixedTransitionType === MixedTransitionType.PerFrame) {
-			let perFrame = (props as PerFrameTransitionProperties).perFrame
-			await (this.mixedTransition as PerFrameTransition).playBetween(0, 1, perFrame)
-		}
-		else {
-			let startFrame = (props as WebTransitionProperties).startFrame;
-			let endFrame = (props as WebTransitionProperties).endFrame;
-			await (this.mixedTransition as WebTransition).playBetween(startFrame, endFrame)
-		}
-
-		let enterEndedEvent = new CustomEvent('transition-enter-ended')
-		this.el.dispatchEvent(enterEndedEvent)
+		return this.transition.enter(this.result)
 	}
 
 	/** Called before the attached element begin to disconnect from document. */
-	async leave() {
+	leave(): Promise<boolean | null> | void {
 		if (!this.result) {
 			return
 		}
 
-		let {direction} = this.result.options as DeepReadonly<TransitionOptions>
-		if (direction === 'enter' || direction === 'none') {
-			return
-		}
-
-		let props = await this.result.getter(this.el, this.result.options, 'leave')
-		if (!props) {
-			return
-		}
-
-		this.updateMixedTransition(props)
-
-		let leaveStartedEvent = new CustomEvent('transition-leave-started')
-		this.el.dispatchEvent(leaveStartedEvent)
-
-		if (this.mixedTransitionType === MixedTransitionType.PerFrame) {
-			let perFrame = (props as PerFrameTransitionProperties).perFrame;
-			await (this.mixedTransition as PerFrameTransition).playBetween(1, 0, perFrame);
-		}
-		else {
-			let startFrame = (props as WebTransitionProperties).startFrame;
-			let endFrame = (props as WebTransitionProperties).endFrame;
-			await (this.mixedTransition as WebTransition).playBetween(endFrame, startFrame)
-		}
-
-		let leaveEndedEvent = new CustomEvent('transition-leave-ended')
-		this.el.dispatchEvent(leaveEndedEvent)
-	}
-
-	private updateMixedTransition(props: TransitionProperties) {
-		let type = this.getMixedTransitionType(props)
-
-		if (this.mixedTransitionType !== type) {
-			if (this.mixedTransition) {
-				this.mixedTransition.finish()
-			}
-
-			this.mixedTransition = null
-			this.mixedTransitionType = type
-		}
-
-		if (!this.mixedTransition) {
-			let options = ObjectUtils.cleanEmptyValues({
-				duration: props.duration,
-				easing: props.easing,
-				delay: props.delay,
-			})
-
-			if (type === MixedTransitionType.PerFrame) {
-				this.mixedTransition = new PerFrameTransition(options)
-			}
-			else {
-				this.mixedTransition = new WebTransition(this.el, options as WebTransitionOptions)
-			}
-		}
-	}
-
-	private getMixedTransitionType(props: TransitionProperties): MixedTransitionType {
-		if ((props as PerFrameTransitionProperties).perFrame) {
-			return MixedTransitionType.PerFrame
-		}
-		else {
-			return MixedTransitionType.Web
-		}
+		return this.transition.leave(this.result)
 	}
 }
