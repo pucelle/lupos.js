@@ -116,7 +116,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 */
 	static style: ComponentStyle | null = null
 
-	/** Compiler will add this variable after analysis render result. */
+	/** Compiler will add this property after analysis render result. */
 	static SlotContentType: SlotContentType | null = null
 
 

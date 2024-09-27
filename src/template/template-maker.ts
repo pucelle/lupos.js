@@ -25,7 +25,7 @@ export interface TemplateInitResult {
 	 * List of all the parts inside.
 	 * If no parts inside, ignores this property.
 	 */
-	parts?: [Part, PartPositionType][] | (() => [Part, PartPositionType][])
+	parts?: [Part, PartPositionType][]
 }
 
 

@@ -1,4 +1,4 @@
-import {UpdateQueue} from '@pucelle/ff'
+import {untilComplete} from '@pucelle/ff'
 import * as lupos from '../../../'
 import {jest} from '@jest/globals'
 
@@ -27,11 +27,11 @@ describe('Test Component', () => {
 
 		parent.on('updated', fn1)
 		parent.on('connected', fn2)
-		parent.on('disconnected', fn3)
+		parent.on('will-disconnect', fn3)
 		expect(parent.connected).toBe(false)
 
 		parent.appendTo(document.body)
-		await UpdateQueue.untilComplete()
+		await untilComplete()
 		let child = Child.fromClosest(parent.el.firstElementChild!)!
 
 		expect(fn1).toHaveBeenCalledTimes(1)

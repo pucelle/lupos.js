@@ -1,4 +1,4 @@
-import {UpdateQueue} from '@pucelle/ff'
+import {untilComplete} from '@pucelle/ff'
 import * as lupos from '../../../out'
 
 
@@ -6,9 +6,9 @@ describe('Test Switch Block', () => {
 	test('Switch Block', async () => {
 		let render = (value: number) => {
 			return lupos.html`
-				<lupos:switch ${value}>
-					<lupos:case ${1}>1</lupos:case>
-				</lupos:switch>
+				<lu:switch ${value}>
+					<lu:case ${1}>1</lu:case>
+				</lu:switch>
 			`
 		}
 
@@ -16,22 +16,22 @@ describe('Test Switch Block', () => {
 		let slot = new lupos.TemplateSlot<null>(new lupos.SlotPosition(lupos.SlotPositionType.AfterContent, container), null)
 
 		slot.update(render(1))
-		await UpdateQueue.untilComplete()
+		await untilComplete()
 		expect(container.textContent).toEqual('1')
 
 		slot.update(render(2))
-		await UpdateQueue.untilComplete()
+		await untilComplete()
 		expect(container.textContent).toEqual('')
 	})
 
 	test('Switch with Default Block', async () => {
 		let render = (value: number) => {
 			return lupos.html`
-				<lupos:switch ${value}>
-					<lupos:case ${1}>1</lupos:case>
-					<lupos:case ${2}>2</lupos:case>
-					<lupos:default>3</lupos:default>
-				</lupos:switch>
+				<lu:switch ${value}>
+					<lu:case ${1}>1</lu:case>
+					<lu:case ${2}>2</lu:case>
+					<lu:default>3</lu:default>
+				</lu:switch>
 			`
 		}
 
@@ -39,15 +39,15 @@ describe('Test Switch Block', () => {
 		let slot = new lupos.TemplateSlot<null>(new lupos.SlotPosition(lupos.SlotPositionType.AfterContent, container), null)
 
 		slot.update(render(1))
-		await UpdateQueue.untilComplete()
+		await untilComplete()
 		expect(container.textContent).toEqual('1')
 
 		slot.update(render(2))
-		await UpdateQueue.untilComplete()
+		await untilComplete()
 		expect(container.textContent).toEqual('2')
 
 		slot.update(render(3))
-		await UpdateQueue.untilComplete()
+		await untilComplete()
 		expect(container.textContent).toEqual('3')
 	})
 
@@ -55,10 +55,10 @@ describe('Test Switch Block', () => {
 	test('Switch Cacheable Block', async () => {
 		let render = (value: number) => {
 			return lupos.html`
-				<lupos:switch ${value}>
-					<lupos:case ${1}><div>1</div></lupos:case>
-					<lupos:case ${2}><div>2</div></lupos:case>
-				</lupos:switch>
+				<lu:switch ${value}>
+					<lu:case ${1}><div>1</div></lu:case>
+					<lu:case ${2}><div>2</div></lu:case>
+				</lu:switch>
 			`
 		}
 
@@ -66,17 +66,17 @@ describe('Test Switch Block', () => {
 		let slot = new lupos.TemplateSlot<null>(new lupos.SlotPosition(lupos.SlotPositionType.AfterContent, container), null)
 
 		slot.update(render(1))
-		await UpdateQueue.untilComplete()
+		await untilComplete()
 		let div = container.firstElementChild
 		expect(container.textContent).toEqual('1')
 
 		slot.update(render(2))
-		await UpdateQueue.untilComplete()
+		await untilComplete()
 		expect(container.textContent).toEqual('2')
 		expect(container.firstElementChild === div).toEqual(false)
 
 		slot.update(render(1))
-		await UpdateQueue.untilComplete()
+		await untilComplete()
 		expect(container.textContent).toEqual('1')
 		expect(container.firstElementChild).toEqual(div)
 	})

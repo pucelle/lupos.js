@@ -265,7 +265,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 		let oldT = this.content as Template | null
 
 		if (oldT === t) {
-			if (t && values) {
+			if (t) {
 				t.update(values)
 			}
 		}

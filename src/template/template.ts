@@ -21,7 +21,7 @@ export class Template<A extends any[] = any[]> implements Part {
 	readonly update: (values: A) => void
 
 	/** Part and it's position. */
-	private readonly parts: [Part, PartPositionType][] | (() => [Part, PartPositionType][])
+	private readonly parts: [Part, PartPositionType][]
 
 	/** 
 	 * Required, a template may be appended and wait to call connect callback.
@@ -47,9 +47,7 @@ export class Template<A extends any[] = any[]> implements Part {
 			return
 		}
 
-		let parts = typeof this.parts === 'function' ? this.parts() : this.parts
-
-		for (let [part, position] of parts) {
+		for (let [part, position] of this.parts) {
 			let partParam = getTemplatePartParameter(param, position)
 			part.afterConnectCallback(partParam)
 		}
@@ -65,9 +63,8 @@ export class Template<A extends any[] = any[]> implements Part {
 		this.connected = false
 
 		let promises: Promise<void>[] = []
-		let parts = typeof this.parts === 'function' ? this.parts() : this.parts
 
-		for (let [part, position] of parts) {
+		for (let [part, position] of this.parts) {
 			let partParam = getTemplatePartParameter(param, position)
 			let p = part.beforeDisconnectCallback(partParam)
 

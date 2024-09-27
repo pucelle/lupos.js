@@ -1,13 +1,13 @@
-import {UpdateQueue} from '@pucelle/ff'
+import {untilComplete} from '@pucelle/ff'
 import * as lupos from '../../../'
 
 
 describe('Test For Block', () => {
 	let render = (list: number[]) => {
 		return lupos.html`
-			<lupos:for ${list}>${(item: number) => lupos.html`
+			<lu:for ${list}>${(item: number) => lupos.html`
 				<div>${item}</div>
-			`}</lupos:if>
+			`}</lu:if>
 		`
 	}
 
@@ -19,19 +19,19 @@ describe('Test For Block', () => {
 	test('For Block', async () => {
 
 		slot.update(render([1]))
-		await UpdateQueue.untilComplete()
+		await untilComplete()
 		expect(container.textContent).toEqual('1')
 
 		slot.update(render([1, 2]))
-		await UpdateQueue.untilComplete()
+		await untilComplete()
 		expect(container.textContent).toEqual('12')
 
 		slot.update(render([2, 3]))
-		await UpdateQueue.untilComplete()
+		await untilComplete()
 		expect(container.textContent).toEqual('23')
 
 		slot.update(render([]))
-		await UpdateQueue.untilComplete()
+		await untilComplete()
 		expect(container.textContent).toEqual('')
 	})
 
@@ -42,7 +42,7 @@ describe('Test For Block', () => {
 			list.push(Math.floor(Math.random() * 10))
 
 			slot.update(render(list))
-			await UpdateQueue.untilComplete()
+			await untilComplete()
 			expect(container.textContent).toEqual(list.join(''))
 		}
 	})

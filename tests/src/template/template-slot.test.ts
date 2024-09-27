@@ -1,4 +1,4 @@
-import {UpdateQueue} from '@pucelle/ff'
+import {untilComplete} from '@pucelle/ff'
 import * as lupos from '../../../'
 
 
@@ -12,19 +12,19 @@ describe('Test TemplateSlot', () => {
 		let text = document.createTextNode('3')
 
 		slot.update(result)
-		await UpdateQueue.untilComplete()
+		await untilComplete()
 		expect(container.textContent).toBe('1')
 
 		slot.update([result, result])
-		await UpdateQueue.untilComplete()
+		await untilComplete()
 		expect(container.textContent).toBe('11')
 
 		slot.update('2')
-		await UpdateQueue.untilComplete()
+		await untilComplete()
 		expect(container.textContent).toBe('2')
 
 		slot.update(text)
-		await UpdateQueue.untilComplete()
+		await untilComplete()
 		expect(container.textContent).toBe('3')
 	})
 })

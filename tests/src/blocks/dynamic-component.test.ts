@@ -1,4 +1,4 @@
-import {UpdateQueue} from '@pucelle/ff'
+import {untilComplete} from '@pucelle/ff'
 import * as lupos from '../../../'
 
 
@@ -26,7 +26,7 @@ describe('Test Dynamic Component Block', () => {
 
 		let parent = new Parent()
 		parent.appendTo(document.body)
-		await UpdateQueue.untilComplete()
+		await untilComplete()
 
 		let child1 = Child1.from(parent.el.firstElementChild!)!
 		expect(child1).toBeInstanceOf(Child1)
@@ -34,7 +34,7 @@ describe('Test Dynamic Component Block', () => {
 		expect(parent.el.textContent).toBe('Child Component Content')
 
 		parent.ChildCom = Child2
-		await UpdateQueue.untilComplete()
+		await untilComplete()
 		expect(child1.connected).toBe(false)
 		expect(Child2.from(parent.el.firstElementChild!)).toBeInstanceOf(Child2)
 		expect(parent.el.textContent).toBe('Child Component Content')

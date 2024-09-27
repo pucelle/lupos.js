@@ -1,4 +1,4 @@
-import {UpdateQueue} from '@pucelle/ff'
+import {untilComplete} from '@pucelle/ff'
 import * as lupos from '../../../'
 
 
@@ -6,9 +6,9 @@ describe('Test Await Block', () => {
 	test('Await Block', async () => {
 		let render = (promise: Promise<any>) => {
 			return lupos.html`
-				<lupos:await ${promise}>Pending</lupos:await>
-				<lupos:then>Then</lupos:then>
-				<lupos:catch>Catch</lupos:catch>
+				<lu:await ${promise}>Pending</lu:await>
+				<lu:then>Then</lu:then>
+				<lu:catch>Catch</lu:catch>
 			`
 		}
 
@@ -21,12 +21,12 @@ describe('Test Await Block', () => {
 		})
 
 		slot.update(render(promise))
-		await UpdateQueue.untilComplete()
+		await untilComplete()
 		expect(container.textContent).toEqual('Pending')
 
 		resolve!(null)
 		await Promise.resolve()
-		await UpdateQueue.untilComplete()
+		await untilComplete()
 		expect(container.textContent).toEqual('Then')
 
 		let reject: (reason: any) => void
@@ -35,12 +35,12 @@ describe('Test Await Block', () => {
 		})
 
 		slot.update(render(promise))
-		await UpdateQueue.untilComplete()
+		await untilComplete()
 		expect(container.textContent).toEqual('Pending')
 
 		reject!(null)
 		await Promise.resolve()
-		await UpdateQueue.untilComplete()
+		await untilComplete()
 		expect(container.textContent).toEqual('Catch')
 	})
 })

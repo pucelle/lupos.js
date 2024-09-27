@@ -92,7 +92,7 @@ export enum PartPositionType {
 export function getComponentSlotParameter(param: PartCallbackParameterMask | 0): PartCallbackParameterMask | 0 {
 
 	// Replace as direct node to as context node.
-	if ((param & PartCallbackParameterMask.DirectNodeToMove) > 0) {
+	if (param & PartCallbackParameterMask.DirectNodeToMove) {
 		param &= ~PartCallbackParameterMask.DirectNodeToMove
 		param |= PartCallbackParameterMask.ContextNodeToMove
 	}
@@ -105,14 +105,14 @@ export function getComponentSlotParameter(param: PartCallbackParameterMask | 0):
 export function getTemplatePartParameter(param: PartCallbackParameterMask | 0, position: PartPositionType): PartCallbackParameterMask | 0 {
 
 	// Removes byte if not match part position.
-	if ((param & PartCallbackParameterMask.DirectNodeToMove) > 0) {
+	if (param & PartCallbackParameterMask.DirectNodeToMove) {
 		if (position !== PartPositionType.DirectNode) {
 			param &= ~PartCallbackParameterMask.DirectNodeToMove
 		}
 	}
 
 	// If has `ContextNodeToMove` and match part position, add `DirectNodeToMove`.
-	if ((param & PartCallbackParameterMask.ContextNodeToMove) > 0) {
+	if (param & PartCallbackParameterMask.ContextNodeToMove) {
 		param &= ~PartCallbackParameterMask.ContextNodeToMove
 
 		if (position === PartPositionType.ContextNode) {
