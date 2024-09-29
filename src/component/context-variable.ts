@@ -1,4 +1,4 @@
-import {WeakDoubleKeysMap} from '@pucelle/ff'
+import {WeakPairKeysMap} from '@pucelle/ff'
 import {Component} from './component'
 
 
@@ -7,7 +7,7 @@ import {Component} from './component'
  * second key is the variable property name,
  * and the value is the source component where declare this property.
  */
-export const ContextVariableUnionMap: WeakDoubleKeysMap<Component, PropertyKey, Component> = new WeakDoubleKeysMap()
+export const ContextVariableUnionMap: WeakPairKeysMap<Component, PropertyKey, Component> = new WeakPairKeysMap()
 
 export function setContextVariable(com: Component, prop: PropertyKey) {
 	ContextVariableUnionMap.set(com, prop, com)
