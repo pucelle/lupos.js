@@ -9,23 +9,26 @@ export type RenderResultRenderer<T = any> = TemplateResult | CompiledTemplateRes
 
 /** 
  * Render a static content by parameter html`...` within a specified `context`,
- * Or render a responsive content by parameter like () => html`...` within a specified `context`.
+ * or render a responsive content by parameter like `() => html`...`` within `context`.
+ * 
  * E.g., render a popup or contextmenu based on current context after some interactions.
- * Returns a component like instance which attach to the context we provided.
+ * Returns a component like instance which attach to the context that provided.
  */
-export function render<T = any>(renderer: RenderResultRenderer<T>, context: T = null as T): AttachedComponent {
-	return new AttachedComponent(renderer, context)
+export function render<T = any>(renderer: RenderResultRenderer<T>, context: T = null as T): RenderedComponentLike {
+	return new RenderedComponentLike(renderer, context)
 }
 
 
 /** 
- * Same as a anonymous component, except it attaches a context,
+ * Same as an anonymous component, except it attaches to a context,
  * and render all the things within that context.
  */
-class AttachedComponent<E = any> extends Component<E> {
+export class RenderedComponentLike<E = any> extends Component<E> {
 
-	protected renderer: RenderResultRenderer
-	protected context: any
+	protected readonly context: any
+
+	/** Renderer can be overwritten. */
+	renderer: RenderResultRenderer
 
 	constructor(renderer: RenderResultRenderer, context: any) {
 		super({}, document.createElement('slot'))

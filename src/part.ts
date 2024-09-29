@@ -53,12 +53,18 @@ export enum PartCallbackParameterMask {
 export interface Part {
 
 	/** 
-	 * After nodes or any ancestral nodes of current part were inserted,
-	 * and current part was totally update, call it's connect callback.
+	 * After nodes or any ancestral nodes of current part were inserted into document.
+	 * 
+	 * For component as a part, all data has been assigned,
+	 * component has been enqueued to update, but hasn't been updated.
+	 * All child parts haven't been updated too.
+	 * 
+	 * For other parts, the part has been totally updated already,
+	 * and all child parts (exclude component) has been updated.
 	 * 
 	 * If part was moved to another place, would not call this connect callback.
 	 * 
-	 * Will also broadcast calling recursively for all descendant parts.
+	 * Will also broadcasted calls connect callback recursively for all descendant parts.
 
 	 * - `param`: AND byte operate of `PartCallbackParameterMask`.
 	 */
