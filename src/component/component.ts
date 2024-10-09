@@ -94,9 +94,11 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	/** 
 	 * Get closest ancestor element (or self) which is the instance of specified component constructor.
 	 * @param element: The element from which to check component instance.
+	 * @param searchDepth: Max search depth, default value is `30`.
 	 */
-	static fromClosest<C extends {new (...args: any): any}>(this: C, element: Element): InstanceType<C> | null {
+	static fromClosest<C extends {new (...args: any): any}>(this: C, element: Element, searchDepth: number = 30): InstanceType<C> | null {
 		let el: Element | null = element
+		let depth = 0
 
 		while (el) {
 			let com = Component.from(el)
@@ -105,6 +107,12 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 			}
 	
 			el = el.parentElement
+
+			if (depth >= searchDepth) {
+				break
+			}
+
+			depth++
 		}
 
 		return null

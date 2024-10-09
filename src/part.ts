@@ -83,14 +83,14 @@ export interface Part {
 /** Type of part position. */
 export enum PartPositionType {
 
+	/** All other nodes. */
+	Normal = 0,
+
 	/** Use direct child node (not grandchild or other descendants) of template. */
-	DirectNode = 0,
+	DirectNode = 1,
 
 	/** Use context node. */
-	ContextNode = 1,
-	
-	/** All other nodes. */
-	Others = 2,
+	ContextNode = 2,
 }
 
 
@@ -166,4 +166,39 @@ export function getConnectCallbackParameter(part: Part): PartCallbackParameterMa
  */
 export function hasConnectCallbackParameter(part: Part): boolean {
 	return HeldPartCallbackParameters.has(part)
+}
+
+
+/** It delegate a part, and this part itself may be deleted or appended again. */
+export class PartDelegator implements Part {
+
+	private part: Part | null = null
+
+	update(part: Part | null) {
+		if (this.part === part) {
+			return
+		}
+
+		if (this.part) {
+			this.part.beforeDisconnectCallback(PartPositionType.Normal)
+		}
+
+		if (part) {
+			part.afterConnectCallback(PartPositionType.Normal)
+		}
+
+		this.part = part
+	}
+
+	afterConnectCallback(param: PartCallbackParameterMask | 0) {
+		if (this.part) {
+			this.part.afterConnectCallback(param)
+		}
+	}
+
+	beforeDisconnectCallback(param: PartCallbackParameterMask | 0) {
+		if (this.part) {
+			this.part.beforeDisconnectCallback(param)
+		}
+	}
 }

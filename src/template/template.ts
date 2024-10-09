@@ -12,7 +12,10 @@ import {SlotPositionMap} from './slot-position-map'
 const PositionMap = new SlotPositionMap()
 
 
-/** Represents a template make from a template literal html`...` bind with a context. */
+/** 
+ * Represents a template make from a template literal html`...`,
+ * and bound with a context.
+ */
 export class Template<A extends any[] = any[]> implements Part {
 
 	readonly el: HTMLTemplateElement

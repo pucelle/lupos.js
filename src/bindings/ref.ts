@@ -6,8 +6,9 @@ import {Binding} from './types'
 /**
  * To reference target component or element as a property of current component.
  * - `<el :ref=${this.prop}>`- Reference target element as a property of current component.
- * - `<com :ref=${this.prop}>`- Reference target component as a property of current component.
- * - `<com :ref.el=${this.prop}>`- Reference element of target component as a property of current component.
+ * - `<Com :ref=${this.prop}>`- Reference target component as a property of current component.
+ * - `<Com :ref.el=${this.prop}>`- Reference element of target component as a property of current component.
+ * - `<XXX :ref.binding=${this.prop}>`- Reference previous binding `:binding=...`.
  */
 export class RefBinding implements Binding, Part {
 
@@ -20,7 +21,7 @@ export class RefBinding implements Binding, Part {
 	/** Compiler will compile `this.prop` -> `r => this.prop = r` */
 	private refFn: ((value: any) => void) | null = null
 
-	constructor(el: Element, context: any, modifiers: 'el'[] = []) {
+	constructor(el: Element, context: any, modifiers: ('el'|'binding')[] = []) {
 		this.el = el
 		this.context = context
 		this.refAsElement = modifiers.includes('el')

@@ -11,4 +11,4 @@ export interface ComponentConstructor {
 }
 
 /** Type of `render` method or function. */
-export type RenderResult = TemplateResult | TemplateResult[] | CompiledTemplateResult | CompiledTemplateResult[] | string | null
+export type RenderResult = TemplateResult | TemplateResult[] | CompiledTemplateResult | CompiledTemplateResult[] | string | number | null

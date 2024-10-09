@@ -1,9 +1,9 @@
-import {TemplateResult, CompiledTemplateResult, TemplateSlot, SlotPosition, SlotPositionType} from '../template'
+import {TemplateResult, CompiledTemplateResult, TemplateSlot, SlotPosition, SlotPositionType, SlotEndOuterPositionType} from '../template'
 import {Component} from './component'
 import {RenderResult} from './types'
 
 
-/** Render result, or a function to return it. */
+/** Rendered result, or a function to return it. */
 export type RenderResultRenderer<T = any> = TemplateResult | CompiledTemplateResult | ((this: T) => TemplateResult | CompiledTemplateResult)
 
 
@@ -39,7 +39,7 @@ export class RenderedComponentLike<E = any> extends Component<E> {
 	
 	/** Replace context of content slot. */
 	protected initContentSlot(): TemplateSlot {
-		let position = new SlotPosition<SlotPositionType.AfterContent>(SlotPositionType.AfterContent, this.el)
+		let position = new SlotPosition<SlotEndOuterPositionType>(SlotPositionType.AfterContent, this.el)
 		return new TemplateSlot(position, this.context)
 	}
 

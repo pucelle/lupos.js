@@ -13,8 +13,6 @@ export enum SlotContentType {
 	TemplateResult = 0,
 	TemplateResultList = 1,
 	Text = 2,
-
-	// Normally for only internal usage.
 	Node = 3,
 }
 
