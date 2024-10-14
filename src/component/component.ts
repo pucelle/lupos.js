@@ -280,10 +280,18 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 
 	/** 
 	 * Apply rest slot range, which may be used to fill `<slot>` inside current component context.
-	 * For inner usage only, and be called by compiled codes.
+	 * For inner usage only, and will be called by compiled codes.
 	 */
-	__applyRestSlotRange(range: SlotRange) {
-		this.restSlotRange = range
+	__applyRestSlotRange(slotRange: SlotRange) {
+		this.restSlotRange = slotRange
+	}
+
+	/** 
+	 * Apply rest slot range nodes, which may be used to fill `<slot>` inside current component context.
+	 * For inner usage only, and will be called by compiled codes.
+	 */
+	__applyRestSlotRangeNodes(startInnerNode: ChildNode, endInnerNode: ChildNode = startInnerNode) {
+		this.restSlotRange = new SlotRange(startInnerNode, endInnerNode)
 	}
 
 	/** 

@@ -3,46 +3,61 @@ import {Part, PartCallbackParameterMask} from '../part'
 import {Binding} from './types'
 
 
+enum RefType {
+	Element,
+	Component,
+	Binding,
+}
+
+
 /**
  * To reference target component or element as a property of current component.
  * - `<el :ref=${this.prop}>`- Reference target element as a property of current component.
  * - `<Com :ref=${this.prop}>`- Reference target component as a property of current component.
  * - `<Com :ref.el=${this.prop}>`- Reference element of target component as a property of current component.
  * - `<XXX :ref.binding=${this.prop}>`- Reference previous binding `:binding=...`.
+ * - `<XXX :ref=${function(comOrElOrBinding){...}}>`- Reference target element by a ref function, `this` is current context.
+ * 
+ * Note when referring an optional binding like `?:binding`
  */
 export class RefBinding implements Binding, Part {
 
 	private readonly el: Element
 	private readonly context: any
 
-	/** Whether reference only element, not component. */
-	private refAsElement: boolean = false
+	/** Whether reference element, or component, or binding. */
+	private refType: RefType = RefType.Element
 	
 	/** Compiler will compile `this.prop` -> `r => this.prop = r` */
 	private refFn: ((value: any) => void) | null = null
 
-	constructor(el: Element, context: any, modifiers: ('el'|'binding')[] = []) {
+	constructor(el: Element, context: any, modifiers: ('el' | 'com' | 'binding')[] = []) {
 		this.el = el
 		this.context = context
-		this.refAsElement = modifiers.includes('el')
+
+		this.refType = modifiers.includes('el')
+			? RefType.Element
+			: modifiers.includes('com')
+			? RefType.Component
+			: modifiers.includes('binding')
+			? RefType.Binding
+			: RefType.Element
 	}
 
-	update(refFn: (value: Component | Element | null) => void) {
+	update(refFn: (value: Component | Element | Binding | null) => void) {
 		this.refFn = refFn
 	}
 
 	private doReference() {
-		if (this.refAsElement) {
+		if (this.refType === RefType.Element) {
 			this.refFn!.call(this.context, this.el)
 		}
-		else {
+		else if (this.refType === RefType.Component) {
 			let com = Component.from(this.el)
-			if (com) {
-				this.refFn!.call(this.context, com)
-			}
-			else {
-				this.refFn!.call(this.context, this.el)
-			}
+			this.refFn!.call(this.context, com)
+		}
+		else {
+			this.refFn!.call(this.context, true)
 		}
 	}
 
@@ -62,7 +77,7 @@ export class RefBinding implements Binding, Part {
 		}
 
 		if (this.refFn) {
-			this.refFn.call(this.context, null)
+			this.refFn.call(this.context, this.refType === RefType.Binding ? false : null)
 		}
 	}
 }
