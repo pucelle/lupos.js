@@ -17,8 +17,8 @@ const ComponentStyleAndTagMap: WeakSet<ComponentConstructor> = new WeakSet()
  * to ensure it's relied styles appended into document.
  */
 export function ensureComponentStyle(Com: ComponentConstructor) {
-	if (Com.style && !ComponentStyleAndTagMap.has(Com)) {
-		createStyleElement(Com.style, Com.name)
+	if (Com.hasOwnProperty('style') && !ComponentStyleAndTagMap.has(Com)) {
+		createStyleElement(Com.style!, Com.name)
 	}
 
 	// Ensure style of super component.

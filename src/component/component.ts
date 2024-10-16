@@ -160,8 +160,6 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 
 		this.el = el
 		Object.assign(this, properties)
-
-		ensureComponentStyle(this.constructor as ComponentConstructor)
 		this.contentSlot = this.initContentSlot()
 
 		addElementComponentMap(el, this)
@@ -189,7 +187,9 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * You may change some data or visit parent nodes, or register some events for self here.
 	 * Fired for only once.
 	 */
-	protected onCreated() {}
+	protected onCreated() {
+		ensureComponentStyle(this.constructor as ComponentConstructor)
+	}
 
 	/**
 	 * Called when component is ready for the first time
@@ -457,7 +457,10 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 
 // For localhost debugging.
 if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+	let original = (Component as any).prototype.onCreated;
+	
 	(Component as any).prototype.onCreated = function() {
+		original.call(this)
 		this.el.setAttribute('com', this.constructor.name)
 	}
 }
