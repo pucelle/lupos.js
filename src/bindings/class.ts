@@ -68,6 +68,8 @@ export class ClassBinding implements Binding {
 	 * - `:class=${value}` and `value` is inferred as array type.
 	 */
 	updateList(value: string[]) {
+		value = value.filter(v => v)
+		
 		for (let name of this.classNames) {
 			if (!value.includes(name)) {
 				this.el.classList.remove(name)

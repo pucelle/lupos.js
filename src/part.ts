@@ -1,4 +1,4 @@
-import {onComplete} from '@pucelle/ff'
+import {onUpdateComplete} from '@pucelle/ff'
 
 
 /** Values of Part Callback Parameter. */
@@ -147,7 +147,7 @@ function cleanShortHeldPartCallbackParameters() {
 export function holdConnectCallbackParameter(part: Part, param: PartCallbackParameterMask | 0) {
 	HeldPartCallbackParameters.set(part, param)
 	if (!enqueuedShortHeldClean) {
-		onComplete(cleanShortHeldPartCallbackParameters)
+		onUpdateComplete(cleanShortHeldPartCallbackParameters)
 		enqueuedShortHeldClean = true
 	}
 }

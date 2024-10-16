@@ -14,4 +14,8 @@ export class CompiledTemplateResult {
 		this.maker = maker
 		this.values = values
 	}
+
+	toString() {
+		throw new Error(`Can't use "toString()" after "TemplateResult" compiled!`)
+	}
 }

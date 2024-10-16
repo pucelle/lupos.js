@@ -1,4 +1,4 @@
-import {ContextVariableConstructor, EventFirer, Observed, enqueue, beginTrack, endTrack, trackGet, trackSet, untrack} from '@pucelle/ff'
+import {ContextVariableConstructor, EventFirer, Observed, enqueueUpdate, beginTrack, endTrack, trackGet, trackSet, untrack} from '@pucelle/ff'
 import {ensureComponentStyle, ComponentStyle} from './style'
 import {addElementComponentMap, getComponentFromElement} from './from-element'
 import {TemplateSlot, SlotPosition, SlotPositionType, CompiledTemplateResult, SlotContentType} from '../template'
@@ -124,6 +124,18 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 */
 	static style: ComponentStyle | null = null
 
+	/** 
+	 * Call after component class declaration,
+	 * to ensure it's relied styles appended into document.
+	 * 
+	 * Why not call it automatically?
+	 * Before a style appended, it should ensure all super style,
+	 * and all referenced style appended, so can overwrite them.
+	 */
+	static ensureStyle() {
+		ensureComponentStyle(this)
+	}
+
 	/** Compiler will add this property after analysis render result. */
 	static SlotContentType: SlotContentType | null = null
 
@@ -141,7 +153,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	protected state: ComponentStateMask | 0 = 0
 
 	/** Help to patch render result to current element. */
-	protected readonly contentSlot!: TemplateSlot<any>
+	protected contentSlot!: TemplateSlot<any>
 
 	/**
 	 * Caches slot elements which are marked as `<... slot="slotName">`.
@@ -160,7 +172,6 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 
 		this.el = el
 		Object.assign(this, properties)
-		this.contentSlot = this.initContentSlot()
 
 		addElementComponentMap(el, this)
 	}
@@ -188,7 +199,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * Fired for only once.
 	 */
 	protected onCreated() {
-		ensureComponentStyle(this.constructor as ComponentConstructor)
+		this.contentSlot = this.initContentSlot()
 	}
 
 	/**
@@ -344,7 +355,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	protected willUpdate() {
 		
 		// Component create earlier, update earlier.
-		enqueue(this.update, this, this.incrementalId)
+		enqueueUpdate(this.update, this, this.incrementalId)
 	}
 	
 	/** Doing update immediately. */

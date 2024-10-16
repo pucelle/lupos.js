@@ -1,3 +1,4 @@
+import {PartCallbackParameterMask} from '../part'
 import {TemplateResult, CompiledTemplateResult, TemplateSlot, SlotPosition, SlotPositionType, SlotEndOuterPositionType} from '../template'
 import {Component} from './component'
 import {RenderResult} from './types'
@@ -45,10 +46,19 @@ export class RenderedComponentLike<E = any> extends Component<E> {
 
 	protected render(): RenderResult {
 		if (typeof this.renderer === 'function') {
-			return this.renderer()
+			return this.renderer.call(this.context)
 		}
 		else {
 			return this.renderer
 		}
+	}
+
+	/** 
+	 * Connect without appending to document,
+	 * use it when you want to get render result soon.
+	 * Later should also wait for `untilUpdateComplete` to get render result.
+	 */
+	connectManually() {
+		this.afterConnectCallback(PartCallbackParameterMask.HappenInCurrentContext)
 	}
 }
