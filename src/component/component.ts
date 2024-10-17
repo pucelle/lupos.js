@@ -418,7 +418,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		
 		container.append(this.el)
 		
-		if (this.el.ownerDocument) {
+		if (document.contains(this.el)) {
 			this.afterConnectCallback(PartCallbackParameterMask.DirectNodeToMove | PartCallbackParameterMask.HappenInCurrentContext)
 		}
 	}
@@ -431,7 +431,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 
 		sibling.before(this.el)
 
-		if (this.el.ownerDocument) {
+		if (document.contains(this.el)) {
 			this.afterConnectCallback(PartCallbackParameterMask.DirectNodeToMove | PartCallbackParameterMask.HappenInCurrentContext)
 		}
 	}
@@ -444,7 +444,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 
 		sibling.after(this.el)
 
-		if (this.el.ownerDocument) {
+		if (document.contains(this.el)) {
 			this.afterConnectCallback(PartCallbackParameterMask.DirectNodeToMove | PartCallbackParameterMask.HappenInCurrentContext)
 		}
 	}
