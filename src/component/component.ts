@@ -46,7 +46,7 @@ enum ComponentStateMask {
 	Created = 2 ** 0,
 	Ready = 2 ** 1,
 	Connected = 2 ** 2,
-	ConnectCallbackCalled = 2 ** 3,
+	NeedToCallConnectCallback = 2 ** 3,
 }
 
 
@@ -329,6 +329,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		this.fire('connected')
 
 		holdConnectCallbackParameter(this.contentSlot, getComponentSlotParameter(param))
+		this.state |= ComponentStateMask.NeedToCallConnectCallback
 		
 		// onConnected will enqueue something, here should ensure enqueuing update later than it.
 		this.willUpdate()
@@ -346,7 +347,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		this.fire('will-disconnect')
 
 		// If haven't called connect callback, not call disconnect callback also.
-		if ((this.state & ComponentStateMask.ConnectCallbackCalled) > 0) {
+		if ((this.state & ComponentStateMask.NeedToCallConnectCallback) === 0) {
 			return this.contentSlot.beforeDisconnectCallback(getComponentSlotParameter(param))
 		}
 	}
@@ -370,8 +371,8 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 
 		
 		// Call connect callback if not yet.
-		if ((this.state & ComponentStateMask.ConnectCallbackCalled) === 0) {
-			this.state |= ComponentStateMask.ConnectCallbackCalled
+		if (this.state & ComponentStateMask.NeedToCallConnectCallback) {
+			this.state &= ~ComponentStateMask.NeedToCallConnectCallback
 			this.contentSlot.afterConnectCallback(getConnectCallbackParameter(this.contentSlot)!)
 		}
 
@@ -394,10 +395,11 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 			result = null
 			console.warn(err)
 		}
+		finally {
+			endTrack()
+		}
 
-		// May read slot elements when updating, which process should be tracked.
 		this.contentSlot!.update(result)
-		endTrack()
 	}
 
 	/** 
