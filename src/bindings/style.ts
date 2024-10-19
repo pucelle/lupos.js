@@ -10,12 +10,12 @@ import {Binding} from './types'
  * - `:style.style-name.url=${numberValue}` - Set style `style-name: url(numberValue)`. Support by compiler.
  * - `:style=${{styleName1: value1, styleName2: value2}}` - Set multiple styles from an object of properties and values.
  * 
- * Note: `:style` will not clean old-applied styles before write new one.
  * Note: compiler may replace this binding to equivalent codes.
  */
 export class StyleBinding implements Binding {
 
 	private readonly el: HTMLElement | SVGElement
+	private lastStyleValues: Record<string, string> = {}
 
 	/** Modifiers like `px`, `percent`, `url` was replaced by compiler. */
 	constructor(el: Element) {
@@ -37,12 +37,20 @@ export class StyleBinding implements Binding {
 	 * - `:style=${value}` and `value` is inferred as object type.
 	 */
 	updateString(value: string) {
+		let o = this.parseStyleString(value)
+		this.updateObject(o)
+	}
 
-		// Parse value so no need to cache original `cssText`.
+	/** Parse style string to object. */
+	private parseStyleString(value: string) {
+		let o: Record<string, string> = {}
+
 		for (let item of value.split(/\s*;\s*/)) {
 			let [k, v] = item.split(/\s*:\s*/);
-			(this.el.style as any)[k] = v
+			o[k] = v
 		}
+
+		return o
 	}
 
 	/** 
@@ -51,8 +59,16 @@ export class StyleBinding implements Binding {
 	 * - `:style=${value}` and `value` is inferred as array type.
 	 */
 	updateObject(value: Record<string, string>) {
+		for (let k of Object.keys(this.lastStyleValues)) {
+			if (!value.hasOwnProperty(k)) {
+				(this.el.style as any)[k] = ''
+			}
+		}
+
 		for (let [k, v] of Object.entries(value)) {
 			(this.el.style as any)[k] = v
 		}
+
+		this.lastStyleValues = value
 	}
 }

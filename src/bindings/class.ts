@@ -17,7 +17,7 @@ type ClassObject = Record<string, any>
 export class ClassBinding implements Binding {
 
 	private readonly el: Element
-	private classNames: string[] = []
+	private lastClassNames: string[] = []
 
 	/** Modifier `className` of `:class.className` will be replaced by compiler. */
 	constructor(el: Element) {
@@ -69,19 +69,19 @@ export class ClassBinding implements Binding {
 	 */
 	updateList(value: string[]) {
 		value = value.filter(v => v)
-		
-		for (let name of this.classNames) {
+
+		for (let name of this.lastClassNames) {
 			if (!value.includes(name)) {
 				this.el.classList.remove(name)
 			}
 		}
 
 		for (let name of value) {
-			if (!this.classNames.includes(name)) {
+			if (!this.lastClassNames.includes(name)) {
 				this.el.classList.add(name)
 			}
 		}
 		
-		this.classNames = value
+		this.lastClassNames = value
 	}
 }
