@@ -171,14 +171,14 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 
 	/** Update from a template result list. */
 	private updateTemplateResultList(trs: CompiledTemplateResult[]) {
-		let oldTs = this.content as Template[] | null
-		if (!oldTs) {
-			oldTs = this.content = []
+		let content = this.content as Template[] | null
+		if (!content) {
+			content = this.content = []
 		}
 
 		// Update shared part.
 		for (let i = 0; i < trs.length; i++) {
-			let oldT = i < oldTs.length ? oldTs[i] : null
+			let oldT = i < content.length ? content[i] : null
 			let tr = trs[i]
 
 			if (oldT && oldT.maker === tr.maker) {
@@ -186,7 +186,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 			}
 			else {
 				let newT = tr.maker.make(this.context, tr.values)
-				let nextOldT = i < oldTs.length - 1 ? oldTs[i + 1] : null
+				let nextOldT = i < content.length - 1 ? content[i + 1] : null
 
 				if (oldT) {
 					this.removeTemplate(oldT)
@@ -199,16 +199,18 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 					newT.afterConnectCallback(PartCallbackParameterMask.HappenInCurrentContext | PartCallbackParameterMask.DirectNodeToMove)
 				}
 
-				oldTs[i] = newT
+				content[i] = newT
 			}
 		}
 
 		// Remove rest part.
-		if (trs.length < oldTs.length) {
-			for (let i = trs.length; i < oldTs.length; i++) {
-				let oldT = oldTs[i]
+		if (trs.length < content.length) {
+			for (let i = trs.length; i < content.length; i++) {
+				let oldT = content[i]
 				this.removeTemplate(oldT)
 			}
+
+			content.splice(trs.length, content.length - trs.length)
 		}
 	}
 
