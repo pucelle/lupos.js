@@ -62,7 +62,11 @@ export class TemplateResult {
 		this.values = values
 	}
 
-	/** Join strings and values to a string. */
+	/** 
+	 * Join strings and values to a string.
+	 * Note after compiled `html` or `svg` type template,
+	 * `toString()` is not available any more.
+	 */
 	toString(): string {
 		let text = this.strings[0]
 

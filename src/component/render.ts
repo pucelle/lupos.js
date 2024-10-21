@@ -1,3 +1,4 @@
+import {trackGet} from '@pucelle/ff'
 import {PartCallbackParameterMask} from '../part'
 import {TemplateResult, CompiledTemplateResult, TemplateSlot, SlotPosition, SlotPositionType, SlotEndOuterPositionType} from '../template'
 import {Component} from './component'
@@ -45,6 +46,8 @@ export class RenderedComponentLike<E = any> extends Component<E> {
 	}
 
 	protected render(): RenderResult {
+		trackGet(this, 'renderer')
+		
 		if (typeof this.renderer === 'function') {
 			return this.renderer.call(this.context)
 		}
