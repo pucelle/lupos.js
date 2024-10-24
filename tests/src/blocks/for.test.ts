@@ -1,4 +1,4 @@
-import {untilComplete} from '@pucelle/ff'
+import {untilUpdateComplete} from '@pucelle/ff'
 import * as lupos from '../../../'
 
 
@@ -19,19 +19,19 @@ describe('Test For Block', () => {
 	test('For Block', async () => {
 
 		slot.update(render([1]))
-		await untilComplete()
+		await untilUpdateComplete()
 		expect(container.textContent).toEqual('1')
 
 		slot.update(render([1, 2]))
-		await untilComplete()
+		await untilUpdateComplete()
 		expect(container.textContent).toEqual('12')
 
 		slot.update(render([2, 3]))
-		await untilComplete()
+		await untilUpdateComplete()
 		expect(container.textContent).toEqual('23')
 
 		slot.update(render([]))
-		await untilComplete()
+		await untilUpdateComplete()
 		expect(container.textContent).toEqual('')
 	})
 
@@ -42,7 +42,7 @@ describe('Test For Block', () => {
 			list.push(Math.floor(Math.random() * 10))
 
 			slot.update(render(list))
-			await untilComplete()
+			await untilUpdateComplete()
 			expect(container.textContent).toEqual(list.join(''))
 		}
 	})

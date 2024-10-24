@@ -1,4 +1,4 @@
-import {untilComplete} from '@pucelle/ff'
+import {untilUpdateComplete} from '@pucelle/ff'
 import * as lupos from '../../../'
 import {jest} from '@jest/globals'
 
@@ -31,7 +31,7 @@ describe('Test Component', () => {
 		expect(parent.connected).toBe(false)
 
 		parent.appendTo(document.body)
-		await untilComplete()
+		await untilUpdateComplete()
 		let child = Child.fromClosest(parent.el.firstElementChild!)!
 
 		expect(fn1).toHaveBeenCalledTimes(1)

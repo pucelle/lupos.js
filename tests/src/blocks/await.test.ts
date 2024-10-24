@@ -1,4 +1,4 @@
-import {untilComplete} from '@pucelle/ff'
+import {untilUpdateComplete} from '@pucelle/ff'
 import * as lupos from '../../../'
 
 
@@ -21,12 +21,12 @@ describe('Test Await Block', () => {
 		})
 
 		slot.update(render(promise))
-		await untilComplete()
+		await untilUpdateComplete()
 		expect(container.textContent).toEqual('Pending')
 
 		resolve!(null)
 		await Promise.resolve()
-		await untilComplete()
+		await untilUpdateComplete()
 		expect(container.textContent).toEqual('Then')
 
 		let reject: (reason: any) => void
@@ -35,12 +35,12 @@ describe('Test Await Block', () => {
 		})
 
 		slot.update(render(promise))
-		await untilComplete()
+		await untilUpdateComplete()
 		expect(container.textContent).toEqual('Pending')
 
 		reject!(null)
 		await Promise.resolve()
-		await untilComplete()
+		await untilUpdateComplete()
 		expect(container.textContent).toEqual('Catch')
 	})
 })

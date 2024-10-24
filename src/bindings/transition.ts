@@ -1,23 +1,6 @@
-import {Transition, TransitionOptions, TransitionResult} from '@pucelle/ff'
+import {Transition, TransitionResult} from '@pucelle/ff'
 import {Binding} from './types'
 import {Part, PartCallbackParameterMask} from '../part'
-
-
-export interface TransitionBindingOptions extends TransitionOptions {
-
-	/** 
-	 * Specifies transition direction.
-	 * E.g., if specifies to `enter` and need to play leave transition, nothing happens.
-	 * Default value is `both`.
-	 */
-	direction?: TransitionDirection
-}
-
-/** 
- * Transition direction, includes enter and leave part.
- * Only direction is allowed the transition can play.
- */
-export type TransitionDirection = 'enter' | 'leave' | 'both' | 'none'
 
 
 /** Cache those bindings that haven't trigger connect callback yet. */

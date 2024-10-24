@@ -1,4 +1,4 @@
-import {untilComplete} from '@pucelle/ff'
+import {untilUpdateComplete} from '@pucelle/ff'
 import * as lupos from '../../../'
 
 
@@ -14,11 +14,11 @@ describe('Test If Block', () => {
 		let slot = new lupos.TemplateSlot<null>(new lupos.SlotPosition(lupos.SlotPositionType.AfterContent, container), null)
 
 		slot.update(render(1))
-		await untilComplete()
+		await untilUpdateComplete()
 		expect(container.textContent).toEqual('1')
 
 		slot.update(render(2))
-		await untilComplete()
+		await untilUpdateComplete()
 		expect(container.textContent).toEqual('')
 	})
 
@@ -36,15 +36,15 @@ describe('Test If Block', () => {
 		let slot = new lupos.TemplateSlot<null>(new lupos.SlotPosition(lupos.SlotPositionType.AfterContent, container), null)
 
 		slot.update(render(1))
-		await untilComplete()
+		await untilUpdateComplete()
 		expect(container.textContent).toEqual('1')
 
 		slot.update(render(2))
-		await untilComplete()
+		await untilUpdateComplete()
 		expect(container.textContent).toEqual('2')
 
 		slot.update(render(3))
-		await untilComplete()
+		await untilUpdateComplete()
 		expect(container.textContent).toEqual('3')
 	})
 
@@ -61,17 +61,17 @@ describe('Test If Block', () => {
 		let slot = new lupos.TemplateSlot<null>(new lupos.SlotPosition(lupos.SlotPositionType.AfterContent, container), null)
 
 		slot.update(render(1))
-		await untilComplete()
+		await untilUpdateComplete()
 		let div = container.firstElementChild
 		expect(container.textContent).toEqual('1')
 
 		slot.update(render(2))
-		await untilComplete()
+		await untilUpdateComplete()
 		expect(container.textContent).toEqual('2')
 		expect(container.firstElementChild === div).toEqual(false)
 
 		slot.update(render(1))
-		await untilComplete()
+		await untilUpdateComplete()
 		expect(container.textContent).toEqual('1')
 		expect(container.firstElementChild).toEqual(div)
 	})

@@ -1,4 +1,4 @@
-import {setContext, untilComplete, useContext} from '@pucelle/ff'
+import {setContext, untilUpdateComplete, useContext} from '@pucelle/ff'
 import * as lupos from '../../../'
 
 
@@ -24,7 +24,7 @@ describe('Test Context Variable', () => {
 		let parent = new Parent()
 		parent.appendTo(document.body)
 
-		await untilComplete()
+		await untilUpdateComplete()
 		let child = Child.fromClosest(parent.el.firstElementChild!)!
 		expect(child.prop).toBe(1)
 
@@ -32,7 +32,7 @@ describe('Test Context Variable', () => {
 		expect(child.prop).toBe(2)
 
 		parent.remove()
-		await untilComplete()
+		await untilUpdateComplete()
 		expect(child.prop).toBe(undefined)
 	})
 })

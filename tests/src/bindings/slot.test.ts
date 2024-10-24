@@ -1,4 +1,4 @@
-import {untilComplete} from '@pucelle/ff'
+import {untilUpdateComplete} from '@pucelle/ff'
 import * as lupos from '../../../'
 
 
@@ -20,7 +20,7 @@ describe('Test :slot', () => {
 		
 		let parent = new Parent()
 		parent.appendTo(document.body)
-		await untilComplete()
+		await untilUpdateComplete()
 		expect(parent.el.querySelector('slot > *')).toBeInstanceOf(HTMLElement)
 	})
 
@@ -42,15 +42,15 @@ describe('Test :slot', () => {
 
 		let parent = new Parent()
 		parent.appendTo(document.body)
-		await untilComplete()
+		await untilUpdateComplete()
 		expect(parent.el.querySelector('slot')?.textContent).toBe('Slot Content')
 
 		parent.prop = false
-		await untilComplete()
+		await untilUpdateComplete()
 		expect(parent.el.querySelector('slot')?.textContent).toEqual('Default Slot Content')
 
 		parent.prop = true
-		await untilComplete()
+		await untilUpdateComplete()
 	
 		expect(parent.el.querySelector('slot')?.textContent).toBe('Slot Content')
 	})
@@ -72,7 +72,7 @@ describe('Test :slot', () => {
 
 		let parent = new Parent()
 		parent.appendTo(document.body)
-		await untilComplete()
+		await untilUpdateComplete()
 		expect(parent.el.querySelector('slot')?.textContent).toBe('Slot Content')
 	})
 })

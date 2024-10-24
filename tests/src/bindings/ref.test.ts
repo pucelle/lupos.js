@@ -1,4 +1,4 @@
-import {untilComplete} from '@pucelle/ff'
+import {untilUpdateComplete} from '@pucelle/ff'
 import * as lupos from '../../../'
 
 
@@ -16,7 +16,7 @@ describe('Test :ref', () => {
 
 		let p = new Parent()
 		p.appendTo(document.body)
-		await untilComplete()
+		await untilUpdateComplete()
 
 		expect(p.ref).toBeInstanceOf(Child)
 	})
@@ -35,16 +35,16 @@ describe('Test :ref', () => {
 
 		let c = new Com()
 		c.appendTo(document.body)
-		await untilComplete()
+		await untilUpdateComplete()
 
 		expect(c.ref).toBeInstanceOf(HTMLElement)
 
 		c.prop = false
-		await untilComplete()
+		await untilUpdateComplete()
 		expect(c.ref).toEqual(null)
 
 		c.prop = true
-		await untilComplete()
+		await untilUpdateComplete()
 		expect(c.ref).toBeInstanceOf(HTMLElement)
 	})
 })

@@ -452,15 +452,25 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	}
 
 	/** Remove element from document, and disconnect immediately. */
-	remove() {
-		
-		// Not wait for leave transition.
-		if (this.connected) {
-			this.beforeDisconnectCallback(
-				PartCallbackParameterMask.RemoveImmediately
-				| PartCallbackParameterMask.DirectNodeToMove
-				| PartCallbackParameterMask.HappenInCurrentContext
-			)
+	remove(canPlayLeaveTransition: boolean = false): Promise<void> | void {
+		if (!this.connected) {
+			return
+		}
+
+		let mask: PartCallbackParameterMask = PartCallbackParameterMask.DirectNodeToMove
+			| PartCallbackParameterMask.HappenInCurrentContext
+
+		if (!canPlayLeaveTransition) {
+			mask |= PartCallbackParameterMask.RemoveImmediately
+		}
+
+		let result = this.beforeDisconnectCallback(mask)
+
+		// Wait for disconnect promise, then remove node.
+		if (canPlayLeaveTransition && result) {
+			return result.then(() => {
+				this.el.remove()
+			})
 		}
 		
 		this.el.remove()

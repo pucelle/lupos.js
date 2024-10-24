@@ -1,4 +1,4 @@
-import {DOMEvents, untilComplete, sleep, TransitionOptions, Transition} from '@pucelle/ff'
+import {DOMEvents, untilUpdateComplete, sleep, TransitionOptions, Transition} from '@pucelle/ff'
 import * as lupos from '../../../'
 import {jest} from '@jest/globals'
 
@@ -62,12 +62,12 @@ describe('Test :transition', () => {
 
 		let com = new Com()
 		com.appendTo(document.body)
-		await untilComplete()
+		await untilUpdateComplete()
 		expect(com.el.firstElementChild).toBe(null)
 
 
 		com.prop = true
-		await untilComplete()
+		await untilUpdateComplete()
 
 		let div = com.el.firstElementChild as HTMLElement
 		let fn2 = jest.fn()
@@ -83,7 +83,7 @@ describe('Test :transition', () => {
 
 		// Leave transition started
 		com.prop = false
-		await untilComplete()
+		await untilUpdateComplete()
 		expect(fn3).toHaveBeenCalledTimes(1)
 
 		// Leave transition from 1 to 0
@@ -114,7 +114,7 @@ describe('Test :transition', () => {
 
 		let com = new Com()
 		com.appendTo(document.body)
-		await untilComplete()
+		await untilUpdateComplete()
 		let div = com.div
 
 		// No enter transition from 0 to 1
@@ -122,7 +122,7 @@ describe('Test :transition', () => {
 
 		// Leave transition started
 		com.prop = false
-		await untilComplete()
+		await untilUpdateComplete()
 
 		// No leave transition from 1 to 0
 		await expectNotPlayingTransition(div)
@@ -149,7 +149,7 @@ describe('Test :transition', () => {
 
 		let com = new Com()
 		com.appendTo(document.body)
-		await untilComplete()
+		await untilUpdateComplete()
 
 		let div = com.div
 
@@ -158,7 +158,7 @@ describe('Test :transition', () => {
 
 		// Leave transition started
 		com.prop = false
-		await untilComplete()
+		await untilUpdateComplete()
 
 		// Leave transition from 1 to 0
 		await expectPlayingLeaveTransition(div)
@@ -187,11 +187,11 @@ describe('Test :transition', () => {
 
 		let com = new Com()
 		com.appendTo(document.body)
-		await untilComplete()
+		await untilUpdateComplete()
 
 		// Show Child
 		com.prop = true
-		await untilComplete()
+		await untilUpdateComplete()
 		let div = com.child.el
 
 		// Enter transition from 0 to 1
@@ -199,7 +199,7 @@ describe('Test :transition', () => {
 
 		// Leave transition started
 		com.prop = false
-		await untilComplete()
+		await untilUpdateComplete()
 
 		// Leave transition from 1 to 0
 		await expectPlayingLeaveTransition(div)

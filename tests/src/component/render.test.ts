@@ -1,4 +1,4 @@
-import {Observed, untilComplete} from '@pucelle/ff'
+import {Observed, untilUpdateComplete} from '@pucelle/ff'
 import * as lupos from '../../../'
 
 
@@ -8,7 +8,7 @@ describe('Test render', () => {
 		let rendered = lupos.render(lupos.html`<div>123</div>`)
 		rendered.appendTo(document.body)
 
-		await untilComplete()
+		await untilUpdateComplete()
 		expect(rendered.el.innerHTML).toBe(`<div>123</div>`)
 	})
 
@@ -21,11 +21,11 @@ describe('Test render', () => {
 		})
 
 		rendered.appendTo(document.body)
-		await untilComplete()
+		await untilUpdateComplete()
 		expect(rendered.el.innerHTML).toBe(`<div>1</div>`)
 
 		o.value = 2
-		await untilComplete()
+		await untilUpdateComplete()
 		expect(rendered.el.innerHTML).toBe(`<div>2</div>`)
 	})
 })
