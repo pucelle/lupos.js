@@ -6,7 +6,7 @@ describe('Test Template', () => {
 	test('Template Content Order', async () => {
 		let result = lupos.html`<div>1</div><div>2</div>` as any as lupos.CompiledTemplateResult
 
-		let t = result.maker.make(null, [])
+		let t = result.maker.make(null)
 		expect(t.el.localName).toBe('template')
 		expect(t.getFirstNode()?.textContent).toBe('1')
 

@@ -25,14 +25,14 @@ export class KeyedBlock {
 		let template: Template | null = null
 
 		if (newKey !== this.key) {
-			template = result ? result.maker.make(this.context, result.values) : null
+			template = result ? result.maker.make(this.context) : null
 			this.key = newKey
 		}
 		else if (result && this.template && this.template.maker === result.maker) {
 			template = this.template
 		}
 		else if (result) {
-			template = result.maker.make(this.context, result.values)
+			template = result.maker.make(this.context)
 		}
 
 		this.slot.updateTemplateDirectly(template, result ? result.values : [])

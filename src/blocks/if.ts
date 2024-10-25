@@ -50,7 +50,7 @@ export class CacheableIfBlock {
 		let template = result ? this.templates.get(result.maker) ?? null : null
 		
 		if (!template && result) {
-			template = result.maker.make(this.context, result.values)
+			template = result.maker.make(this.context)
 			this.templates.set(result.maker, template)
 		}
 

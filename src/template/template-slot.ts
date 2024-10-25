@@ -157,7 +157,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 				this.removeTemplate(oldT)
 			}
 
-			let newT = tr.maker.make(this.context, tr.values)
+			let newT = tr.maker.make(this.context)
 			newT.insertNodesBefore(this.endOuterPosition)
 			newT.update(tr.values)
 
@@ -188,7 +188,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 				oldT.update(tr.values)
 			}
 			else {
-				let newT = tr.maker.make(this.context, tr.values)
+				let newT = tr.maker.make(this.context)
 				let nextOldT = i < content.length - 1 ? content[i + 1] : null
 
 				if (oldT) {
@@ -237,7 +237,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 		let t = this.content as Template<[string]> | null
 
 		if (!t) {
-			t = this.content = TextTemplateMaker.make(null, null)
+			t = this.content = TextTemplateMaker.make(null)
 			t.insertNodesBefore(this.endOuterPosition)
 		}
 
@@ -250,7 +250,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 
 		if (node) {
 			if (!t) {
-				t = this.content = NodeTemplateMaker.make(null, null)
+				t = this.content = NodeTemplateMaker.make(null)
 				t.insertNodesBefore(this.endOuterPosition)
 			}
 
