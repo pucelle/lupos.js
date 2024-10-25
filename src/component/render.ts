@@ -47,7 +47,7 @@ export class RenderedComponentLike<E = any> extends Component<E> {
 
 	protected render(): RenderResult {
 		trackGet(this, 'renderer')
-		
+
 		if (typeof this.renderer === 'function') {
 			return this.renderer.call(this.context)
 		}
@@ -62,6 +62,6 @@ export class RenderedComponentLike<E = any> extends Component<E> {
 	 * Later should also wait for `untilUpdateComplete` to get render result.
 	 */
 	connectManually() {
-		this.afterConnectCallback(PartCallbackParameterMask.HappenInCurrentContext)
+		this.afterConnectCallback(PartCallbackParameterMask.MoveImmediately)
 	}
 }

@@ -5,14 +5,15 @@ import {onUpdateComplete} from '@pucelle/ff'
 export enum PartCallbackParameterMask {
 
 	/** 
-	 * If current part will be connected or disconnected from current context,
-	 * this value is unioned.
+	 * If current part to be connected or disconnected from current context,
+	 * but not because follow current context, this value is unioned.
 	 * 
-	 * E.g., `<lupos:if {...}><div :binding /><ChildCom />...`, after `<if>` state change.
-	 * - for `:binding`, the connect or disconnect action "HappenInCurrentContext".
-	 * - for `<ChildCom>`, the connect or disconnect action happen in parent context.
+	 * Note when first time initialize, this value is not included.
+	 * 
+	 * E.g., `<lupos:if {...}><div :binding />...`, after `<if>` state change.
+	 * - for `:binding`, the connect or disconnect callback "FollowCurrentContext".
 	 */
-	HappenInCurrentContext = 2 ** 0,
+	StrayFromContext = 2 ** 0,
 
 	/** 
 	 * If nodes of current part will be inserted or removed directly from their parent,
@@ -34,15 +35,15 @@ export enum PartCallbackParameterMask {
 	ContextNodeToMove = 2 ** 2,
 
 	/** 
-	 * If nodes of current part has been removed immediately,
+	 * If nodes of current part has been moved immediately,
 	 * this value is unioned.
 	 * 
 	 * E.g., if any ancestral element was removed directly,
-	 * no transition needs to be played any more.
+	 * no transition needs to be played.
 	 * 
-	 * Only use it for disconnect callback.
+	 * Or connect manually immediately, no transition needs to be played too.
 	 */
-	RemoveImmediately = 2 ** 3,
+	MoveImmediately = 2 ** 3,
 }
 
 
@@ -102,6 +103,9 @@ export function getComponentSlotParameter(param: PartCallbackParameterMask | 0):
 		param &= ~PartCallbackParameterMask.DirectNodeToMove
 		param |= PartCallbackParameterMask.ContextNodeToMove
 	}
+
+	// Remove `StrayFromContext`.
+	param &= ~PartCallbackParameterMask.StrayFromContext
 	
 	return param
 }
@@ -166,6 +170,13 @@ export function getConnectCallbackParameter(part: Part): PartCallbackParameterMa
  */
 export function hasConnectCallbackParameter(part: Part): boolean {
 	return HeldPartCallbackParameters.has(part)
+}
+
+
+/** Knows a part held callback parameter, and union more parameter. */
+export function unionConnectCallbackParameter(part: Part, value: PartCallbackParameterMask) {
+	let existingValue = HeldPartCallbackParameters.get(part)!
+	HeldPartCallbackParameters.set(part, existingValue | value)
 }
 
 

@@ -421,7 +421,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		container.append(this.el)
 		
 		if (document.contains(this.el)) {
-			this.afterConnectCallback(PartCallbackParameterMask.DirectNodeToMove | PartCallbackParameterMask.HappenInCurrentContext)
+			this.afterConnectCallback(PartCallbackParameterMask.DirectNodeToMove)
 		}
 	}
 
@@ -434,7 +434,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		sibling.before(this.el)
 
 		if (document.contains(this.el)) {
-			this.afterConnectCallback(PartCallbackParameterMask.DirectNodeToMove | PartCallbackParameterMask.HappenInCurrentContext)
+			this.afterConnectCallback(PartCallbackParameterMask.DirectNodeToMove)
 		}
 	}
 
@@ -447,7 +447,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		sibling.after(this.el)
 
 		if (document.contains(this.el)) {
-			this.afterConnectCallback(PartCallbackParameterMask.DirectNodeToMove | PartCallbackParameterMask.HappenInCurrentContext)
+			this.afterConnectCallback(PartCallbackParameterMask.DirectNodeToMove)
 		}
 	}
 
@@ -458,10 +458,9 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		}
 
 		let mask: PartCallbackParameterMask = PartCallbackParameterMask.DirectNodeToMove
-			| PartCallbackParameterMask.HappenInCurrentContext
 
 		if (!canPlayLeaveTransition) {
-			mask |= PartCallbackParameterMask.RemoveImmediately
+			mask |= PartCallbackParameterMask.MoveImmediately
 		}
 
 		let result = this.beforeDisconnectCallback(mask)

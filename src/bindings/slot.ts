@@ -25,6 +25,7 @@ export class SlotBinding implements Binding, Part {
 	private readonly el: Element
 	private slotName: string | null = null
 	private com: Component | null = null
+	private connected: boolean = false
 
 	constructor(el: Element) {
 		this.el = el
@@ -34,8 +35,8 @@ export class SlotBinding implements Binding, Part {
 		this.slotName = slotName
 	}
 
-	afterConnectCallback(param: PartCallbackParameterMask | 0) {
-		if ((param & PartCallbackParameterMask.HappenInCurrentContext) === 0) {
+	afterConnectCallback(_param: PartCallbackParameterMask | 0) {
+		if (this.connected) {
 			return
 		}
 
@@ -47,7 +48,7 @@ export class SlotBinding implements Binding, Part {
 	}
 
 	beforeDisconnectCallback(param: PartCallbackParameterMask | 0) {
-		if ((param & PartCallbackParameterMask.HappenInCurrentContext) === 0) {
+		if ((param & PartCallbackParameterMask.StrayFromContext) === 0) {
 			return
 		}
 
@@ -55,5 +56,7 @@ export class SlotBinding implements Binding, Part {
 			this.com.__setSlotElement(this.slotName!, null)
 			this.com = null
 		}
+
+		this.connected = false
 	}
 }

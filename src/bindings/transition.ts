@@ -50,6 +50,12 @@ export class TransitionBinding implements Binding, Part {
 	}
 
 	afterConnectCallback(param: PartCallbackParameterMask | 0) {
+
+		// Connect immediately manually, no need to play transition.
+		if (param & PartCallbackParameterMask.MoveImmediately) {
+			return
+		}
+
 		if (NotConnectCallbackForFirstTime.has(this)) {
 			NotConnectCallbackForFirstTime.delete(this)
 
@@ -67,7 +73,7 @@ export class TransitionBinding implements Binding, Part {
 	beforeDisconnectCallback(param: PartCallbackParameterMask | 0): Promise<void> | void {
 
 		// Ancestral element has been removed immediately, no need to play transition.
-		if ((param & PartCallbackParameterMask.RemoveImmediately) > 0) {
+		if (param & PartCallbackParameterMask.MoveImmediately) {
 			return
 		}
 

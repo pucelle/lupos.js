@@ -1,7 +1,7 @@
 import {SlotPosition, SlotEndOuterPositionType} from './slot-position'
 import {Template} from './template'
 import {CompiledTemplateResult} from './template-result-compiled'
-import {hasConnectCallbackParameter, Part, PartCallbackParameterMask} from '../part'
+import {hasConnectCallbackParameter, Part, PartCallbackParameterMask, unionConnectCallbackParameter} from '../part'
 import {NodeTemplateMaker, TextTemplateMaker} from './template-makers'
 
 
@@ -161,8 +161,11 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 			newT.insertNodesBefore(this.endOuterPosition)
 			newT.update(tr.values)
 
-			if (!hasConnectCallbackParameter(this)) {
-				newT.afterConnectCallback(PartCallbackParameterMask.HappenInCurrentContext | PartCallbackParameterMask.DirectNodeToMove)
+			if (hasConnectCallbackParameter(this)) {
+				unionConnectCallbackParameter(newT, PartCallbackParameterMask.StrayFromContext | PartCallbackParameterMask.DirectNodeToMove)
+			}
+			else {
+				newT.afterConnectCallback(PartCallbackParameterMask.StrayFromContext | PartCallbackParameterMask.DirectNodeToMove)
 			}
 			
 			this.content = newT
@@ -195,8 +198,11 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 				this.insertTemplate(newT, nextOldT)
 				newT.update(tr.values)
 
-				if (!hasConnectCallbackParameter(this)) {
-					newT.afterConnectCallback(PartCallbackParameterMask.HappenInCurrentContext | PartCallbackParameterMask.DirectNodeToMove)
+				if (hasConnectCallbackParameter(this)) {
+					unionConnectCallbackParameter(newT, PartCallbackParameterMask.StrayFromContext | PartCallbackParameterMask.DirectNodeToMove)
+				}
+				else {
+					newT.afterConnectCallback(PartCallbackParameterMask.StrayFromContext | PartCallbackParameterMask.DirectNodeToMove)
 				}
 
 				content[i] = newT
@@ -261,12 +267,12 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 	 * Update template manually and directly without comparing template maker.
 	 * Use this when template is been managed and cached outside.
 	 */
-	updateTemplateDirectly(t: Template | null, values: any[]) {
+	updateTemplateDirectly(newT: Template | null, values: any[]) {
 		let oldT = this.content as Template | null
 
-		if (oldT === t) {
-			if (t) {
-				t.update(values)
+		if (oldT === newT) {
+			if (newT) {
+				newT.update(values)
 			}
 		}
 		else {
@@ -274,16 +280,19 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 				this.removeTemplate(oldT)
 			}
 
-			if (t) {
-				t.insertNodesBefore(this.endOuterPosition)
-				t.update(values!)
+			if (newT) {
+				newT.insertNodesBefore(this.endOuterPosition)
+				newT.update(values!)
 
-				if (!hasConnectCallbackParameter(this)) {
-					t.afterConnectCallback(PartCallbackParameterMask.HappenInCurrentContext | PartCallbackParameterMask.DirectNodeToMove)
+				if (hasConnectCallbackParameter(this)) {
+					unionConnectCallbackParameter(newT, PartCallbackParameterMask.StrayFromContext | PartCallbackParameterMask.DirectNodeToMove)
+				}
+				else {
+					newT.afterConnectCallback(PartCallbackParameterMask.StrayFromContext | PartCallbackParameterMask.DirectNodeToMove)
 				}
 			}
 
-			this.content = t
+			this.content = newT
 		}
 	}
 

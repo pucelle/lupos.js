@@ -1,6 +1,6 @@
 import {EditType, getEditRecord} from '@pucelle/ff'
 import {CompiledTemplateResult, Template, TemplateSlot} from '../template'
-import {hasConnectCallbackParameter, PartCallbackParameterMask} from '../part'
+import {hasConnectCallbackParameter, PartCallbackParameterMask, unionConnectCallbackParameter} from '../part'
 
 
 /** 
@@ -87,8 +87,11 @@ export class ForBlock<T = any> {
 		this.insertTemplate(t, nextOldT)
 		t.update(result.values)
 
-		if (!hasConnectCallbackParameter(this.slot)) {
-			t.afterConnectCallback(PartCallbackParameterMask.HappenInCurrentContext | PartCallbackParameterMask.DirectNodeToMove)
+		if (hasConnectCallbackParameter(this.slot)) {
+			unionConnectCallbackParameter(this.slot, PartCallbackParameterMask.StrayFromContext | PartCallbackParameterMask.DirectNodeToMove)
+		}
+		else {
+			t.afterConnectCallback(PartCallbackParameterMask.StrayFromContext | PartCallbackParameterMask.DirectNodeToMove)
 		}
 
 		this.templates.push(t)
@@ -100,7 +103,7 @@ export class ForBlock<T = any> {
 		t.update(result.values)
 
 		if (!hasConnectCallbackParameter(this.slot)) {
-			t.afterConnectCallback(PartCallbackParameterMask.HappenInCurrentContext | PartCallbackParameterMask.DirectNodeToMove)
+			t.afterConnectCallback(0)
 		}
 
 		this.templates.push(t)

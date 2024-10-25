@@ -24,6 +24,7 @@ export class RefBinding implements Binding, Part {
 
 	private readonly el: Element
 	private readonly context: any
+	private connected: boolean = false
 
 	/** Whether reference element, or component, or binding. */
 	private refType: RefType = RefType.Element
@@ -61,23 +62,27 @@ export class RefBinding implements Binding, Part {
 		}
 	}
 
-	afterConnectCallback(param: PartCallbackParameterMask | 0) {
-		if ((param & PartCallbackParameterMask.HappenInCurrentContext) === 0) {
+	afterConnectCallback(_param: PartCallbackParameterMask | 0) {
+		if (this.connected) {
 			return
 		}
 
 		if (this.refFn) {
 			this.doReference()
 		}
+
+		this.connected = true
 	}
 
 	beforeDisconnectCallback(param: PartCallbackParameterMask | 0) {
-		if ((param & PartCallbackParameterMask.HappenInCurrentContext) === 0) {
+		if ((param & PartCallbackParameterMask.StrayFromContext) === 0) {
 			return
 		}
 
 		if (this.refFn) {
 			this.refFn.call(this.context, this.refType === RefType.Binding ? false : null)
 		}
+
+		this.connected = false
 	}
 }

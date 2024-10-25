@@ -65,7 +65,7 @@ function onConnected(el: HTMLElement) {
 
 	// Component instance is created.
 	if (com) {
-		com.afterConnectCallback(PartCallbackParameterMask.HappenInCurrentContext | PartCallbackParameterMask.DirectNodeToMove)
+		com.afterConnectCallback(PartCallbackParameterMask.DirectNodeToMove)
 	}
 	else {
 		let {Com, propertyMap} = CustomElementConstructorMap.get(el.localName)!
@@ -101,9 +101,8 @@ function onDisconnected(el: HTMLElement) {
 	let com = getComponentFromElement(el)
 	if (com && com.connected) {
 		com.beforeDisconnectCallback(
-			PartCallbackParameterMask.HappenInCurrentContext
-			| PartCallbackParameterMask.DirectNodeToMove
-			| PartCallbackParameterMask.RemoveImmediately
+			PartCallbackParameterMask.DirectNodeToMove
+			| PartCallbackParameterMask.MoveImmediately
 		)
 		
 		console.warn(`Suggest you DON'T remove custom element directly, which will cause disconnect action cant work as expected! We suggest you to remove component instead.`, 'CustomElementDisconnectActionWarning')
