@@ -414,32 +414,48 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	
 	/** Append current element into a container, and do connect. */
 	appendTo(container: Element) {
+		if (this.connected) {
+			this.remove()
+		}
+		
 		container.append(this.el)
 		
-		if (!this.connected && document.contains(this.el)) {
+		if (document.contains(this.el)) {
 			this.afterConnectCallback(PartCallbackParameterMask.DirectNodeToMove)
 		}
 	}
 
 	/** Insert current element before an element, and do connect. */
 	insertBefore(sibling: Element) {
+		if (this.connected) {
+			this.remove()
+		}
+
 		sibling.before(this.el)
 
-		if (!this.connected && document.contains(this.el)) {
+		if (document.contains(this.el)) {
 			this.afterConnectCallback(PartCallbackParameterMask.DirectNodeToMove)
 		}
 	}
 
 	/** Insert current element after an element, and do connect. */
 	insertAfter(sibling: Element) {
+		if (this.connected) {
+			this.remove()
+		}
+
 		sibling.after(this.el)
 
-		if (!this.connected && document.contains(this.el)) {
+		if (document.contains(this.el)) {
 			this.afterConnectCallback(PartCallbackParameterMask.DirectNodeToMove)
 		}
 	}
 
-	/** Remove element from document, and disconnect immediately. */
+	/** 
+	 * Remove or will remove element from document.
+	 * by default it disconnect immediately and will not play any leave transition,
+	 * except `canPlayLeaveTransition` specified as `true`.
+	 */
 	remove(canPlayLeaveTransition: boolean = false): Promise<void> | void {
 		if (!this.connected) {
 			return
