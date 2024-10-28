@@ -1,5 +1,4 @@
 import {trackGet} from '@pucelle/ff'
-import {PartCallbackParameterMask} from '../part'
 import {TemplateResult, CompiledTemplateResult, TemplateSlot, SlotPosition, SlotPositionType, SlotEndOuterPositionType} from '../template'
 import {Component} from './component'
 import {RenderResult} from './types'
@@ -54,14 +53,5 @@ export class RenderedComponentLike<E = any> extends Component<E> {
 		else {
 			return this.renderer
 		}
-	}
-
-	/** 
-	 * Connect without appending to document,
-	 * use it when you want to get render result soon.
-	 * Later should also wait for `untilUpdateComplete` to get render result.
-	 */
-	connectManually() {
-		this.afterConnectCallback(PartCallbackParameterMask.MoveImmediately)
 	}
 }

@@ -44,7 +44,7 @@ let IncrementalId = 1
 /** Components state. */
 enum ComponentStateMask {
 	Created = 2 ** 0,
-	Ready = 2 ** 1,
+	ReadyAlready = 2 ** 1,
 	Connected = 2 ** 2,
 	NeedToCallConnectCallback = 2 ** 3,
 }
@@ -250,7 +250,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * If is ready already, resolve the promise immediately.
 	 */
 	protected untilReady(this: Component<{}>): Promise<void> {
-		if ((this.state & ComponentStateMask.Ready) === 0) {
+		if ((this.state & ComponentStateMask.ReadyAlready) === 0) {
 			return new Promise(resolve => {
 				this.once('updated', resolve)
 			}) as Promise<void>
@@ -359,9 +359,13 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		enqueueUpdate(this.update, this, this.incrementalId)
 	}
 	
-	/** Doing update immediately. */
-	update(this: Component<{}>) {
-		if (!this.connected) {
+	/** 
+	 * Doing update immediately.
+	 * Update can only work after connected,
+	 * but you can use `force = true` to force update even not connected.
+	 */
+	update(this: Component<{}>, force: boolean = false) {
+		if (!this.connected && !force) {
 			return
 		}
 
@@ -369,7 +373,6 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		this.onUpdated()
 		this.fire('updated')
 
-		
 		// Call connect callback if not yet.
 		if (this.state & ComponentStateMask.NeedToCallConnectCallback) {
 			this.state &= ~ComponentStateMask.NeedToCallConnectCallback
@@ -377,8 +380,8 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		}
 
 		// Call ready if not yet.
-		if ((this.state & ComponentStateMask.Ready) === 0) {
-			this.state |= ComponentStateMask.Ready
+		if ((this.state & ComponentStateMask.ReadyAlready) === 0) {
+			this.state |= ComponentStateMask.ReadyAlready
 			this.onReady()
 		}
 	}
@@ -399,7 +402,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 			endTrack()
 		}
 
-		this.contentSlot!.update(result)
+		this.contentSlot.update(result)
 	}
 
 	/** 
