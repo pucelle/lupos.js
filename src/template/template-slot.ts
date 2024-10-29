@@ -162,10 +162,10 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 			newT.update(tr.values)
 
 			if (hasConnectCallbackParameter(this)) {
-				unionConnectCallbackParameter(newT, PartCallbackParameterMask.StrayFromContext | PartCallbackParameterMask.DirectNodeToMove)
+				unionConnectCallbackParameter(newT, PartCallbackParameterMask.IsolateFromContext | PartCallbackParameterMask.DirectNodeToMove)
 			}
 			else {
-				newT.afterConnectCallback(PartCallbackParameterMask.StrayFromContext | PartCallbackParameterMask.DirectNodeToMove)
+				newT.afterConnectCallback(PartCallbackParameterMask.IsolateFromContext | PartCallbackParameterMask.DirectNodeToMove)
 			}
 			
 			this.content = newT
@@ -199,10 +199,10 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 				newT.update(tr.values)
 
 				if (hasConnectCallbackParameter(this)) {
-					unionConnectCallbackParameter(newT, PartCallbackParameterMask.StrayFromContext | PartCallbackParameterMask.DirectNodeToMove)
+					unionConnectCallbackParameter(newT, PartCallbackParameterMask.IsolateFromContext | PartCallbackParameterMask.DirectNodeToMove)
 				}
 				else {
-					newT.afterConnectCallback(PartCallbackParameterMask.StrayFromContext | PartCallbackParameterMask.DirectNodeToMove)
+					newT.afterConnectCallback(PartCallbackParameterMask.IsolateFromContext | PartCallbackParameterMask.DirectNodeToMove)
 				}
 
 				content[i] = newT
@@ -285,10 +285,10 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 				newT.update(values!)
 
 				if (hasConnectCallbackParameter(this)) {
-					unionConnectCallbackParameter(newT, PartCallbackParameterMask.StrayFromContext | PartCallbackParameterMask.DirectNodeToMove)
+					unionConnectCallbackParameter(newT, PartCallbackParameterMask.IsolateFromContext | PartCallbackParameterMask.DirectNodeToMove)
 				}
 				else {
-					newT.afterConnectCallback(PartCallbackParameterMask.StrayFromContext | PartCallbackParameterMask.DirectNodeToMove)
+					newT.afterConnectCallback(PartCallbackParameterMask.IsolateFromContext | PartCallbackParameterMask.DirectNodeToMove)
 				}
 			}
 

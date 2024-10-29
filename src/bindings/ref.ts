@@ -75,7 +75,7 @@ export class RefBinding implements Binding, Part {
 	}
 
 	beforeDisconnectCallback(param: PartCallbackParameterMask | 0) {
-		if ((param & PartCallbackParameterMask.StrayFromContext) === 0) {
+		if ((param & PartCallbackParameterMask.IsolateFromContext) === 0) {
 			return
 		}
 

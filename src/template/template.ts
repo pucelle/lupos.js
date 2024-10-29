@@ -112,7 +112,7 @@ export class Template<A extends any[] = any[]> implements Part {
 	 * Will call disconnect callback before recycling nodes.
 	 */
 	async recycleNodes() {
-		let promise = this.beforeDisconnectCallback(PartCallbackParameterMask.StrayFromContext | PartCallbackParameterMask.DirectNodeToMove)
+		let promise = this.beforeDisconnectCallback(PartCallbackParameterMask.IsolateFromContext | PartCallbackParameterMask.DirectNodeToMove)
 
 		// Ensure be able to recycle nodes immediately if possible.
 		if (promise) {

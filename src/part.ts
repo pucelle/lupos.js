@@ -10,10 +10,12 @@ export enum PartCallbackParameterMask {
 	 * 
 	 * Note when first time initialize, this value is not included.
 	 * 
-	 * E.g., `<lupos:if {...}><div :binding />...`, after `<if>` state change.
-	 * - for `:binding`, the connect or disconnect callback "FollowCurrentContext".
+	 * E.g., `<lupos:if {...}><div :binding />...`
+	 * - after `<if>` state change, for `:binding`, it "IsolateFromContext".
+	 * - But if the whole context get connected or disconnect,
+	 *   the `:binding` do same thing follow it, not "IsolateFromContext".
 	 */
-	StrayFromContext = 2 ** 0,
+	IsolateFromContext = 2 ** 0,
 
 	/** 
 	 * If nodes of current part will be inserted or removed directly from their parent,
@@ -105,7 +107,7 @@ export function getComponentSlotParameter(param: PartCallbackParameterMask | 0):
 	}
 
 	// Remove `StrayFromContext`.
-	param &= ~PartCallbackParameterMask.StrayFromContext
+	param &= ~PartCallbackParameterMask.IsolateFromContext
 	
 	return param
 }

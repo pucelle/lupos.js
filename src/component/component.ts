@@ -38,7 +38,7 @@ export interface ComponentEvents {
 
 
 /** Current of `component.incrementalId`. */
-let IncrementalId = 1
+let IncrementId = 1
 
 
 /** Components state. */
@@ -46,6 +46,7 @@ enum ComponentStateMask {
 	Created = 2 ** 0,
 	ReadyAlready = 2 ** 1,
 	Connected = 2 ** 2,
+	NeedToCallConnectCallback = 2 ** 3,
 }
 
 
@@ -143,7 +144,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * Help to identify the create orders of component.
 	 * Only for internal usages.
 	 */
-	protected readonly incrementalId: number = IncrementalId++
+	protected readonly incrementId: number = IncrementId++
 
 	/** The root element of component. */
 	readonly el: HTMLElement
@@ -326,18 +327,11 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 
 		// Avoid child parts calls `afterConnectCallback`.
 		holdConnectCallbackParameter(this.contentSlot, getComponentSlotParameter(param))
-
-		// onConnected may assign properties enqueue something, here should ensure enqueuing update later than it.
-		this.update()
+		this.state |= ComponentStateMask.NeedToCallConnectCallback
 		
-		// Child parts calls `afterConnectCallback` right now.
-		this.contentSlot.afterConnectCallback(getConnectCallbackParameter(this.contentSlot)!)
-
-		// Call ready if not yet.
-		if ((this.state & ComponentStateMask.ReadyAlready) === 0) {
-			this.state |= ComponentStateMask.ReadyAlready
-			this.onReady()
-		}
+		// onConnected may assign properties and cause enqueue current component,
+		// so here should ensure enqueuing update later than it.
+		this.willUpdate()
 	}
 
 	beforeDisconnectCallback(this: Component<{}>, param: PartCallbackParameterMask | 0): Promise<void> | void {
@@ -349,14 +343,17 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		this.onWillDisconnect()
 		this.fire('will-disconnect')
 
-		return this.contentSlot.beforeDisconnectCallback(getComponentSlotParameter(param))
+		// If haven't called connect callback, not call disconnect callback also.
+		if ((this.state & ComponentStateMask.NeedToCallConnectCallback) === 0) {
+			return this.contentSlot.beforeDisconnectCallback(getComponentSlotParameter(param))
+		}
 	}
 
 	/** After any tracked data change, enqueue it to update in next animation frame. */
 	protected willUpdate() {
 		
 		// Component create earlier, update earlier.
-		enqueueUpdate(this.update, this, this.incrementalId)
+		enqueueUpdate(this.update, this, this.incrementId)
 	}
 	
 	/** 
@@ -372,6 +369,18 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		this.updateRendering()
 		this.onUpdated()
 		this.fire('updated')
+
+		// Call connect callback if not yet.
+		if (this.state & ComponentStateMask.NeedToCallConnectCallback) {
+			this.state &= ~ComponentStateMask.NeedToCallConnectCallback
+			this.contentSlot.afterConnectCallback(getConnectCallbackParameter(this.contentSlot)!)
+		}
+
+		// Call ready if not yet.
+		if ((this.state & ComponentStateMask.ReadyAlready) === 0) {
+			this.state |= ComponentStateMask.ReadyAlready
+			this.onReady()
+		}
 	}
 
 	/** Update and track rendering contents. */
@@ -472,16 +481,27 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 
 	/** 
 	 * Connect current component manually even it's not truly connected.
-	 * If `canPlayLeaveEnterTransition` specifies as `true`, will play enter transition.
+	 * Will cause update immediately.
 	 */
-	connectManually(canPlayLeaveEnterTransition: boolean = false) {
-		let mask: PartCallbackParameterMask = PartCallbackParameterMask.DirectNodeToMove
+	connectManually() {
+		let param: PartCallbackParameterMask = PartCallbackParameterMask.DirectNodeToMove
+			| PartCallbackParameterMask.MoveImmediately
 
-		if (!canPlayLeaveEnterTransition) {
-			mask |= PartCallbackParameterMask.MoveImmediately
+		if ((this.state & ComponentStateMask.Created) === 0) {
+			this.state |= ComponentStateMask.Created
+			this.onCreated()
 		}
 
-		this.afterConnectCallback(mask)
+		this.state |= ComponentStateMask.Connected
+		this.onConnected()
+
+		// Avoid child parts calls `afterConnectCallback`.
+		holdConnectCallbackParameter(this.contentSlot, getComponentSlotParameter(param))
+		this.state |= ComponentStateMask.NeedToCallConnectCallback
+		
+		// onConnected may assign properties and cause enqueue current component,
+		// so here should ensure enqueuing update later than it.
+		this.update()
 	}
 }
 
