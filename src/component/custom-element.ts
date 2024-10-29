@@ -14,7 +14,7 @@ type PropertyFormatter = (value: string) => any
 /** To cache `custom element name -> component constructor` */
 const CustomElementConstructorMap: Map<
 	string,
-	{Com: ComponentConstructor, propertyMap: PropertyMapOf<ComponentConstructor>}
+	{Com: ComponentConstructor, propertyMap: PropertyMapOf<ComponentConstructor> | undefined}
 > = new Map()
 
 
@@ -33,7 +33,7 @@ const CustomElementConstructorMap: Map<
  * - the component will be automatically `connect` or `disconnected`
  *   after the element was connected or disconnected from document.
  */
-export function defineCustomElement<T extends ComponentConstructor>(name: string, Com: T, propertyMap: PropertyMapOf<T> = {}) {
+export function defineCustomElement<T extends ComponentConstructor>(name: string, Com: T, propertyMap?: PropertyMapOf<T>) {
 	if (!name.includes('-')) {
 		throw new Error(`"${name}" can't be defined as custom element name, which must contain "-"!`)
 	}
@@ -69,9 +69,13 @@ function onConnected(el: HTMLElement) {
 	}
 	else {
 		let {Com, propertyMap} = CustomElementConstructorMap.get(el.localName)!
-		let props = makeProperties(el, propertyMap)
 
-		com = new Com(props, el)
+		com = new Com(el)
+
+		if (propertyMap) {
+			let props = makeProperties(el, propertyMap)
+			Object.assign(com, props)
+		}
 	}
 }
 

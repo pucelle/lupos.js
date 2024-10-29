@@ -1,4 +1,4 @@
-import {EditType, getEditRecord} from '@pucelle/ff'
+import {EditType, getEditRecord, trackGet} from '@pucelle/ff'
 import {CompiledTemplateResult, Template, TemplateSlot} from '../template'
 import {hasConnectCallbackParameter, PartCallbackParameterMask, unionConnectCallbackParameter} from '../part'
 
@@ -21,21 +21,28 @@ type ForBlockRenderFn = (item: any, index: number) => CompiledTemplateResult
  */
 export class ForBlock<T = any> {
 
-	readonly renderFn: ForBlockRenderFn
 	readonly slot: TemplateSlot
 	readonly context: any
 
+	private renderFn!: ForBlockRenderFn
 	private data: T[] = []
 	private templates: Template[] = []
 
-	constructor(renderFn: ForBlockRenderFn, slot: TemplateSlot) {
-		this.renderFn = renderFn
+	constructor(slot: TemplateSlot) {
 		this.slot = slot		
 		this.context = slot.context
 	}
 
+	/** Update render function. */
+	updateRenderFn(renderFn: ForBlockRenderFn) {
+		this.renderFn = renderFn
+	}
+
 	/** Update data items. */
-	update(data: Iterable<T>) {
+	updateData(data: Iterable<T>) {
+
+		// Read data items, so track it.
+		trackGet(data, '')
 
 		// Must clone data items.
 		let newData = [...data]

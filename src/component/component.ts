@@ -1,4 +1,4 @@
-import {ContextVariableConstructor, EventFirer, Observed, enqueueUpdate, beginTrack, endTrack, trackGet, trackSet, untrack} from '@pucelle/ff'
+import {ContextVariableConstructor, EventFirer, Observed, enqueueUpdate, beginTrack, endTrack, trackGet, trackSet} from '@pucelle/ff'
 import {ensureComponentStyle, ComponentStyle} from './style'
 import {addElementComponentMap, getComponentFromElement} from './from-element'
 import {TemplateSlot, SlotPosition, SlotPositionType, CompiledTemplateResult, SlotContentType} from '../template'
@@ -46,7 +46,6 @@ enum ComponentStateMask {
 	Created = 2 ** 0,
 	ReadyAlready = 2 ** 1,
 	Connected = 2 ** 2,
-	NeedToCallConnectCallback = 2 ** 3,
 }
 
 
@@ -167,12 +166,9 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 */
 	protected restSlotRange: SlotRange | null = null
 
-	constructor(properties: Record<string, any> = {}, el: HTMLElement = document.createElement('div')) {
+	constructor(el: HTMLElement = document.createElement('div')) {
 		super()
-
 		this.el = el
-		Object.assign(this, properties)
-
 		addElementComponentMap(el, this)
 	}
 
@@ -203,7 +199,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	}
 
 	/**
-	 * Called when component is ready for the first time
+	 * Called when component is ready for the first time.
 	 * All the data, child nodes, child components were prepared.
 	 * You may visit or further-adjust child nodes here, or register events for them.
 	 * Fired for only once.
@@ -328,11 +324,20 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		this.onConnected()
 		this.fire('connected')
 
+		// Avoid child parts calls `afterConnectCallback`.
 		holdConnectCallbackParameter(this.contentSlot, getComponentSlotParameter(param))
-		this.state |= ComponentStateMask.NeedToCallConnectCallback
+
+		// onConnected may assign properties enqueue something, here should ensure enqueuing update later than it.
+		this.update()
 		
-		// onConnected will enqueue something, here should ensure enqueuing update later than it.
-		this.willUpdate()
+		// Child parts calls `afterConnectCallback` right now.
+		this.contentSlot.afterConnectCallback(getConnectCallbackParameter(this.contentSlot)!)
+
+		// Call ready if not yet.
+		if ((this.state & ComponentStateMask.ReadyAlready) === 0) {
+			this.state |= ComponentStateMask.ReadyAlready
+			this.onReady()
+		}
 	}
 
 	beforeDisconnectCallback(this: Component<{}>, param: PartCallbackParameterMask | 0): Promise<void> | void {
@@ -340,16 +345,11 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 			return
 		}
 
-		untrack(this.willUpdate, this)
-
 		this.state &= ~ComponentStateMask.Connected
 		this.onWillDisconnect()
 		this.fire('will-disconnect')
 
-		// If haven't called connect callback, not call disconnect callback also.
-		if ((this.state & ComponentStateMask.NeedToCallConnectCallback) === 0) {
-			return this.contentSlot.beforeDisconnectCallback(getComponentSlotParameter(param))
-		}
+		return this.contentSlot.beforeDisconnectCallback(getComponentSlotParameter(param))
 	}
 
 	/** After any tracked data change, enqueue it to update in next animation frame. */
@@ -364,26 +364,14 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * Update can only work after connected,
 	 * but you can use `force = true` to force update even not connected.
 	 */
-	update(this: Component<{}>, force: boolean = false) {
-		if (!this.connected && !force) {
+	update(this: Component<{}>) {
+		if (!this.connected) {
 			return
 		}
 
 		this.updateRendering()
 		this.onUpdated()
 		this.fire('updated')
-
-		// Call connect callback if not yet.
-		if (this.state & ComponentStateMask.NeedToCallConnectCallback) {
-			this.state &= ~ComponentStateMask.NeedToCallConnectCallback
-			this.contentSlot.afterConnectCallback(getConnectCallbackParameter(this.contentSlot)!)
-		}
-
-		// Call ready if not yet.
-		if ((this.state & ComponentStateMask.ReadyAlready) === 0) {
-			this.state |= ComponentStateMask.ReadyAlready
-			this.onReady()
-		}
 	}
 
 	/** Update and track rendering contents. */
@@ -480,6 +468,20 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		}
 		
 		this.el.remove()
+	}
+
+	/** 
+	 * Connect current component manually even it's not truly connected.
+	 * If `canPlayLeaveEnterTransition` specifies as `true`, will play enter transition.
+	 */
+	connectManually(canPlayLeaveEnterTransition: boolean = false) {
+		let mask: PartCallbackParameterMask = PartCallbackParameterMask.DirectNodeToMove
+
+		if (!canPlayLeaveEnterTransition) {
+			mask |= PartCallbackParameterMask.MoveImmediately
+		}
+
+		this.afterConnectCallback(mask)
 	}
 }
 

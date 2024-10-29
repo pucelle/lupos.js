@@ -1,4 +1,4 @@
-import {createEffect} from '@pucelle/ff'
+import {createEffect, DOMEvents} from '@pucelle/ff'
 import {TemplateResult} from '../template'
 import {ComponentConstructor} from './types'
 
@@ -15,12 +15,13 @@ const ComponentStyleAndTagMap: WeakSet<ComponentConstructor> = new WeakSet()
  * Call after any instance of component constructor created,
  * to ensure it's relied styles appended into document.
  */
-export function ensureComponentStyle(Com: ComponentConstructor) {
+export async function ensureComponentStyle(Com: ComponentConstructor) {
 	if (Com.hasOwnProperty('style') && !ComponentStyleAndTagMap.has(Com)) {
+		ComponentStyleAndTagMap.add(Com)
+
+		await DOMEvents.untilDocumentComplete()
 		createStyleElement(Com.style!, Com.name)
 	}
-
-	ComponentStyleAndTagMap.add(Com)
 }
 
 

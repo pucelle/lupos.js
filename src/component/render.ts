@@ -32,7 +32,7 @@ export class RenderedComponentLike<E = any> extends Component<E> {
 	renderer: RenderResultRenderer
 
 	constructor(renderer: RenderResultRenderer, context: any) {
-		super({}, document.createElement('slot'))
+		super(document.createElement('slot'))
 		
 		this.renderer = renderer
 		this.context = context

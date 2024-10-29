@@ -40,7 +40,7 @@ export class DynamicComponentBlock {
 			return
 		}
 
-		let com = new NewCom({}, this.originalEl)
+		let com = new NewCom(this.originalEl)
 		this.binder(com)
 
 		if (this.com) {
