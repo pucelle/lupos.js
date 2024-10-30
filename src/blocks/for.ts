@@ -40,12 +40,16 @@ export class ForBlock<T = any> {
 
 	/** Update data items. */
 	updateData(data: Iterable<T>) {
+		let newData: T[]
 
-		// Read data items, so track it.
-		trackGet(data, '')
-
-		// Must clone data items.
-		let newData = [...data]
+		// Read data array items, so need to track it.
+		if (Array.isArray(data)) {
+			newData = data
+			trackGet(data, '')
+		}
+		else {
+			newData = [...data]
+		}
 
 		let oldData = this.data
 		let oldTs = this.templates
