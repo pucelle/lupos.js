@@ -141,7 +141,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 
 
 	/** 
-	 * Help to identify the create orders of component.
+	 * Help to identify the creation orders of component.
 	 * Only for internal usages.
 	 */
 	protected readonly incrementId: number = IncrementId++
@@ -351,7 +351,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 
 	/** After any tracked data change, enqueue it to update in next animation frame. */
 	protected willUpdate() {
-		
+
 		// Component create earlier, update earlier.
 		enqueueUpdate(this.update, this, this.incrementId)
 	}
@@ -395,11 +395,12 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 			result = null
 			console.warn(err)
 		}
-		finally {
-			endTrack()
-		}
 
 		this.contentSlot.update(result)
+
+		// `endTrack` here is important.
+		// This will cause tracking `ForBlock` update.
+		endTrack()
 	}
 
 	/** 
