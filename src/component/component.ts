@@ -1,4 +1,4 @@
-import {ContextVariableConstructor, EventFirer, Observed, enqueueUpdate, beginTrack, endTrack, trackGet, trackSet} from '@pucelle/ff'
+import {ContextVariableConstructor, EventFirer, Observed, enqueueUpdate, beginTrack, endTrack, trackGet, trackSet, promiseWithResolves} from '@pucelle/ff'
 import {ensureComponentStyle, ComponentStyle} from './style'
 import {addElementComponentMap, getComponentFromElement} from './from-element'
 import {TemplateSlot, SlotPosition, SlotPositionType, CompiledTemplateResult, SlotContentType} from '../template'
@@ -252,14 +252,16 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * If is ready already, resolve the promise immediately.
 	 */
 	protected untilReady(this: Component<{}>): Promise<void> {
+		let {promise, resolve} = promiseWithResolves()
+
 		if ((this.state & ComponentStateMask.ReadyAlready) === 0) {
-			return new Promise(resolve => {
-				this.once('updated', resolve)
-			}) as Promise<void>
+			this.once('updated', resolve)
 		}
 		else {
-			return Promise.resolve()
+			resolve()
 		}
+
+		return promise
 	}
 
 	/** 
