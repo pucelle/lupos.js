@@ -9,7 +9,11 @@ describe('Test Dynamic Component Block', () => {
 			ChildCom: any = Child1
 
 			protected render() {
-				return lupos.html`<${this.ChildCom} :class="${'className'}">Child Component Content</>`
+				return lupos.html`
+					<${this.ChildCom} :class="${'className'}">
+						Child Component Content
+					</>
+				`
 			}
 		}
 

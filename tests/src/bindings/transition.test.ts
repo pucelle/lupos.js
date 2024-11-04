@@ -111,7 +111,6 @@ describe('Test :transition', () => {
 			}
 		}
 
-
 		let com = new Com()
 		com.appendTo(document.body)
 		await untilUpdateComplete()

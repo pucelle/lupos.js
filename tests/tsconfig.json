@@ -21,7 +21,7 @@
 			"@pucelle/lupos.js": ["./"],
 		},
 		"plugins": [
-			{"transform": "@pucelle/lupos.compiler"},
+			{"transform": "@pucelle/lupos.compiler/src/index.ts"},
 		],
 	},
 	"references": [

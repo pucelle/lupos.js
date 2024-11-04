@@ -1,4 +1,4 @@
-import {onUpdateComplete} from '@pucelle/ff'
+import {untilUpdateComplete} from '@pucelle/ff'
 
 
 /** Values of Part Callback Parameter. */
@@ -43,7 +43,7 @@ export enum PartCallbackParameterMask {
 	 * E.g., if any ancestral element was removed directly,
 	 * no transition needs to be played.
 	 * 
-	 * Or connect manually immediately, no transition needs to be played too.
+	 * Or connect manually immediately, and no transition needs to be played too.
 	 */
 	MoveImmediately = 2 ** 3,
 }
@@ -152,16 +152,11 @@ function cleanShortHeldPartCallbackParameters() {
  * Hold part callback parameters because may update later and then do connect. */
 export function holdConnectCallbackParameter(part: Part, param: PartCallbackParameterMask | 0) {
 	HeldPartCallbackParameters.set(part, param)
+
 	if (!enqueuedShortHeldClean) {
-		onUpdateComplete(cleanShortHeldPartCallbackParameters)
+		untilUpdateComplete().then(cleanShortHeldPartCallbackParameters)
 		enqueuedShortHeldClean = true
 	}
-}
-
-
-/** Get held callback parameters by a part. */
-export function getConnectCallbackParameter(part: Part): PartCallbackParameterMask | 0 | undefined {
-	return HeldPartCallbackParameters.get(part)
 }
 
 

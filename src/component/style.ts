@@ -1,4 +1,4 @@
-import {createEffect, DOMEvents} from '@pucelle/ff'
+import {EffectMaker} from '@pucelle/ff'
 import {TemplateResult} from '../template'
 import {ComponentConstructor} from './types'
 
@@ -15,11 +15,9 @@ const ComponentStyleAndTagMap: WeakSet<ComponentConstructor> = new WeakSet()
  * Call after any instance of component constructor created,
  * to ensure it's relied styles appended into document.
  */
-export async function ensureComponentStyle(Com: ComponentConstructor) {
+export function ensureComponentStyle(Com: ComponentConstructor) {
 	if (Com.hasOwnProperty('style') && !ComponentStyleAndTagMap.has(Com)) {
 		ComponentStyleAndTagMap.add(Com)
-
-		await DOMEvents.untilDocumentComplete()
 		createStyleElement(Com.style!, Com.name)
 	}
 }
@@ -35,22 +33,17 @@ function createStyleElement(style: ComponentStyle, identifyName: string) {
 	let styleTag = document.createElement('style')
 	styleTag.setAttribute('name', identifyName)
 
-	createEffect(() => {
-		styleTag.textContent = getStyleContent(style)
-	})
+	if (typeof style === 'function') {
+		new EffectMaker(() => {
+			styleTag.textContent = String((style as () => TemplateResult)())
+		}).connect()
+	}
+	else {
+		styleTag.textContent = String(style)
+	}
 	
 	let scriptTag = document.head.querySelector('script')
 	document.head.insertBefore(styleTag, scriptTag)
-}
-
-
-/** Get style text from static style property. */
-function getStyleContent(style: ComponentStyle): string {
-	if (typeof style === 'function') {
-		style = style()
-	}
-
-	return String(style)
 }
 
 

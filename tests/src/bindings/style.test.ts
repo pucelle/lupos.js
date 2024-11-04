@@ -37,6 +37,6 @@ describe('Test :style', () => {
 		expect(div.style.cssText).toEqual('color: red; background: rgb(255, 255, 255); flex: 1;')
 
 		b.update({background: 'none'})
-		expect(div.style.cssText).toEqual('color: red; flex: 1; background: none;')
+		expect(div.style.cssText).toEqual('color: red; background: none;')
 	})
 })

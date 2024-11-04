@@ -3,7 +3,7 @@ import {ensureComponentStyle, ComponentStyle} from './style'
 import {addElementComponentMap, getComponentFromElement} from './from-element'
 import {TemplateSlot, SlotPosition, SlotPositionType, CompiledTemplateResult, SlotContentType} from '../template'
 import {ComponentConstructor, RenderResult} from './types'
-import {getComponentSlotParameter, getConnectCallbackParameter, holdConnectCallbackParameter, Part, PartCallbackParameterMask} from '../part'
+import {getComponentSlotParameter, holdConnectCallbackParameter, Part, PartCallbackParameterMask} from '../part'
 import {SlotRange} from '../template/slot-range'
 import {deleteContextVariables, getContextVariableDeclared, setContextVariable} from './context-variable'
 
@@ -46,7 +46,6 @@ enum ComponentStateMask {
 	Created = 2 ** 0,
 	ReadyAlready = 2 ** 1,
 	Connected = 2 ** 2,
-	NeedToCallConnectCallback = 2 ** 3,
 }
 
 
@@ -166,6 +165,12 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * which will be used to fill `<slot />` element the component itself render.
 	 */
 	protected restSlotRange: SlotRange | null = null
+
+	/** 
+	 * Whether needs update.
+	 * Only when `needsUpdate` is `true`, current component can be updated.
+	 */
+	needsUpdate: boolean = true
 
 	constructor(el: HTMLElement = document.createElement('div')) {
 		super()
@@ -326,12 +331,21 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		this.fire('connected')
 
 		// Avoid child parts calls `afterConnectCallback`.
-		holdConnectCallbackParameter(this.contentSlot, getComponentSlotParameter(param))
-		this.state |= ComponentStateMask.NeedToCallConnectCallback
-		
+		let slotParam = getComponentSlotParameter(param)
+		holdConnectCallbackParameter(this.contentSlot, slotParam)
+
 		// onConnected may assign properties and cause enqueue current component,
 		// so here should ensure enqueuing update later than it.
-		this.willUpdate()
+		this.update()
+
+		// Call connect callback if not yet.
+		this.contentSlot.afterConnectCallback(slotParam)
+
+		// Call ready if not yet.
+		if ((this.state & ComponentStateMask.ReadyAlready) === 0) {
+			this.state |= ComponentStateMask.ReadyAlready
+			this.onReady()
+		}
 	}
 
 	beforeDisconnectCallback(this: Component<{}>, param: PartCallbackParameterMask | 0): Promise<void> | void {
@@ -344,43 +358,35 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		this.fire('will-disconnect')
 
 		// If haven't called connect callback, not call disconnect callback also.
-		if ((this.state & ComponentStateMask.NeedToCallConnectCallback) === 0) {
-			return this.contentSlot.beforeDisconnectCallback(getComponentSlotParameter(param))
-		}
+		return this.contentSlot.beforeDisconnectCallback(getComponentSlotParameter(param))
 	}
 
 	/** After any tracked data change, enqueue it to update in next animation frame. */
 	protected willUpdate() {
+		if (this.needsUpdate) {
+			return
+		}
 
 		// Component create earlier, update earlier.
 		enqueueUpdate(this.update, this, this.incrementId)
+		this.needsUpdate = true
 	}
 	
 	/** 
 	 * Doing update immediately.
 	 * Update can only work after connected,
-	 * but you can use `force = true` to force update even not connected.
+	 * and calls `willUpdate` cause `needsUpdate=true`.
+	 * But you can set `needsUpdate = true` explicitly to force it can be updated.
 	 */
 	update(this: Component<{}>) {
-		if (!this.connected) {
+		if (!this.connected || !this.needsUpdate) {
 			return
 		}
 
 		this.updateRendering()
 		this.onUpdated()
 		this.fire('updated')
-
-		// Call connect callback if not yet.
-		if (this.state & ComponentStateMask.NeedToCallConnectCallback) {
-			this.state &= ~ComponentStateMask.NeedToCallConnectCallback
-			this.contentSlot.afterConnectCallback(getConnectCallbackParameter(this.contentSlot)!)
-		}
-
-		// Call ready if not yet.
-		if ((this.state & ComponentStateMask.ReadyAlready) === 0) {
-			this.state |= ComponentStateMask.ReadyAlready
-			this.onReady()
-		}
+		this.needsUpdate = false
 	}
 
 	/** Update and track rendering contents. */
@@ -488,21 +494,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		let param: PartCallbackParameterMask = PartCallbackParameterMask.DirectNodeToMove
 			| PartCallbackParameterMask.MoveImmediately
 
-		if ((this.state & ComponentStateMask.Created) === 0) {
-			this.state |= ComponentStateMask.Created
-			this.onCreated()
-		}
-
-		this.state |= ComponentStateMask.Connected
-		this.onConnected()
-
-		// Avoid child parts calls `afterConnectCallback`.
-		holdConnectCallbackParameter(this.contentSlot, getComponentSlotParameter(param))
-		this.state |= ComponentStateMask.NeedToCallConnectCallback
-		
-		// onConnected may assign properties and cause enqueue current component,
-		// so here should ensure enqueuing update later than it.
-		this.update()
+		this.afterConnectCallback(param)
 	}
 }
 
@@ -514,5 +506,6 @@ if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
 	(Component as any).prototype.onCreated = function() {
 		original.call(this)
 		this.el.setAttribute('com', this.constructor.name)
+		this.el.setAttribute('iid', this.incrementId)
 	}
 }
