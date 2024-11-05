@@ -143,7 +143,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * Help to identify the creation orders of component.
 	 * Only for internal usages.
 	 */
-	protected readonly incrementId: number = IncrementId++
+	protected readonly iid: number = IncrementId++
 
 	/** The root element of component. */
 	readonly el: HTMLElement
@@ -370,7 +370,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		}
 
 		// Component create earlier, update earlier.
-		enqueueUpdate(this.update, this, this.incrementId)
+		enqueueUpdate(this.update, this, this.iid)
 		this.needsUpdate = true
 	}
 	

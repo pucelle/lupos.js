@@ -44,6 +44,12 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 	}
 
 	afterConnectCallback(param: PartCallbackParameterMask | 0) {
+
+		// May haven't get updated.
+		if (!this.content) {
+			return
+		}
+
 		if (this.contentType === SlotContentType.TemplateResultList) {
 			for (let t of this.content as Template[]) {
 				t.afterConnectCallback(param)
