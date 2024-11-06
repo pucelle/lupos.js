@@ -22,5 +22,5 @@ export interface Binding {
 	 * Update binding parameters.
 	 * If not provide, means no need to update.
 	 */
-	update?: (value: any) => void
+	update?: (...values: any[]) => void
 }
