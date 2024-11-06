@@ -508,6 +508,6 @@ if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
 	(Component as any).prototype.onCreated = function() {
 		original.call(this)
 		this.el.setAttribute('com', this.constructor.name)
-		this.el.setAttribute('iid', this.incrementId)
+		this.el.setAttribute('iid', this.iid)
 	}
 }
