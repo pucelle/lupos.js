@@ -139,17 +139,18 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	static SlotContentType: SlotContentType | null = null
 
 
+	/** The root element of component. */
+	readonly el: HTMLElement
+
 	/** 
-	 * Help to identify the creation orders of component.
+	 * Help to identify the creation orders of component,
+	 * or for debugging a specified component.
 	 * Only for internal usages.
 	 */
 	protected readonly iid: number = IncrementId++
 
-	/** The root element of component. */
-	readonly el: HTMLElement
-
 	/** State of current component, byte mask type. */
-	protected state: ComponentStateMask | 0 = 0
+	protected stateMask: ComponentStateMask | 0 = 0
 
 	/** Help to patch render result to current element. */
 	protected contentSlot!: TemplateSlot<any>
@@ -183,7 +184,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * Readonly outside of component.
 	 */
 	get connected(): boolean {
-		return (this.state & ComponentStateMask.Connected) > 0
+		return (this.stateMask & ComponentStateMask.Connected) > 0
 	}
 
 	/** Init `contentSlot`. */
@@ -254,7 +255,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	protected untilReady(this: Component<{}>): Promise<void> {
 		let {promise, resolve} = promiseWithResolves()
 
-		if ((this.state & ComponentStateMask.ReadyAlready) === 0) {
+		if ((this.stateMask & ComponentStateMask.ReadyAlready) === 0) {
 			this.once('updated', resolve)
 		}
 		else {
@@ -323,12 +324,12 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 			return
 		}
 
-		if ((this.state & ComponentStateMask.Created) === 0) {
-			this.state |= ComponentStateMask.Created
+		if ((this.stateMask & ComponentStateMask.Created) === 0) {
+			this.stateMask |= ComponentStateMask.Created
 			this.onCreated()
 		}
 
-		this.state |= ComponentStateMask.Connected
+		this.stateMask |= ComponentStateMask.Connected
 		this.onConnected()
 		this.fire('connected')
 
@@ -344,8 +345,8 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		this.contentSlot.afterConnectCallback(slotParam)
 
 		// Call ready if not yet.
-		if ((this.state & ComponentStateMask.ReadyAlready) === 0) {
-			this.state |= ComponentStateMask.ReadyAlready
+		if ((this.stateMask & ComponentStateMask.ReadyAlready) === 0) {
+			this.stateMask |= ComponentStateMask.ReadyAlready
 			this.onReady()
 		}
 	}
@@ -355,7 +356,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 			return
 		}
 
-		this.state &= ~ComponentStateMask.Connected
+		this.stateMask &= ~ComponentStateMask.Connected
 		this.onWillDisconnect()
 		this.fire('will-disconnect')
 
