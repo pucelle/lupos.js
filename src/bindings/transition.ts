@@ -12,7 +12,7 @@ const NotConnectCallbackForFirstTime: WeakSet<TransitionBinding> = new WeakSet()
  * - `<el :transition=${fade({duration, ...})}>`
  * - `<el :transition.local=${...}>`: play transition only when element itself get inserted or removed. `.local` can omit.
  * - `<el :transition.global=${...}>`: play transition when element or any ancestral element get inserted or removed.
- * - `<el :transition.immediate=${...}>`: play transition immediately when element initialized.
+ * - `<el :transition.immediate=${...}>`: play transition immediately after element get initialized.
  * 
  * `:transition` binding will dispatch 4 events on the target element:
  * - `transition-enter-started`: After enter transition started.
