@@ -119,7 +119,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 
 	/**
 	 * Provides a global css content, used as styles for current component.
-	 * You can nest css codes just like in SCSS, and use `$` to reference parent selector.
+	 * Although it supports dynamic css content, we would suggest using only static css content.
 	 */
 	static style: ComponentStyle | null = null
 

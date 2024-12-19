@@ -61,12 +61,12 @@ export class StyleBinding implements Binding {
 	updateObject(value: Record<string, string>) {
 		for (let k of Object.keys(this.lastStyleValues)) {
 			if (!value.hasOwnProperty(k)) {
-				(this.el.style as any)[k] = ''
+				this.el.style.setProperty(k, '')
 			}
 		}
 
 		for (let [k, v] of Object.entries(value)) {
-			(this.el.style as any)[k] = v
+			this.el.style.setProperty(k, v)
 		}
 
 		this.lastStyleValues = value
