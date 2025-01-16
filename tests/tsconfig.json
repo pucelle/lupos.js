@@ -19,10 +19,7 @@
 		"skipLibCheck": true,
 		"paths": {
 			"@pucelle/lupos.js": ["./"],
-		},
-		"plugins": [
-			{"transform": "@pucelle/lupos.compiler/src/index.ts"},
-		],
+		}
 	},
 	"references": [
         { "path": "../" }

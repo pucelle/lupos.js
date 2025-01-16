@@ -14,9 +14,9 @@
 	"types": "out/index.d.ts",
 	"sideEffects": false,
 	"scripts": {
-		"build": "tsc -b",
-		"watch": "tsc -b -w",
-		"prepublish": "tsc -b",
+		"build": "luc -e",
+		"watch": "luc -e -w",
+		"prepublish": "npm run build",
 		"build-tests": "cd tests && tspc",
 		"test": "npm run build && npm run build-tests && node --experimental-vm-modules node_modules/jest/bin/jest.js"
 	},
