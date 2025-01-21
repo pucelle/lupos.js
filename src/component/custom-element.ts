@@ -56,7 +56,7 @@ function defineCallbacks(name: string) {
 		disconnectedCallback() {
 			onDisconnected(this)
 		}
-	}, {extends: 'div'})
+	})
 }
 
 /** Connect callback of custom element. */
