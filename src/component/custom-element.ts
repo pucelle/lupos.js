@@ -63,11 +63,8 @@ function defineCallbacks(name: string) {
 function onConnected(el: HTMLElement) {
 	let com = getComponentFromElement(el)
 
-	// Component instance is created.
-	if (com) {
-		com.afterConnectCallback(PartCallbackParameterMask.DirectNodeToMove)
-	}
-	else {
+	// Component instance isn't created.
+	if (!com) {
 		let {Com, propertyMap} = CustomElementConstructorMap.get(el.localName)!
 
 		com = new Com(el)
@@ -77,6 +74,8 @@ function onConnected(el: HTMLElement) {
 			Object.assign(com, props)
 		}
 	}
+
+	com.afterConnectCallback(PartCallbackParameterMask.DirectNodeToMove)
 }
 
 /** Make a property parameter for initializing component. */

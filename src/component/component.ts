@@ -503,7 +503,10 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 
 
 // For localhost debugging.
-if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+if (location.hostname === "localhost"
+	|| location.hostname === "127.0.0.1"
+	|| location.protocol === 'file:'
+) {
 	let original = (Component as any).prototype.onCreated;
 	
 	(Component as any).prototype.onCreated = function() {
