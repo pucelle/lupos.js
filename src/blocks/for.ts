@@ -1,4 +1,4 @@
-import {EditType, getEditRecord, trackGet} from '@pucelle/ff'
+import {EditType, getEditRecord} from '@pucelle/ff'
 import {CompiledTemplateResult, Template, TemplateSlot} from '../template'
 import {hasConnectCallbackParameter, PartCallbackParameterMask, unionConnectCallbackParameter} from '../part'
 
@@ -40,11 +40,6 @@ export class ForBlock<T = any> {
 
 	/** Update data items. */
 	updateData(data: Iterable<T>) {
-
-		// Read data array items, so need to track it.
-		if (Array.isArray(data)) {
-			trackGet(data, '')
-		}
 
 		// Must clone, will compare with old and new.
 		let newData = [...data]
