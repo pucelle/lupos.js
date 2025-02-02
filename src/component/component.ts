@@ -378,7 +378,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	/** 
 	 * Doing update immediately.
 	 * Update can only work after connected,
-	 * and calls `willUpdate` cause `needsUpdate=true`.
+	 * and after calls `willUpdate` cause `needsUpdate=true`.
 	 * But you can set `needsUpdate = true` explicitly to force it can be updated.
 	 */
 	update(this: Component<{}>) {
