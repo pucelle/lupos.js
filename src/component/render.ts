@@ -41,7 +41,7 @@ export class RenderedComponentLike<E = any> extends Component<E> {
 	/** Replace context of content slot. */
 	protected initContentSlot(): TemplateSlot {
 		let position = new SlotPosition<SlotEndOuterPositionType>(SlotPositionType.AfterContent, this.el)
-		return new TemplateSlot(position, this.context)
+		return new TemplateSlot(position)
 	}
 
 	protected render(): RenderResult {

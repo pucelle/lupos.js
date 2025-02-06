@@ -192,7 +192,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		let position = new SlotPosition<SlotPositionType.AfterContent>(SlotPositionType.AfterContent, this.el)
 		let Com = this.constructor as ComponentConstructor
 
-		return new TemplateSlot(position, this, Com.SlotContentType!)
+		return new TemplateSlot(position, Com.SlotContentType!)
 	}
 
 	/**

@@ -12,11 +12,9 @@ import {CompiledTemplateResult, Template, TemplateMaker, TemplateSlot} from '../
 export class IfBlock {
 
 	readonly slot: TemplateSlot
-	readonly context: any
 
 	constructor(slot: TemplateSlot) {
 		this.slot = slot
-		this.context = slot.context
 	}
 
 	update(result: CompiledTemplateResult | null) {
@@ -37,20 +35,17 @@ export class IfBlock {
 export class CacheableIfBlock {
 
 	readonly slot: TemplateSlot
-	readonly context: any
-
 	private templates: Map<TemplateMaker, Template | null> = new Map()
 
 	constructor(slot: TemplateSlot) {
 		this.slot = slot
-		this.context = slot.context
 	}
 
 	update(result: CompiledTemplateResult | null) {
 		let template = result ? this.templates.get(result.maker) ?? null : null
 		
 		if (!template && result) {
-			template = result.maker.make(this.context)
+			template = result.maker.make(result.context)
 			this.templates.set(result.maker, template)
 		}
 

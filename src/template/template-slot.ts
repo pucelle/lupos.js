@@ -26,7 +26,6 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 
 	/** End outer position, indicates where to put new content. */
 	readonly endOuterPosition: SlotPosition<SlotEndOuterPositionType>
-	readonly context: any
 
 	private contentType: T | null = null
 	private readonly knownContentType: boolean
@@ -34,11 +33,9 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 
 	constructor(
 		endOuterPosition: SlotPosition<SlotEndOuterPositionType>,
-		context: any,
 		knownType: T | null = null
 	) {
 		this.endOuterPosition = endOuterPosition
-		this.context = context
 		this.contentType = knownType as T
 		this.knownContentType = knownType !== null
 	}
@@ -163,7 +160,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 				this.removeTemplate(oldT)
 			}
 
-			let newT = tr.maker.make(this.context)
+			let newT = tr.maker.make(tr.context)
 			newT.insertNodesBefore(this.endOuterPosition)
 			newT.update(tr.values)
 
@@ -194,7 +191,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 				oldT.update(tr.values)
 			}
 			else {
-				let newT = tr.maker.make(this.context)
+				let newT = tr.maker.make(tr.context)
 				let nextOldT = i < content.length - 1 ? content[i + 1] : null
 
 				if (oldT) {

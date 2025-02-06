@@ -29,8 +29,7 @@ export class ForBlock<T = any> {
 	private templates: Template[] = []
 
 	constructor(slot: TemplateSlot) {
-		this.slot = slot		
-		this.context = slot.context
+		this.slot = slot
 	}
 
 	/** Update render function. */
@@ -86,7 +85,7 @@ export class ForBlock<T = any> {
 
 	private createTemplate(item: T, index: number, nextOldT: Template | null) {
 		let result = this.renderFn(item, index)
-		let t = result.maker.make(this.context)
+		let t = result.maker.make(result.context)
 
 		this.insertTemplate(t, nextOldT)
 		t.update(result.values)

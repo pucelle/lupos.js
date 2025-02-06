@@ -19,10 +19,10 @@ export class AwaitBlock {
 	private values: any[] | null = null
 	private template: Template | null = null
 
-	constructor(makers: (TemplateMaker | null)[], slot: TemplateSlot) {
+	constructor(makers: (TemplateMaker | null)[], slot: TemplateSlot, context: any) {
 		this.makers = makers
 		this.slot = slot
-		this.context = slot.context
+		this.context = context
 	}
 
 	/** 
