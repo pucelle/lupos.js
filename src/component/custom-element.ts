@@ -75,7 +75,7 @@ function onConnected(el: HTMLElement) {
 		}
 	}
 
-	com.afterConnectCallback(PartCallbackParameterMask.DirectNodeToMove)
+	com.afterConnectCallback(PartCallbackParameterMask.MoveAsDirectNode)
 }
 
 /** Make a property parameter for initializing component. */
@@ -104,7 +104,7 @@ function onDisconnected(el: HTMLElement) {
 	let com = getComponentFromElement(el)
 	if (com && com.connected) {
 		com.beforeDisconnectCallback(
-			PartCallbackParameterMask.DirectNodeToMove
+			PartCallbackParameterMask.MoveAsDirectNode
 			| PartCallbackParameterMask.MoveImmediately
 		)
 		

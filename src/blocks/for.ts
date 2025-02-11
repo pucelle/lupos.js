@@ -91,10 +91,10 @@ export class ForBlock<T = any> {
 		t.update(result.values)
 
 		if (hasConnectCallbackParameter(this.slot)) {
-			unionConnectCallbackParameter(this.slot, PartCallbackParameterMask.IsolateFromContext | PartCallbackParameterMask.DirectNodeToMove)
+			unionConnectCallbackParameter(this.slot, PartCallbackParameterMask.MoveFromOwnStateChange | PartCallbackParameterMask.MoveAsDirectNode)
 		}
 		else {
-			t.afterConnectCallback(PartCallbackParameterMask.IsolateFromContext | PartCallbackParameterMask.DirectNodeToMove)
+			t.afterConnectCallback(PartCallbackParameterMask.MoveFromOwnStateChange | PartCallbackParameterMask.MoveAsDirectNode)
 		}
 
 		this.templates.push(t)

@@ -10,31 +10,31 @@ export enum PartCallbackParameterMask {
 	 * 
 	 * Note when first time initialize, this value is not included.
 	 * 
-	 * E.g., `<lupos:if {...}><div :binding />...`
-	 * - after `<if>` state change, for `:binding`, it "IsolateFromContext".
+	 * E.g., `<lu:if {...}><div :binding />...`
+	 * - after `<lu:if>` state change, for `:binding`, it connects or disconnects "MoveFromOwnStateChange".
 	 * - But if the whole context get connected or disconnect,
-	 *   the `:binding` do same thing follow it, not "IsolateFromContext".
+	 *   the `:binding` do same action follows it, then it's not "MoveFromOwnStateChange".
 	 */
-	IsolateFromContext = 2 ** 0,
+	MoveFromOwnStateChange = 1,
 
 	/** 
 	 * If nodes of current part will be inserted or removed directly from their parent,
 	 * this value is unioned.
 	 * 
-	 * E.g., `<lupos:if {...}><div :transition><div :transition>...`.
-	 * The first transition can play after if state change because it is "DirectNodeToMove" .
-	 * The second transition can't play after if state change because it is not directly moved.
+	 * E.g., `<lu:if {...}><div :transition><div :transition>...`.
+	 * The first transition can play after `<lu:if>` state change because it is "AsDirectNodeToMove" .
+	 * The second transition can't play after `<lu:if>` state change because it is not directly moved.
 	 */
-	DirectNodeToMove = 2 ** 1,
+	MoveAsDirectNode = 2,
 
 	/** 
 	 * If nodes of current context will be inserted or removed directly from their parent,
 	 * this value is unioned.
 	 * 
-	 * E.g., `<lupos:if {...}><Com :transition>...`.
-	 * Com will pass this parameter to content slot after if state change.
+	 * E.g., `<lu:if {...}><Com :transition>...`.
+	 * `<Com>` will pass this parameter to content slot after `<lu:if>` state change.
 	 */
-	ContextNodeToMove = 2 ** 2,
+	MoveAsContextNode = 4,
 
 	/** 
 	 * If nodes of current part has been moved immediately,
@@ -45,7 +45,7 @@ export enum PartCallbackParameterMask {
 	 * 
 	 * Or connect manually immediately, and no transition needs to be played too.
 	 */
-	MoveImmediately = 2 ** 3,
+	MoveImmediately = 8,
 }
 
 
@@ -101,13 +101,13 @@ export enum PartPositionType {
 export function getComponentSlotParameter(param: PartCallbackParameterMask | 0): PartCallbackParameterMask | 0 {
 
 	// Replace as direct node to as context node.
-	if (param & PartCallbackParameterMask.DirectNodeToMove) {
-		param &= ~PartCallbackParameterMask.DirectNodeToMove
-		param |= PartCallbackParameterMask.ContextNodeToMove
+	if (param & PartCallbackParameterMask.MoveAsDirectNode) {
+		param &= ~PartCallbackParameterMask.MoveAsDirectNode
+		param |= PartCallbackParameterMask.MoveAsContextNode
 	}
 
 	// Remove `StrayFromContext`.
-	param &= ~PartCallbackParameterMask.IsolateFromContext
+	param &= ~PartCallbackParameterMask.MoveFromOwnStateChange
 	
 	return param
 }
@@ -117,18 +117,18 @@ export function getComponentSlotParameter(param: PartCallbackParameterMask | 0):
 export function getTemplatePartParameter(param: PartCallbackParameterMask | 0, position: PartPositionType): PartCallbackParameterMask | 0 {
 
 	// Removes byte if not match part position.
-	if (param & PartCallbackParameterMask.DirectNodeToMove) {
+	if (param & PartCallbackParameterMask.MoveAsDirectNode) {
 		if (position !== PartPositionType.DirectNode) {
-			param &= ~PartCallbackParameterMask.DirectNodeToMove
+			param &= ~PartCallbackParameterMask.MoveAsDirectNode
 		}
 	}
 
 	// If has `ContextNodeToMove` and match part position, add `DirectNodeToMove`.
-	if (param & PartCallbackParameterMask.ContextNodeToMove) {
-		param &= ~PartCallbackParameterMask.ContextNodeToMove
+	if (param & PartCallbackParameterMask.MoveAsContextNode) {
+		param &= ~PartCallbackParameterMask.MoveAsContextNode
 
 		if (position === PartPositionType.ContextNode) {
-			param |= PartCallbackParameterMask.DirectNodeToMove
+			param |= PartCallbackParameterMask.MoveAsDirectNode
 		}
 	}
 
@@ -181,18 +181,21 @@ export function unionConnectCallbackParameter(part: Part, value: PartCallbackPar
 export class PartDelegator implements Part {
 
 	private part: Part | null = null
+	private connected: boolean = false
 
 	update(part: Part | null) {
 		if (this.part === part) {
 			return
 		}
 
-		if (this.part) {
-			this.part.beforeDisconnectCallback(PartPositionType.Normal)
-		}
+		if (this.connected) {
+			if (this.part) {
+				this.part.beforeDisconnectCallback(PartCallbackParameterMask.MoveFromOwnStateChange | PartCallbackParameterMask.MoveAsDirectNode)
+			}
 
-		if (part) {
-			part.afterConnectCallback(PartPositionType.Normal)
+			if (part) {
+				part.afterConnectCallback(PartCallbackParameterMask.MoveFromOwnStateChange | PartCallbackParameterMask.MoveAsDirectNode)
+			}
 		}
 
 		this.part = part
@@ -202,11 +205,15 @@ export class PartDelegator implements Part {
 		if (this.part) {
 			this.part.afterConnectCallback(param)
 		}
+
+		this.connected = true
 	}
 
 	beforeDisconnectCallback(param: PartCallbackParameterMask | 0) {
 		if (this.part) {
 			this.part.beforeDisconnectCallback(param)
 		}
+
+		this.connected = false
 	}
 }

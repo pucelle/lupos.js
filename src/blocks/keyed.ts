@@ -34,5 +34,6 @@ export class KeyedBlock {
 		}
 
 		this.slot.updateTemplateDirectly(template, result ? result.values : [])
+		this.template = template
 	}
 }

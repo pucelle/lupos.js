@@ -431,7 +431,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		container.append(this.el)
 		
 		if (document.contains(this.el)) {
-			this.afterConnectCallback(PartCallbackParameterMask.DirectNodeToMove)
+			this.afterConnectCallback(PartCallbackParameterMask.MoveAsDirectNode)
 		}
 	}
 
@@ -444,7 +444,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		sibling.before(this.el)
 
 		if (document.contains(this.el)) {
-			this.afterConnectCallback(PartCallbackParameterMask.DirectNodeToMove)
+			this.afterConnectCallback(PartCallbackParameterMask.MoveAsDirectNode)
 		}
 	}
 
@@ -457,7 +457,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		sibling.after(this.el)
 
 		if (document.contains(this.el)) {
-			this.afterConnectCallback(PartCallbackParameterMask.DirectNodeToMove)
+			this.afterConnectCallback(PartCallbackParameterMask.MoveAsDirectNode)
 		}
 	}
 
@@ -471,7 +471,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 			return
 		}
 
-		let mask: PartCallbackParameterMask = PartCallbackParameterMask.DirectNodeToMove
+		let mask: PartCallbackParameterMask = PartCallbackParameterMask.MoveAsDirectNode
 
 		if (!canPlayLeaveTransition) {
 			mask |= PartCallbackParameterMask.MoveImmediately
@@ -494,7 +494,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * Will cause update immediately.
 	 */
 	connectManually() {
-		let param: PartCallbackParameterMask = PartCallbackParameterMask.DirectNodeToMove
+		let param: PartCallbackParameterMask = PartCallbackParameterMask.MoveAsDirectNode
 			| PartCallbackParameterMask.MoveImmediately
 
 		this.afterConnectCallback(param)
