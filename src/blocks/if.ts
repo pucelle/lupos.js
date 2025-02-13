@@ -4,9 +4,9 @@ import {CompiledTemplateResult, Template, TemplateMaker, TemplateSlot} from '../
 /** 
  * Make it by compiling:
  * ```
- * 	<if ${...}>...</if>
- * 	<elseif ${...}>...</elseif>
- * 	<else>...</else>
+ * 	<lu:if ${...}>...</lu:if>
+ * 	<lu:elseif ${...}>...</lu:elseif>
+ * 	<lu:else>...</lu:else>
  * ```
  */
 export class IfBlock {
@@ -27,9 +27,9 @@ export class IfBlock {
 /** 
  * Make it by compiling:
  * ```
- * 	<if ${...} cache>...</if>
- * 	<elseif ${...}>...</elseif>
- * 	<else>...</else>
+ * 	<lu:if ${...} cache>...</lu:if>
+ * 	<lu:elseif ${...}>...</lu:elseif>
+ * 	<lu:else>...</lu:else>
  * ```
  */
 export class CacheableIfBlock {

@@ -4,9 +4,9 @@ import {Template, TemplateMaker, TemplateSlot} from '../template'
 /** 
  * Make it by compiling:
  * ```
- * 	<await ${...}>...</await>
- * 	<then>...</then>
- * 	<catch>...</catch>
+ * 	<lu:await ${...}>...</lu:await>
+ * 	<lu:then>...</lu:then>
+ * 	<lu:catch>...</lu:catch>
  * ```
  */
 export class AwaitBlock {

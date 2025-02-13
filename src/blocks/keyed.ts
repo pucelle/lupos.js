@@ -4,7 +4,7 @@ import {CompiledTemplateResult, Template, TemplateSlot} from '../template'
 /** 
  * Make it by compiling:
  * ```
- * 	<keyed ${...}>...</keyed>
+ * 	<lu:keyed ${...}>...</lu:keyed>
  * ```
  */
 /** Help to update block like `<keyed>`. */

@@ -4,10 +4,10 @@ import {CacheableIfBlock, IfBlock} from './if'
 /** 
  * Make it by compiling:
  * ```
- * 	<switch ${...}>
- * 		<case ${...}>...</case>
- * 		<case ${...}>...</case>
- * 		<default>...</default>
+ * 	<lu:switch ${...}>
+ * 		<lu:case ${...}>...</lu:case>
+ * 		<lu:case ${...}>...</lu:case>
+ * 		<lu:default>...</lu:default>
  *  </switch>
  * ```
  */
@@ -17,11 +17,11 @@ export const SwitchBlock = IfBlock
 /** 
  * Make it by compiling:
  * ```
- * 	<switch ${...} cache>
- * 		<case ${...}>...</case>
- * 		<case ${...}>...</case>
- * 		<default>...</default>
- *  </switch>
+ * 	<lu:switch ${...} cache>
+ * 		<lu:case ${...}>...</lu:case>
+ * 		<lu:case ${...}>...</lu:case>
+ * 		<lu:default>...</lu:default>
+ *  </lu:switch>
  * ```
  */
 export const CacheableSwitchBlock = CacheableIfBlock

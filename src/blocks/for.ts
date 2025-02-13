@@ -14,9 +14,9 @@ type ForBlockRenderFn = (item: any, index: number) => CompiledTemplateResult
 /** 
  * Make it by compiling:
  * ```
- * 	<for ${...}>${(item) => html`
+ * 	<lu:for ${...}>${(item) => html`
  * 		...
- * 	`}</for>
+ * 	`}</lu:for>
  * ```
  */
 export class ForBlock<T = any> {
