@@ -31,7 +31,10 @@ export interface ComponentEvents {
 	/** 
 	 * After every time the component get updated.
 	 * Right now all data has been assigned, content parts have been updated.
-	 * but descendant components haven't dispatched updated event.
+	 * 
+	 * Child components have accepted data assignment, and have enqueued update
+	 * for computers, watchers and effectors, you may enqueue a callback with
+	 * order `0` to get called after they get updated.
 	 */
 	'updated': () => void
 }
@@ -53,10 +56,30 @@ enum ComponentStateMask {
  * Super class of all the components.
  * @typeparam `E`: Event interface in `{eventName: (...args) => void}` format.
  * 
- * Note about:
- * - If instantiate from being part of a template, It **can** be connected or disconnected after it's parent component insert or delete it.
- * - If instantiate from `new`, It **cant** be automatically connected or disconnected along it's element.
- * - If instantiate from custom element, It **can** be automatically connected or disconnected along it's element.
+ * Connect Lifecycle:
+ *  - Parent `afterConnectCallback`, from element appending to dom, parent connecting, or custom element initializing.
+ *  - Parent `onCreated` for only once
+ *  - Parent `onConnected`
+ *  	- Parent watchers, effectors, computers get connected and update immediately
+ *  - Parent fires `connected` event
+ *  - Parent `update` from newly render result, apply data to each child part
+ *  - Parent connect each child part
+ *  	- Each child's connect lifecycle works just like parent
+ *  - Parent `onUpdated`
+ *  - Parent fires `updated` event
+ *  - Parent `onReady` for only once
+ * 
+ * Disconnect Lifecycle:
+ *  - Parent `beforeDisconnectCallback`, from element removing from dom, or parent disconnecting.
+ *  - Parent `onWillDisconnect`
+ * 		- Parent watchers, effectors, computers get disconnected
+ *  - Parent fires `will-disconnect`
+ *  - Parent disconnect each child part
+ * 		- Each child's disconnect lifecycle works just like parent
+ * 
+ * Update Lifecycle:
+ *  - Parent `update` from newly render result, apply data to each child part
+ *  - Parent `onUpdated`, and fires `updated` event
  */
 export class Component<E = any> extends EventFirer<E & ComponentEvents> implements Part, Observed {
 
@@ -205,20 +228,24 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		this.contentSlot = this.initContentSlot()
 	}
 
+	/** 
+	 * After every time the component get updated.
+	 * Right now all data has been assigned, content parts have been updated.
+	 * 
+	 * Child components have accepted data assigned, and have enqueued update
+	 * for computers, watchers and effectors, you may enqueue a callback with
+	 * order `0` to get called after they get updated.
+	 */
+	protected onUpdated() {}
+
 	/**
 	 * Called when component is ready for the first time.
-	 * All the data, child nodes, child components were prepared.
+	 * All the data, nodes of current component are ready,
+	 * but child components were prepared.
 	 * You may visit or further-adjust child nodes here, or register events for them.
 	 * Fired for only once.
 	 */
 	protected onReady() {}
-
-	/** 
-	 * Called after every time all the data and child nodes, child components were updated.
-	 * Same with `onReady` when the first time call.
-	 * but normally you would don't need to.
-	 */
-	protected onUpdated() {}
 
 	/** 
 	 * After component's element was inserted into document,
@@ -408,7 +435,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		this.contentSlot.update(result)
 
 		// `endTrack` here is important.
-		// This will cause tracking `ForBlock` update.
+		// This will cause can track the update process of `ForBlock`.
 		endTrack()
 	}
 
