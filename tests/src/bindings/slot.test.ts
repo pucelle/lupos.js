@@ -47,7 +47,7 @@ describe('Test :slot', () => {
 
 		parent.prop = false
 		await untilUpdateComplete()
-		expect(parent.el.querySelector('slot')?.textContent).toEqual('Default Slot Content')
+		expect(parent.el.querySelector('slot')?.textContent).toBe('Default Slot Content')
 
 		parent.prop = true
 		await untilUpdateComplete()

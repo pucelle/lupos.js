@@ -17,8 +17,8 @@
 		"build": "luc -e",
 		"watch": "luc -e -w",
 		"prepublish": "npm run build",
-		"build-tests": "cd tests && tspc",
-		"test": "npm run build && npm run build-tests && node --experimental-vm-modules node_modules/jest/bin/jest.js"
+		"build-tests": "cd tests && luc -e",
+		"test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
 	},
 	"dependencies": {
 		"@pucelle/ff": "^2.0.0"

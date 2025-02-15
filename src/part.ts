@@ -1,6 +1,3 @@
-import {untilUpdateComplete} from '@pucelle/ff'
-
-
 /** Values of Part Callback Parameter. */
 export enum PartCallbackParameterMask {
 
@@ -55,6 +52,9 @@ export enum PartCallbackParameterMask {
  */
 export interface Part {
 
+	/** A connected property indicates whether has connected to document. */
+	connected: boolean
+
 	/** 
 	 * After nodes or any ancestral nodes of current part were inserted into document.
 	 * 
@@ -100,13 +100,13 @@ export enum PartPositionType {
 /** Get content slot parameter from component callback parameter. */
 export function getComponentSlotParameter(param: PartCallbackParameterMask | 0): PartCallbackParameterMask | 0 {
 
-	// Replace as direct node to as context node.
+	// Replace `MoveAsDirectNode` to as `MoveAsContextNode`.
 	if (param & PartCallbackParameterMask.MoveAsDirectNode) {
 		param &= ~PartCallbackParameterMask.MoveAsDirectNode
 		param |= PartCallbackParameterMask.MoveAsContextNode
 	}
 
-	// Remove `StrayFromContext`.
+	// Remove `MoveFromOwnStateChange`.
 	param &= ~PartCallbackParameterMask.MoveFromOwnStateChange
 	
 	return param
@@ -116,14 +116,14 @@ export function getComponentSlotParameter(param: PartCallbackParameterMask | 0):
 /** Get part callback parameter by template callback parameter and part position. */
 export function getTemplatePartParameter(param: PartCallbackParameterMask | 0, position: PartPositionType): PartCallbackParameterMask | 0 {
 
-	// Removes byte if not match part position.
+	// Removes `MoveAsDirectNode` if is in Direct Position.
 	if (param & PartCallbackParameterMask.MoveAsDirectNode) {
 		if (position !== PartPositionType.DirectNode) {
 			param &= ~PartCallbackParameterMask.MoveAsDirectNode
 		}
 	}
 
-	// If has `ContextNodeToMove` and match part position, add `DirectNodeToMove`.
+	// If has `MoveAsContextNode` and is in Context Position, replace to `MoveAsDirectNode`.
 	if (param & PartCallbackParameterMask.MoveAsContextNode) {
 		param &= ~PartCallbackParameterMask.MoveAsContextNode
 
@@ -136,52 +136,11 @@ export function getTemplatePartParameter(param: PartCallbackParameterMask | 0, p
 }
 
 
-/** Held part callback parameters. */
-const HeldPartCallbackParameters: Map<Part, PartCallbackParameterMask | 0> = new Map()
-
-let enqueuedShortHeldClean = false
-
-/** Clean held part callback parameters after updating complete. */
-function cleanShortHeldPartCallbackParameters() {
-	HeldPartCallbackParameters.clear()
-	enqueuedShortHeldClean = false
-}
-
-
-/** 
- * Hold part callback parameters because may update later and then do connect. */
-export function holdConnectCallbackParameter(part: Part, param: PartCallbackParameterMask | 0) {
-	HeldPartCallbackParameters.set(part, param)
-
-	if (!enqueuedShortHeldClean) {
-		untilUpdateComplete().then(cleanShortHeldPartCallbackParameters)
-		enqueuedShortHeldClean = true
-	}
-}
-
-
-/** 
- * Check whether a part held callback parameter.
- * If true, means it get pipe from an outer component, and will call connect callback recursively soon.
- * If false, means current part is getting update normally.
- */
-export function hasConnectCallbackParameter(part: Part): boolean {
-	return HeldPartCallbackParameters.has(part)
-}
-
-
-/** Knows a part held callback parameter, and union more parameter. */
-export function unionConnectCallbackParameter(part: Part, value: PartCallbackParameterMask) {
-	let existingValue = HeldPartCallbackParameters.get(part)!
-	HeldPartCallbackParameters.set(part, existingValue | value)
-}
-
-
 /** It delegate a part, and this part itself may be deleted or appended again. */
 export class PartDelegator implements Part {
 
+	connected: boolean = false
 	private part: Part | null = null
-	private connected: boolean = false
 
 	update(part: Part | null) {
 		if (this.part === part) {
@@ -202,6 +161,10 @@ export class PartDelegator implements Part {
 	}
 
 	afterConnectCallback(param: PartCallbackParameterMask | 0) {
+		if (this.connected) {
+			return
+		}
+
 		if (this.part) {
 			this.part.afterConnectCallback(param)
 		}
@@ -210,6 +173,10 @@ export class PartDelegator implements Part {
 	}
 
 	beforeDisconnectCallback(param: PartCallbackParameterMask | 0) {
+		if (!this.connected) {
+			return
+		}
+
 		if (this.part) {
 			this.part.beforeDisconnectCallback(param)
 		}

@@ -57,7 +57,7 @@ export class DynamicComponentBlock {
 		}
 	
 		let template = makeTemplateByComponent(com)
-		this.slot.updateTemplateDirectly(template, [])
+		this.slot.updateExternalTemplate(template, [])
 
 		this.Com = NewCom
 		this.com = com

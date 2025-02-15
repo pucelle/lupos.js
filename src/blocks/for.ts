@@ -1,6 +1,6 @@
 import {EditType, getEditRecord} from '@pucelle/ff'
 import {CompiledTemplateResult, Template, TemplateSlot} from '../template'
-import {hasConnectCallbackParameter, PartCallbackParameterMask, unionConnectCallbackParameter} from '../part'
+import {PartCallbackParameterMask} from '../part'
 
 
 /** 
@@ -71,7 +71,7 @@ export class ForBlock<T = any> {
 			}
 		}
 
-		this.slot.updateTemplateListDirectly(this.templates)
+		this.slot.updateExternalTemplateList(this.templates)
 	}
 
 	private getItemAtIndex<T>(items: T[], index: number): T | null {
@@ -90,10 +90,8 @@ export class ForBlock<T = any> {
 		this.insertTemplate(t, nextOldT)
 		t.update(result.values)
 
-		if (hasConnectCallbackParameter(this.slot)) {
-			unionConnectCallbackParameter(this.slot, PartCallbackParameterMask.MoveFromOwnStateChange | PartCallbackParameterMask.MoveAsDirectNode)
-		}
-		else {
+		// `lu:for` use it's slot to cache child parts.
+		if (this.slot.connected) {
 			t.afterConnectCallback(PartCallbackParameterMask.MoveFromOwnStateChange | PartCallbackParameterMask.MoveAsDirectNode)
 		}
 
@@ -104,11 +102,6 @@ export class ForBlock<T = any> {
 		let result = this.renderFn(item, index)
 
 		t.update(result.values)
-
-		if (!hasConnectCallbackParameter(this.slot)) {
-			t.afterConnectCallback(0)
-		}
-
 		this.templates.push(t)
 	}
 

@@ -18,6 +18,12 @@ const PositionMap = new SlotPositionMap()
  */
 export class Template<A extends any[] = any[]> implements Part {
 
+	/** 
+	 * Required, a template may be appended and wait to call connect callback.
+	 * It may be then updated to be removed and call disconnect callback immediately.
+	 */
+	connected: boolean = false
+
 	readonly el: HTMLTemplateElement
 	readonly maker: TemplateMaker | null
 	readonly startInnerPosition: SlotPosition<SlotStartInnerPositionType>
@@ -26,12 +32,6 @@ export class Template<A extends any[] = any[]> implements Part {
 	/** Part and it's position. */
 	private readonly parts: [Part, PartPositionType][]
 
-	/** 
-	 * Required, a template may be appended and wait to call connect callback.
-	 * It may be then updated to be removed and call disconnect callback immediately.
-	 */
-	private connected: boolean = false
-	
 	/** 
 	 * If `maker` is `null`, normally create template from `new Template(...)`,
 	 * not `Maker.make(...)`. then can only update by `slot.updateTemplateOnly(...)`.
@@ -49,13 +49,13 @@ export class Template<A extends any[] = any[]> implements Part {
 		if (this.connected) {
 			return
 		}
+		
+		this.connected = true
 
 		for (let [part, position] of this.parts) {
 			let partParam = getTemplatePartParameter(param, position)
 			part.afterConnectCallback(partParam)
 		}
-		
-		this.connected = true
 	}
 
 	beforeDisconnectCallback(param: PartCallbackParameterMask | 0): Promise<void> | void {

@@ -6,7 +6,7 @@ describe('Test Dynamic Component Block', () => {
 	test('Dynamic Child Component', async () => {
 		class Parent extends lupos.Component {
 
-			ChildCom: any = Child1
+			ChildCom: typeof Child1 | typeof Child2 = Child1
 
 			protected render() {
 				return lupos.html`

@@ -22,9 +22,10 @@ enum RefType {
  */
 export class RefBinding implements Binding, Part {
 
+	connected: boolean = false
+
 	private readonly el: Element
 	private readonly context: any
-	private connected: boolean = false
 
 	/** Whether reference element, or component, or binding. */
 	private refType: RefType = RefType.Element
@@ -67,14 +68,20 @@ export class RefBinding implements Binding, Part {
 			return
 		}
 
+		this.connected = true
+
 		if (this.refFn) {
 			this.doReference()
 		}
-
-		this.connected = true
 	}
 
 	beforeDisconnectCallback(param: PartCallbackParameterMask | 0) {
+		if (!this.connected) {
+			return
+		}
+
+		this.connected = false
+
 		if ((param & PartCallbackParameterMask.MoveFromOwnStateChange) === 0) {
 			return
 		}
@@ -82,7 +89,5 @@ export class RefBinding implements Binding, Part {
 		if (this.refFn) {
 			this.refFn.call(this.context, this.refType === RefType.Binding ? false : null)
 		}
-
-		this.connected = false
 	}
 }

@@ -83,7 +83,7 @@ describe('Test :transition', () => {
 
 		// Leave transition started
 		com.prop = false
-		await untilUpdateComplete()
+		await sleep(0)
 		expect(fn3).toHaveBeenCalledTimes(1)
 
 		// Leave transition from 1 to 0

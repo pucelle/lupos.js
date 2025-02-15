@@ -3,7 +3,7 @@ import {ensureComponentStyle, ComponentStyle} from './style'
 import {addElementComponentMap, getComponentFromElement} from './from-element'
 import {TemplateSlot, SlotPosition, SlotPositionType, CompiledTemplateResult, SlotContentType} from '../template'
 import {ComponentConstructor, RenderResult} from './types'
-import {getComponentSlotParameter, holdConnectCallbackParameter, Part, PartCallbackParameterMask} from '../part'
+import {getComponentSlotParameter, Part, PartCallbackParameterMask} from '../part'
 import {SlotRange} from '../template/slot-range'
 import {deleteContextVariables, getContextVariableDeclared, setContextVariable} from './context-variable'
 
@@ -79,7 +79,15 @@ enum ComponentStateMask {
  * 
  * Update Lifecycle:
  *  - Parent `update` from newly render result, apply data to each child part
- *  - Parent `onUpdated`, and fires `updated` event
+ *  	- Enqueue Child1 watchers, effectors, computers
+ * 		- Enqueue Child1 to update.
+ * 		- Enqueue Child2 watchers, effectors, computers
+ * 		- Enqueue Child2 to update.
+ *  - Parent `onUpdated`
+ *  - Parent fires `updated` event
+ *  - Child1 and Child2 watchers, effectors, computers of Child1 and Child2
+ *  - Child1 update like Parent
+ *  - Child2 update like Parent
  */
 export class Component<E = any> extends EventFirer<E & ComponentEvents> implements Part, Observed {
 
@@ -193,6 +201,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	/** 
 	 * Whether needs update.
 	 * Only when `needsUpdate` is `true`, current component can be updated.
+	 * This can avoid updating for twice, especially when connecting.
 	 */
 	needsUpdate: boolean = true
 
@@ -360,15 +369,12 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		this.onConnected()
 		this.fire('connected')
 
-		// Avoid child parts calls `afterConnectCallback`.
-		let slotParam = getComponentSlotParameter(param)
-		holdConnectCallbackParameter(this.contentSlot, slotParam)
-
 		// onConnected may assign properties and cause enqueue current component,
 		// so here should ensure enqueuing update later than it.
 		this.update()
 
 		// Call connect callback if not yet.
+		let slotParam = getComponentSlotParameter(param)
 		this.contentSlot.afterConnectCallback(slotParam)
 
 		// Call ready if not yet.
@@ -521,6 +527,10 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * Will cause update immediately.
 	 */
 	connectManually() {
+		if (this.connected) {
+			return
+		}
+		
 		let param: PartCallbackParameterMask = PartCallbackParameterMask.MoveAsDirectNode
 			| PartCallbackParameterMask.MoveImmediately
 

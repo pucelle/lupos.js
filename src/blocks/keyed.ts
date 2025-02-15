@@ -33,7 +33,7 @@ export class KeyedBlock {
 			template = result.maker.make(result.context)
 		}
 
-		this.slot.updateTemplateDirectly(template, result ? result.values : [])
+		this.slot.updateExternalTemplate(template, result ? result.values : [])
 		this.template = template
 	}
 }

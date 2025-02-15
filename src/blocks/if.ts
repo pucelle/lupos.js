@@ -49,6 +49,6 @@ export class CacheableIfBlock {
 			this.templates.set(result.maker, template)
 		}
 
-		this.slot.updateTemplateDirectly(template, result ? result.values : [])
+		this.slot.updateExternalTemplate(template, result ? result.values : [])
 	}
 }

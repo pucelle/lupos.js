@@ -52,6 +52,6 @@ export class AwaitBlock {
 	private updateIndex(index: number) {
 		let maker = this.makers[index]
 		this.template = maker ? maker.make(this.context) : null
-		this.slot.updateTemplateDirectly(this.template, this.values!)
+		this.slot.updateExternalTemplate(this.template, this.values!)
 	}
 }

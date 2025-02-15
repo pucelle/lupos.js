@@ -1,7 +1,7 @@
 import {SlotPosition, SlotEndOuterPositionType} from './slot-position'
 import {Template} from './template'
 import {CompiledTemplateResult} from './template-result-compiled'
-import {hasConnectCallbackParameter, Part, PartCallbackParameterMask, unionConnectCallbackParameter} from '../part'
+import {Part, PartCallbackParameterMask} from '../part'
 import {NodeTemplateMaker, TextTemplateMaker} from './template-makers'
 
 
@@ -24,6 +24,8 @@ export enum SlotContentType {
  */
 export class TemplateSlot<T extends SlotContentType | null = SlotContentType> implements Part {
 
+	connected: boolean = false
+
 	/** End outer position, indicates where to put new content. */
 	readonly endOuterPosition: SlotPosition<SlotEndOuterPositionType>
 
@@ -41,6 +43,11 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 	}
 
 	afterConnectCallback(param: PartCallbackParameterMask | 0) {
+		if (this.connected) {
+			return
+		}
+
+		this.connected = true
 
 		// May haven't get updated.
 		if (!this.content) {
@@ -58,6 +65,12 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 	}
 
 	beforeDisconnectCallback(param: PartCallbackParameterMask | 0): Promise<void> | void {
+		if (!this.connected) {
+			return
+		}
+
+		this.connected = false
+
 		if (this.contentType === SlotContentType.TemplateResult) {
 			return (this.content as Template).beforeDisconnectCallback(param)
 		}
@@ -164,10 +177,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 			newT.insertNodesBefore(this.endOuterPosition)
 			newT.update(tr.values)
 
-			if (hasConnectCallbackParameter(this)) {
-				unionConnectCallbackParameter(newT, PartCallbackParameterMask.MoveFromOwnStateChange | PartCallbackParameterMask.MoveAsDirectNode)
-			}
-			else {
+			if (this.connected) {
 				newT.afterConnectCallback(PartCallbackParameterMask.MoveFromOwnStateChange | PartCallbackParameterMask.MoveAsDirectNode)
 			}
 			
@@ -201,10 +211,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 				this.insertTemplate(newT, nextOldT)
 				newT.update(tr.values)
 
-				if (hasConnectCallbackParameter(this)) {
-					unionConnectCallbackParameter(newT, PartCallbackParameterMask.MoveFromOwnStateChange | PartCallbackParameterMask.MoveAsDirectNode)
-				}
-				else {
+				if (this.connected) {
 					newT.afterConnectCallback(PartCallbackParameterMask.MoveFromOwnStateChange | PartCallbackParameterMask.MoveAsDirectNode)
 				}
 
@@ -267,10 +274,11 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 	}
 
 	/** 
-	 * Update template manually and directly without comparing template maker.
+	 * Update external template manually without comparing template maker.
 	 * Use this when template is been managed and cached outside.
+	 * Note it will still connect target template if needed.
 	 */
-	updateTemplateDirectly(newT: Template | null, values: any[]) {
+	updateExternalTemplate(newT: Template | null, values: any[]) {
 		let oldT = this.content as Template | null
 
 		if (oldT === newT) {
@@ -287,23 +295,23 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 				newT.insertNodesBefore(this.endOuterPosition)
 				newT.update(values!)
 
-				if (hasConnectCallbackParameter(this)) {
-					unionConnectCallbackParameter(newT, PartCallbackParameterMask.MoveFromOwnStateChange | PartCallbackParameterMask.MoveAsDirectNode)
-				}
-				else {
+				if (this.connected) {
 					newT.afterConnectCallback(PartCallbackParameterMask.MoveFromOwnStateChange | PartCallbackParameterMask.MoveAsDirectNode)
 				}
 			}
 
+			this.contentType = SlotContentType.TemplateResult as T
 			this.content = newT
 		}
 	}
 
 	/** 
-	 * Update template list manually and directly without comparing template maker.
+	 * Update external template list manually without comparing template maker.
 	 * Use this when template list is been managed and cached outside.
+	 * Note it will not connect target template list.
 	 */
-	updateTemplateListDirectly(list: Template[]) {
+	updateExternalTemplateList(list: Template[]) {
+		this.contentType = SlotContentType.TemplateResultList as T
 		this.content = list
 	}
 }
