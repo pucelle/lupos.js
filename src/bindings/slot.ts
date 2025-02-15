@@ -22,8 +22,6 @@ import {Binding} from './types'
  */
 export class SlotBinding implements Binding, Part {
 
-	connected: boolean = false
-
 	private readonly el: Element
 	private slotName: string | null = null
 	private com: Component | null = null
@@ -37,12 +35,6 @@ export class SlotBinding implements Binding, Part {
 	}
 
 	afterConnectCallback(_param: PartCallbackParameterMask | 0) {
-		if (this.connected) {
-			return
-		}
-
-		this.connected = true
-
 		let com = Component.fromClosest(this.el.parentElement!)
 		if (com) {
 			this.com = com
@@ -51,12 +43,6 @@ export class SlotBinding implements Binding, Part {
 	}
 
 	beforeDisconnectCallback(param: PartCallbackParameterMask | 0) {
-		if (!this.connected) {
-			return
-		}
-
-		this.connected = false
-
 		if ((param & PartCallbackParameterMask.MoveFromOwnStateChange) === 0) {
 			return
 		}

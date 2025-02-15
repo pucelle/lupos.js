@@ -24,6 +24,10 @@ export enum SlotContentType {
  */
 export class TemplateSlot<T extends SlotContentType | null = SlotContentType> implements Part {
 
+	/** 
+	 * Indicates whether connected to document.
+	 * Can also avoid calls content connect actions twice in update logic and connect callback.
+	 */
 	connected: boolean = false
 
 	/** End outer position, indicates where to put new content. */

@@ -22,8 +22,6 @@ enum RefType {
  */
 export class RefBinding implements Binding, Part {
 
-	connected: boolean = false
-
 	private readonly el: Element
 	private readonly context: any
 
@@ -64,24 +62,12 @@ export class RefBinding implements Binding, Part {
 	}
 
 	afterConnectCallback(_param: PartCallbackParameterMask | 0) {
-		if (this.connected) {
-			return
-		}
-
-		this.connected = true
-
 		if (this.refFn) {
 			this.doReference()
 		}
 	}
 
 	beforeDisconnectCallback(param: PartCallbackParameterMask | 0) {
-		if (!this.connected) {
-			return
-		}
-
-		this.connected = false
-
 		if ((param & PartCallbackParameterMask.MoveFromOwnStateChange) === 0) {
 			return
 		}

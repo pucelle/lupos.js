@@ -52,9 +52,6 @@ export enum PartCallbackParameterMask {
  */
 export interface Part {
 
-	/** A connected property indicates whether has connected to document. */
-	connected: boolean
-
 	/** 
 	 * After nodes or any ancestral nodes of current part were inserted into document.
 	 * 

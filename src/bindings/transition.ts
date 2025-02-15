@@ -22,8 +22,6 @@ const NotConnectCallbackForFirstTime: WeakSet<TransitionBinding> = new WeakSet()
  */
 export class TransitionBinding implements Binding, Part {
 
-	connected: boolean = false
-
 	private readonly el: Element
 
 	/** 
@@ -52,11 +50,6 @@ export class TransitionBinding implements Binding, Part {
 	}
 
 	afterConnectCallback(param: PartCallbackParameterMask | 0) {
-		if (this.connected) {
-			return
-		}
-
-		this.connected = true
 
 		// Connect immediately manually, no need to play transition.
 		if (param & PartCallbackParameterMask.MoveImmediately) {
@@ -78,11 +71,7 @@ export class TransitionBinding implements Binding, Part {
 	}
 
 	beforeDisconnectCallback(param: PartCallbackParameterMask | 0): Promise<void> | void {
-		if (!this.connected) {
-			return
-		}
-
-		this.connected = false
+		this.cancel()
 
 		// Ancestral element has been removed immediately, no need to play transition.
 		if (param & PartCallbackParameterMask.MoveImmediately) {
@@ -101,6 +90,11 @@ export class TransitionBinding implements Binding, Part {
 		if (!this.result) {
 			this.transition.cancel()
 		}
+	}
+
+	/** Cancel playing transition. */
+	cancel() {
+		return this.transition.cancel()
 	}
 
 	/** Called after the attached element is connected into document. */
