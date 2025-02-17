@@ -35,7 +35,7 @@ export class IfBlock {
 export class CacheableIfBlock {
 
 	readonly slot: TemplateSlot
-	private templates: Map<TemplateMaker, Template | null> = new Map()
+	private templates: Map<TemplateMaker, Template> = new Map()
 
 	constructor(slot: TemplateSlot) {
 		this.slot = slot
