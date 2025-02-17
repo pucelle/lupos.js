@@ -33,8 +33,7 @@ export interface ComponentEvents {
 	 * Right now all data has been assigned, content parts have been updated.
 	 * 
 	 * Child components have accepted data assignment, and have enqueued update
-	 * for computers, watchers and effectors, you may enqueue a callback with
-	 * order `0` to get called after they get updated.
+	 * for computers, watchers and effectors, but haven't updated them.
 	 */
 	'updated': () => void
 }
