@@ -388,6 +388,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 			return
 		}
 
+		this.needsUpdate = true
 		this.stateMask &= ~ComponentStateMask.Connected
 		this.onWillDisconnect()
 		this.fire('will-disconnect')
