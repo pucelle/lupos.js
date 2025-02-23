@@ -32,15 +32,15 @@ export interface ComponentEvents {
 	 * After every time the component get updated.
 	 * Right now all data has been assigned, content parts have been updated.
 	 * 
-	 * Child components have accepted data assignment, and have enqueued update
-	 * for computers, watchers and effectors, but haven't updated them.
+	 * Child components has been referenced, and have accepted data assignments,
+	 * and will be updated immediately.
 	 */
 	'updated': () => void
 }
 
 
 /** Current of `component.incrementalId`. */
-let IncrementId = 1
+let IncrementalId = 1
 
 
 /** Components state. */
@@ -48,6 +48,7 @@ enum ComponentStateMask {
 	Created = 2 ** 0,
 	ReadyAlready = 2 ** 1,
 	Connected = 2 ** 2,
+	WillCallConnectCallback = 2 ** 3,
 }
 
 
@@ -61,20 +62,8 @@ enum ComponentStateMask {
  *  - Parent `onConnected`
  *  	- Parent watchers, effectors, computers get connected and update immediately
  *  - Parent fires `connected` event
- *  - Parent `update` from newly render result, apply data to each child part
- *  - Parent connect each child part
- *  	- Each child's connect lifecycle works just like parent
- *  - Parent `onUpdated`
- *  - Parent fires `updated` event
+ *  - Parent to be enqueued, add see Update Lifecycle below
  *  - Parent `onReady` for only once
- * 
- * Disconnect Lifecycle:
- *  - Parent `beforeDisconnectCallback`, from element removing from dom, or parent disconnecting.
- *  - Parent `onWillDisconnect`
- * 		- Parent watchers, effectors, computers get disconnected
- *  - Parent fires `will-disconnect`
- *  - Parent disconnect each child part
- * 		- Each child's disconnect lifecycle works just like parent
  * 
  * Update Lifecycle:
  *  - Parent `update` from newly render result, apply data to each child part
@@ -87,6 +76,15 @@ enum ComponentStateMask {
  *  - Child1 and Child2 watchers, effectors, computers of Child1 and Child2
  *  - Child1 update like Parent
  *  - Child2 update like Parent
+ * 
+ * Disconnect Lifecycle:
+ *  - Parent `beforeDisconnectCallback`, from element removing from dom, or parent disconnecting.
+ *  - Parent `onWillDisconnect`
+ * 		- Parent watchers, effectors, computers get disconnected
+ *  - Parent fires `will-disconnect`
+ *  - Parent disconnect each child part
+ * 		- Each child's disconnect lifecycle works just like parent
+
  */
 export class Component<E = any> extends EventFirer<E & ComponentEvents> implements Part, Observed {
 
@@ -177,7 +175,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * or for debugging a specified component.
 	 * Only for internal usages.
 	 */
-	protected readonly iid: number = IncrementId++
+	protected readonly iid: number = IncrementalId++
 
 	/** State of current component, byte mask type. */
 	protected stateMask: ComponentStateMask | 0 = 0
@@ -202,7 +200,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * Only when `needsUpdate` is `true`, current component can be updated.
 	 * This can avoid updating for twice, especially when connecting.
 	 */
-	needsUpdate: boolean = true
+	needsUpdate: boolean = false
 
 	constructor(el: HTMLElement = document.createElement('div')) {
 		super()
@@ -229,7 +227,10 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	/**
 	 * Called when component was connected and all properties were assigned.
 	 * All the child nodes are not prepared yet, until `onReady`.
-	 * You may change some data or visit parent nodes, or register some events for self here.
+	 * 
+	 * You may change properties, visit `el` or parent nodes,
+	 * or register some component events here.
+	 * 
 	 * Fired for only once.
 	 */
 	protected onCreated() {
@@ -238,20 +239,23 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 
 	/** 
 	 * After every time the component get updated.
-	 * Right now all data has been assigned, content parts have been updated.
+	 * All the data, nodes of current component are ready.
+	 * But child components were not updated.
 	 * 
-	 * Child components have accepted data assigned, and have enqueued update
-	 * for computers, watchers and effectors, you may enqueue a callback with
-	 * order `0` to get called after they get updated.
+	 * You can visit all child nodes, and can access and assign
+	 * properties to child components by their references.
 	 */
 	protected onUpdated() {}
 
 	/**
-	 * Called when component is ready for the first time.
-	 * All the data, nodes of current component are ready,
-	 * but child components were prepared.
-	 * You may visit or further-adjust child nodes here, or register events for them.
-	 * Fired for only once.
+	 * Called when component is updated for the first time.
+	 * All the data, nodes of current component are ready.
+	 * But child components were not updated.
+	 *
+	 * You can visit all child nodes, and can access and assign
+	 * properties to child components by their references.
+	 * 
+	 * This fires for only once.
 	 */
 	protected onReady() {}
 
@@ -364,23 +368,31 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 			this.onCreated()
 		}
 
-		this.stateMask |= ComponentStateMask.Connected
+		this.stateMask |= (ComponentStateMask.Connected | ComponentStateMask.WillCallConnectCallback)
 		this.onConnected()
 		this.fire('connected')
 
 		// onConnected may assign properties and cause enqueue current component,
 		// so here should ensure enqueuing update later than it.
-		this.update()
+		this.willUpdate()
 
-		// Call connect callback if not yet.
-		let slotParam = getComponentSlotParameter(param)
-		this.contentSlot.afterConnectCallback(slotParam)
+		this.once('updated', () => {
+			if ((this.stateMask & ComponentStateMask.WillCallConnectCallback) === 0) {
+				return
+			}
 
-		// Call ready if not yet.
-		if ((this.stateMask & ComponentStateMask.ReadyAlready) === 0) {
-			this.stateMask |= ComponentStateMask.ReadyAlready
-			this.onReady()
-		}
+			this.stateMask &= ~ComponentStateMask.WillCallConnectCallback
+			
+			// Call connect callback if not yet.
+			let slotParam = getComponentSlotParameter(param)
+			this.contentSlot.afterConnectCallback(slotParam)
+
+			// Call ready if not yet.
+			if ((this.stateMask & ComponentStateMask.ReadyAlready) === 0) {
+				this.stateMask |= ComponentStateMask.ReadyAlready
+				this.onReady()
+			}
+		})
 	}
 
 	beforeDisconnectCallback(this: Component<{}>, param: PartCallbackParameterMask | 0): Promise<void> | void {
@@ -388,12 +400,16 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 			return
 		}
 
-		this.needsUpdate = true
 		this.stateMask &= ~ComponentStateMask.Connected
 		this.onWillDisconnect()
 		this.fire('will-disconnect')
 
 		// If haven't called connect callback, not call disconnect callback also.
+		if (this.stateMask & ComponentStateMask.WillCallConnectCallback) {
+			this.stateMask &= ~ComponentStateMask.WillCallConnectCallback
+			return
+		}
+
 		return this.contentSlot.beforeDisconnectCallback(getComponentSlotParameter(param))
 	}
 
@@ -412,17 +428,16 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * Doing update immediately.
 	 * Update can only work after connected,
 	 * and after calls `willUpdate` cause `needsUpdate=true`.
-	 * But you can set `needsUpdate = true` explicitly to force it can be updated.
 	 */
 	update(this: Component<{}>) {
-		if (!this.connected || !this.needsUpdate) {
+		if (!this.connected) {
 			return
 		}
 
 		this.updateRendering()
 		this.onUpdated()
-		this.fire('updated')
 		this.needsUpdate = false
+		this.fire('updated')
 	}
 
 	/** Update and track rendering contents. */
