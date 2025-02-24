@@ -44,7 +44,7 @@ export class DynamicComponentBlock {
 		this.binder(com)
 
 		if (this.com) {
-			this.com.__transferSlotContents(com)
+			this.com.$transferSlotContents(com)
 		}
 
 		// First time updating.
@@ -52,7 +52,7 @@ export class DynamicComponentBlock {
 			this.originalEl = undefined
 
 			if (this.contentRange) {
-				com.__applyRestSlotRange(this.contentRange)
+				com.$applyRestSlotRange(this.contentRange)
 			}
 		}
 	

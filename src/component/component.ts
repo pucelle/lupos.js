@@ -1,4 +1,4 @@
-import {ContextVariableConstructor, EventFirer, Observed, enqueueUpdate, beginTrack, endTrack, trackGet, trackSet, promiseWithResolves} from '@pucelle/ff'
+import {ContextVariableConstructor, EventFirer, Observed, enqueueUpdate, beginTrack, endTrack, promiseWithResolves} from '@pucelle/ff'
 import {ensureComponentStyle, ComponentStyle} from './style'
 import {addElementComponentMap, getComponentFromElement} from './from-element'
 import {TemplateSlot, SlotPosition, SlotPositionType, CompiledTemplateResult, SlotContentType} from '../template'
@@ -57,15 +57,18 @@ enum ComponentStateMask {
  * @typeparam `E`: Event interface in `{eventName: (...args) => void}` format.
  * 
  * Connect Lifecycle:
- *  - Parent `afterConnectCallback`, from element appending to dom, parent connecting, or custom element initializing.
+ *  - Parent `afterConnectCallback`, from element appending to dom, parent connecting, or custom element initializing
  *  - Parent `onCreated` for only once
  *  - Parent `onConnected`
- *  	- Parent watchers, effectors, computers get connected and update immediately
+ *  	- Parent watchers, effectors, computers get connected in their declaration order, and get enqueued
  *  - Parent fires `connected` event
- *  - Parent to be enqueued, add see Update Lifecycle below
- *  - Parent `onReady` for only once
+ *  - Parent to be enqueued
+ * 	- ----Queue callback
+ * 		- See Update Lifecycle below
+ *  	- Parent `onReady` for only once
  * 
  * Update Lifecycle:
+ *  - Parent watchers, effectors, computers get updated in their declaration order.
  *  - Parent `update` from newly render result, apply data to each child part
  *  	- Enqueue Child1 watchers, effectors, computers
  * 		- Enqueue Child1 to update.
@@ -73,9 +76,10 @@ enum ComponentStateMask {
  * 		- Enqueue Child2 to update.
  *  - Parent `onUpdated`
  *  - Parent fires `updated` event
- *  - Child1 and Child2 watchers, effectors, computers of Child1 and Child2
- *  - Child1 update like Parent
- *  - Child2 update like Parent
+ *  - ----Queue callback
+ *  	- Child1 and Child2 watchers, effectors, computers of Child1 and Child2
+ *  	- Child1 update like Parent
+ *  	- Child2 update like Parent
  * 
  * Disconnect Lifecycle:
  *  - Parent `beforeDisconnectCallback`, from element removing from dom, or parent disconnecting.
@@ -178,29 +182,29 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	protected readonly iid: number = IncrementalId++
 
 	/** State of current component, byte mask type. */
-	protected stateMask: ComponentStateMask | 0 = 0
+	protected $stateMask: ComponentStateMask | 0 = 0
 
 	/** Help to patch render result to current element. */
-	protected contentSlot!: TemplateSlot<any>
-
-	/**
-	 * Caches slot elements which are marked as `<... slot="slotName">`.
-	 * You should re-define the detailed type like `{name1: Element, ...}` in derived components.
-	 */
-	protected slotElements: Record<string, Element | null> = {}
+	protected $contentSlot!: TemplateSlot<any>
 
 	/** 
 	 * Cache range of rest slot content,
 	 * which will be used to fill `<slot />` element the component itself render.
 	 */
-	protected restSlotRange: SlotRange | null = null
+	protected $restSlotRange: SlotRange | null = null
 
 	/** 
 	 * Whether needs update.
 	 * Only when `needsUpdate` is `true`, current component can be updated.
 	 * This can avoid updating for twice, especially when connecting.
 	 */
-	needsUpdate: boolean = false
+	protected $needsUpdate: boolean = false
+
+	/**
+	 * Caches slot elements which are marked as `<... slot="slotName">`.
+	 * You should re-define the detailed type like `{name1: Element, ...}` in derived components.
+	 */
+	protected slotElements: Record<string, Element | null> = {}
 
 	constructor(el: HTMLElement = document.createElement('div')) {
 		super()
@@ -213,7 +217,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * Readonly outside of component.
 	 */
 	get connected(): boolean {
-		return (this.stateMask & ComponentStateMask.Connected) > 0
+		return (this.$stateMask & ComponentStateMask.Connected) > 0
 	}
 
 	/** Init `contentSlot`. */
@@ -234,7 +238,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * Fired for only once.
 	 */
 	protected onCreated() {
-		this.contentSlot = this.initContentSlot()
+		this.$contentSlot = this.initContentSlot()
 	}
 
 	/** 
@@ -291,71 +295,70 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * `ready` means first time updated.
 	 * If is ready already, resolve the promise immediately.
 	 */
-	protected untilReady(this: Component<{}>): Promise<void> {
+	untilReady(this: Component<{}>): void | Promise<void> {
+		if ((this.$stateMask & ComponentStateMask.ReadyAlready) === 0) {
+			return this.untilUpdated()
+		}
+	}
+
+	/** Returns a promise which will be resolved after the component is  next time updated. */
+	untilUpdated(this: Component<{}>): Promise<void> {
 		let {promise, resolve} = promiseWithResolves()
-
-		if ((this.stateMask & ComponentStateMask.ReadyAlready) === 0) {
-			this.once('updated', resolve)
-		}
-		else {
-			resolve()
-		}
-
+		this.once('updated', resolve)
 		return promise
 	}
 
 	/** 
 	 * When a dynamic component is replaced by another,
 	 * transfer all the slot contents to it.
+	 * For internal usage only.
 	 */
-	__transferSlotContents(toCom: Component) {
+	$transferSlotContents(toCom: Component) {
 		toCom.slotElements = this.slotElements
-		toCom.restSlotRange = this.restSlotRange
+		toCom.$restSlotRange = this.$restSlotRange
 	}
 
 	/** 
 	 * For `:slot=slotName` binding to apply slot elements,
 	 * which may be used later to fill `<slot name=slotName>` inside current component context.
-	 * For inner usage only.
+	 * For internal usage only.
 	 */
-	__setSlotElement(slotName: string, el: Element | null) {
+	$setSlotElement(slotName: string, el: Element | null) {
 		this.slotElements[slotName] = el
-		trackSet(this.slotElements, slotName)
 	}
 
 	/** 
 	 * Get element by specified slot name,
 	 * and use it to fill `<slot name=slotName>` inside current component context.
-	 * For inner usage only, and be called by compiled codes.
+	 * For internal usage only, and be called by compiled codes.
 	 */
-	__getSlotElement(slotName: string): Element | null {
-		trackGet(this.slotElements, slotName)
+	$getSlotElement(slotName: string): Element | null {
 		return this.slotElements[slotName]
 	}
 
 	/** 
 	 * Apply rest slot range, which may be used to fill `<slot>` inside current component context.
-	 * For inner usage only, and will be called by compiled codes.
+	 * For internal usage only, and will be called by compiled codes.
 	 */
-	__applyRestSlotRange(slotRange: SlotRange) {
-		this.restSlotRange = slotRange
+	$applyRestSlotRange(slotRange: SlotRange) {
+		this.$restSlotRange = slotRange
 	}
 
 	/** 
 	 * Apply rest slot range nodes, which may be used to fill `<slot>` inside current component context.
-	 * For inner usage only, and will be called by compiled codes.
+	 * For internal usage only, and will be called by compiled codes.
 	 */
-	__applyRestSlotRangeNodes(startInnerNode: ChildNode, endInnerNode: ChildNode = startInnerNode) {
-		this.restSlotRange = new SlotRange(startInnerNode, endInnerNode)
+	$applyRestSlotRangeNodes(startInnerNode: ChildNode, endInnerNode: ChildNode = startInnerNode) {
+		this.$restSlotRange = new SlotRange(startInnerNode, endInnerNode)
 	}
 
 	/** 
 	 * Get list of rest slot nodes.
 	 * Use these nodes to fill `<slot />` element that the component itself render.
-	 * For inner usage only, and be called by compiled codes.
+	 * For internal usage only, and be called by compiled codes.
 	 */
-	__getRestSlotNodes(): ChildNode[] {
-		return this.restSlotRange ? [...this.restSlotRange.walkNodes()] : []
+	$getRestSlotNodes(): ChildNode[] {
+		return this.$restSlotRange ? [...this.$restSlotRange.walkNodes()] : []
 	}
 
 	afterConnectCallback(this: Component<{}>, param: PartCallbackParameterMask | 0) {
@@ -363,33 +366,31 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 			return
 		}
 
-		if ((this.stateMask & ComponentStateMask.Created) === 0) {
-			this.stateMask |= ComponentStateMask.Created
+		if ((this.$stateMask & ComponentStateMask.Created) === 0) {
+			this.$stateMask |= ComponentStateMask.Created
 			this.onCreated()
 		}
 
-		this.stateMask |= (ComponentStateMask.Connected | ComponentStateMask.WillCallConnectCallback)
+		this.$stateMask |= (ComponentStateMask.Connected | ComponentStateMask.WillCallConnectCallback)
 		this.onConnected()
 		this.fire('connected')
 
-		// onConnected may assign properties and cause enqueue current component,
-		// so here should ensure enqueuing update later than it.
 		this.willUpdate()
 
 		this.once('updated', () => {
-			if ((this.stateMask & ComponentStateMask.WillCallConnectCallback) === 0) {
+			if ((this.$stateMask & ComponentStateMask.WillCallConnectCallback) === 0) {
 				return
 			}
 
-			this.stateMask &= ~ComponentStateMask.WillCallConnectCallback
+			this.$stateMask &= ~ComponentStateMask.WillCallConnectCallback
 			
 			// Call connect callback if not yet.
 			let slotParam = getComponentSlotParameter(param)
-			this.contentSlot.afterConnectCallback(slotParam)
+			this.$contentSlot.afterConnectCallback(slotParam)
 
 			// Call ready if not yet.
-			if ((this.stateMask & ComponentStateMask.ReadyAlready) === 0) {
-				this.stateMask |= ComponentStateMask.ReadyAlready
+			if ((this.$stateMask & ComponentStateMask.ReadyAlready) === 0) {
+				this.$stateMask |= ComponentStateMask.ReadyAlready
 				this.onReady()
 			}
 		})
@@ -400,28 +401,29 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 			return
 		}
 
-		this.stateMask &= ~ComponentStateMask.Connected
+		this.$needsUpdate = false
+		this.$stateMask &= ~ComponentStateMask.Connected
 		this.onWillDisconnect()
 		this.fire('will-disconnect')
 
 		// If haven't called connect callback, not call disconnect callback also.
-		if (this.stateMask & ComponentStateMask.WillCallConnectCallback) {
-			this.stateMask &= ~ComponentStateMask.WillCallConnectCallback
+		if (this.$stateMask & ComponentStateMask.WillCallConnectCallback) {
+			this.$stateMask &= ~ComponentStateMask.WillCallConnectCallback
 			return
 		}
 
-		return this.contentSlot.beforeDisconnectCallback(getComponentSlotParameter(param))
+		return this.$contentSlot.beforeDisconnectCallback(getComponentSlotParameter(param))
 	}
 
 	/** After any tracked data change, enqueue it to update in next animation frame. */
 	protected willUpdate() {
-		if (this.needsUpdate) {
+		if (this.$needsUpdate) {
 			return
 		}
 
 		// Component create earlier, update earlier.
 		enqueueUpdate(this.update, this, this.iid)
-		this.needsUpdate = true
+		this.$needsUpdate = true
 	}
 	
 	/** 
@@ -436,7 +438,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 
 		this.updateRendering()
 		this.onUpdated()
-		this.needsUpdate = false
+		this.$needsUpdate = false
 		this.fire('updated')
 	}
 
@@ -453,7 +455,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 			console.warn(err)
 		}
 
-		this.contentSlot.update(result)
+		this.$contentSlot.update(result)
 
 		// `endTrack` here is important.
 		// This will cause can track the update process of `ForBlock`.
@@ -541,7 +543,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * Connect current component manually even it's not truly connected.
 	 * Will cause update immediately.
 	 */
-	connectManually() {
+	async connectManually() {
 		if (this.connected) {
 			return
 		}
@@ -550,6 +552,8 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 			| PartCallbackParameterMask.MoveImmediately
 
 		this.afterConnectCallback(param)
+
+		return this.untilUpdated()
 	}
 }
 

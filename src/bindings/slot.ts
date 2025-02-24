@@ -38,7 +38,7 @@ export class SlotBinding implements Binding, Part {
 		let com = Component.fromClosest(this.el.parentElement!)
 		if (com) {
 			this.com = com
-			com.__setSlotElement(this.slotName!, this.el)
+			com.$setSlotElement(this.slotName!, this.el)
 		}
 	}
 
@@ -48,7 +48,7 @@ export class SlotBinding implements Binding, Part {
 		}
 
 		if (this.com) {
-			this.com.__setSlotElement(this.slotName!, null)
+			this.com.$setSlotElement(this.slotName!, null)
 			this.com = null
 		}
 	}
