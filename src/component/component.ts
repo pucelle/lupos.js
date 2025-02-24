@@ -60,7 +60,7 @@ enum ComponentStateMask {
  *  - Parent `afterConnectCallback`, from element appending to dom, parent connecting, or custom element initializing
  *  - Parent `onCreated` for only once
  *  - Parent `onConnected`
- *  	- Parent watchers, effectors, computers get connected in their declaration order, and get enqueued
+ *  	- Parent watchers, effectors, computers get enqueued
  *  - Parent fires `connected` event
  *  - Parent to be enqueued
  * 	- ----Queue callback
