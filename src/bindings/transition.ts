@@ -112,6 +112,11 @@ export class TransitionBinding implements Binding, Part {
 			return
 		}
 
-		return this.transition.leave(this.result)
+		// Sometimes we need to reference binding and force update it
+		// after it get disconnected and can't to be updated.
+		// So here postpone leave transition for a micro task.
+		return Promise.resolve().then(() => {
+			return this.transition.leave(this.result!)
+		})
 	}
 }
