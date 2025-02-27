@@ -88,7 +88,6 @@ enum ComponentStateMask {
  *  - Parent fires `will-disconnect`
  *  - Parent disconnect each child part
  * 		- Each child's disconnect lifecycle works just like parent
-
  */
 export class Component<E = any> extends EventFirer<E & ComponentEvents> implements Part, Observed {
 
@@ -417,7 +416,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 
 	/** After any tracked data change, enqueue it to update in next animation frame. */
 	protected willUpdate() {
-		if (this.$needsUpdate) {
+		if (!this.connected || this.$needsUpdate) {
 			return
 		}
 
