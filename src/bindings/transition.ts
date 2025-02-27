@@ -13,6 +13,7 @@ const NotConnectCallbackForFirstTime: WeakSet<TransitionBinding> = new WeakSet()
  * - `<el :transition.local=${...}>`: play transition only when element itself get inserted or removed. `.local` can omit.
  * - `<el :transition.global=${...}>`: play transition when element or any ancestral element get inserted or removed.
  * - `<el :transition.immediate=${...}>`: play transition immediately after element get initialized.
+ * - `<el :transition=${() => {...}}>`: Get transition result by a function, useful for leave transition to update transition parameters.
  * 
  * `:transition` binding will dispatch 4 events on the target element:
  * - `transition-enter-started`: After enter transition started.
@@ -37,7 +38,7 @@ export class TransitionBinding implements Binding, Part {
 	 */
 	private immediate: boolean = false
 
-	private result: TransitionResult | null = null
+	private result: TransitionResult | null | (() => TransitionResult | null) = null
 	private transition: Transition
 
 	constructor(el: Element, _context: any, modifiers: ('global' | 'local' | 'immediate')[] = []) {
@@ -83,7 +84,7 @@ export class TransitionBinding implements Binding, Part {
 		}
 	}
 
-	update(result: TransitionResult | null) {
+	update(result: TransitionResult | null | (() => TransitionResult | null)) {
 		this.result = result
 
 		// Cancel transition immediately if transition value becomes `null`.
@@ -99,24 +100,29 @@ export class TransitionBinding implements Binding, Part {
 
 	/** Called after the attached element is connected into document. */
 	enter(): Promise<boolean | null> | void {
-		if (!this.result) {
+		let result = this.getResult()
+		if (!result) {
 			return
 		}
 
-		return this.transition.enter(this.result)
+		return this.transition.enter(result)
+	}
+
+	private getResult() {
+		if (typeof this.result === 'function') {
+			return this.result()
+		}
+
+		return this.result
 	}
 
 	/** Called before the attached element begin to disconnect from document. */
 	leave(): Promise<boolean | null> | void {
-		if (!this.result) {
+		let result = this.getResult()
+		if (!result) {
 			return
 		}
 
-		// Sometimes we need to reference binding and force update it
-		// after it get disconnected and can't to be updated.
-		// So here postpone leave transition for a micro task.
-		return Promise.resolve().then(() => {
-			return this.transition.leave(this.result!)
-		})
+		return this.transition.leave(result)
 	}
 }
