@@ -5,7 +5,7 @@ import {RenderResult} from './types'
 
 
 /** Rendered result, or a function to return it. */
-export type RenderResultRenderer<T = any> = TemplateResult | CompiledTemplateResult | ((this: T) => TemplateResult | CompiledTemplateResult)
+export type RenderResultRenderer<T = any> = string | TemplateResult | CompiledTemplateResult | ((this: T) => string | TemplateResult | CompiledTemplateResult)
 
 
 /** 
