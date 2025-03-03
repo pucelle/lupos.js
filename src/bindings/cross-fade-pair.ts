@@ -6,7 +6,7 @@ import {Part} from '../part'
 /**
  * `:crossFadePair` can bind an element to provide rect for later crossfade transition,
  * but the element itself will not participate crossfade transition.
- * - `<el :crossFadePair=${fade({duration, ...})}>`
+ * - `<el :crossFadePair=${key | null}>`: key can be any type, which matches the key parameter of `:transition=${crossfade({key})}`
  */
 export class crossFadePair implements Binding, Part {
 
