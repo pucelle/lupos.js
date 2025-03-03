@@ -24,7 +24,7 @@ export class KeyedBlock {
 		if (newKey === this.key
 			&& result
 			&& this.template
-			&& this.template.maker === result.maker
+			&& this.template.canUpdateBy(result)
 		) {
 			template = this.template
 		}
@@ -64,7 +64,7 @@ export class CacheableKeyedBlock {
 		if (newKey === this.key
 			&& result
 			&& this.template
-			&& this.template.maker === result.maker
+			&& this.template.canUpdateBy(result)
 		) {
 			template = this.template
 		}
@@ -108,7 +108,7 @@ export class WeakCacheableKeyedBlock {
 		if (newKey === this.key
 			&& result
 			&& this.template
-			&& this.template.maker === result.maker
+			&& this.template.canUpdateBy(result)
 		) {
 			template = this.template
 		}

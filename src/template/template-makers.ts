@@ -77,5 +77,5 @@ export function makeTemplateByComponent(com: Component): Template {
 		el,
 		position,
 		parts: [[com, PartPositionType.DirectNode]],
-	})
+	}, null, null)
 }

@@ -66,7 +66,9 @@ export class StyleBinding implements Binding {
 		}
 
 		for (let [k, v] of Object.entries(value)) {
-			this.el.style.setProperty(k, v)
+			if (v !== this.lastStyleValues[k]) {
+				this.el.style.setProperty(k, v)
+			}
 		}
 
 		this.lastStyleValues = value

@@ -40,6 +40,6 @@ export class TemplateMaker {
 
 	/** Bind with a context to create a Template. */
 	make(context: any): Template {
-		return new Template(this.init(context), this)
+		return new Template(this.init(context), this, context)
 	}
 }

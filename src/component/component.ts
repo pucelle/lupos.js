@@ -376,6 +376,9 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 
 		this.willUpdate()
 
+		// Postpone to connect child after updated.
+		// So it keeps consist with normal enqueuing update logic,
+		// and and visit child references before it updates.
 		this.once('updated', () => {
 			if ((this.$stateMask & ComponentStateMask.WillCallConnectCallback) === 0) {
 				return
@@ -431,7 +434,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * and after calls `willUpdate` cause `needsUpdate=true`.
 	 */
 	update(this: Component<{}>) {
-		if (!this.connected) {
+		if (!this.connected || !this.$needsUpdate) {
 			return
 		}
 
@@ -538,15 +541,12 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		this.el.remove()
 	}
 
-	/** 
-	 * Connect current component manually even it's not truly connected.
-	 * Will cause update immediately.
-	 */
-	async connectManually() {
+	/** Connect current component manually even it's not in document. */
+	async connectManually(this: Component) {
 		if (this.connected) {
 			return
 		}
-		
+
 		let param: PartCallbackParameterMask = PartCallbackParameterMask.MoveAsDirectNode
 			| PartCallbackParameterMask.MoveImmediately
 

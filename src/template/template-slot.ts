@@ -169,7 +169,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 	/** Update from a template result. */
 	private updateTemplateResult(tr: CompiledTemplateResult) {
 		let oldT = this.content as Template | null
-		if (oldT && oldT.maker === tr.maker) {
+		if (oldT && oldT.canUpdateBy(tr)) {
 			oldT.update(tr.values)
 		}
 		else {
@@ -201,7 +201,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 			let oldT = i < content.length ? content[i] : null
 			let tr = trs[i]
 
-			if (oldT && oldT.maker === tr.maker) {
+			if (oldT && oldT.canUpdateBy(tr)) {
 				oldT.update(tr.values)
 			}
 			else {

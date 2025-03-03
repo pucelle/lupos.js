@@ -3,6 +3,7 @@ import {TemplateMaker, TemplateInitResult} from './template-maker'
 import {noop} from '@pucelle/ff'
 import {getTemplatePartParameter, Part, PartCallbackParameterMask, PartPositionType} from '../part'
 import {SlotPositionMap} from './slot-position-map'
+import {CompiledTemplateResult} from './template-result-compiled'
 
 
 /** 
@@ -26,6 +27,7 @@ export class Template<A extends any[] = any[]> implements Part {
 
 	readonly el: HTMLTemplateElement
 	readonly maker: TemplateMaker | null
+	readonly context: any
 	readonly startInnerPosition: SlotPosition<SlotStartInnerPositionType>
 	readonly update: (values: A) => void
 
@@ -36,13 +38,19 @@ export class Template<A extends any[] = any[]> implements Part {
 	 * If `maker` is `null`, normally create template from `new Template(...)`,
 	 * not `Maker.make(...)`. then can only update by `slot.updateTemplateOnly(...)`.
 	 */
-	constructor(initResult: TemplateInitResult, maker: TemplateMaker | null = null) {
+	constructor(initResult: TemplateInitResult, maker: TemplateMaker | null = null, context: any) {
 		this.maker = maker
+		this.context = context
 
 		this.el = initResult.el
 		this.startInnerPosition = initResult.position
 		this.parts = initResult.parts ?? []
 		this.update = initResult.update ?? noop
+	}
+
+	/** Whether can use `result` to do update. */
+	canUpdateBy(result: CompiledTemplateResult) {
+		return this.maker === result.maker && this.context === result.context
 	}
 
 	afterConnectCallback(param: PartCallbackParameterMask | 0) {
