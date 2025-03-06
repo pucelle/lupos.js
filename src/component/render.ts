@@ -1,11 +1,11 @@
 import {trackGet} from '@pucelle/ff'
-import {TemplateResult, CompiledTemplateResult, TemplateSlot, SlotPosition, SlotPositionType, SlotEndOuterPositionType} from '../template'
+import {TemplateSlot, SlotPosition, SlotPositionType, SlotEndOuterPositionType} from '../template'
 import {Component} from './component'
 import {RenderResult} from './types'
 
 
 /** Rendered result, or a function to return it. */
-export type RenderResultRenderer<T = any> = string | TemplateResult | CompiledTemplateResult | ((this: T) => string | TemplateResult | CompiledTemplateResult)
+export type RenderResultRenderer = RenderResult | (() => RenderResult)
 
 
 /** 
@@ -15,7 +15,7 @@ export type RenderResultRenderer<T = any> = string | TemplateResult | CompiledTe
  * E.g., render a popup or contextmenu based on current context after some interactions.
  * Returns a component like instance which attach to the context that provided.
  */
-export function render<T = any>(renderer: RenderResultRenderer<T>, context: T = null as T): RenderedComponentLike {
+export function render(renderer: RenderResultRenderer, context: any = null): RenderedComponentLike {
 	return new RenderedComponentLike(renderer, context)
 }
 
