@@ -26,9 +26,10 @@ export function render(renderer: RenderResultRenderer, context: any = null): Ren
  */
 export class RenderedComponentLike<E = any> extends Component<E> {
 
-	protected readonly context: any
+	/** `context` can be overwritten. */
+	context: any
 
-	/** Renderer can be overwritten. */
+	/** `renderer` can be overwritten. */
 	renderer: RenderResultRenderer
 
 	constructor(renderer: RenderResultRenderer, context: any) {
