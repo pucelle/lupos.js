@@ -9,8 +9,8 @@ export type RenderResultRenderer = RenderResult | (() => RenderResult)
 
 
 /** 
- * Render a static content by parameter html`...` within a specified `context`,
- * or render a responsive content by parameter like `() => html`...`` within `context`.
+ * Render a `<slot>` tag to contain content specified by html`...` bound with `context`,
+ * or contain responsive content render by function like `() => html`...`` bound with `context`.
  * 
  * E.g., render a popup or contextmenu based on current context after some interactions.
  * Returns a component like instance which attach to the context that provided.
