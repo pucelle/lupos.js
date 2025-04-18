@@ -100,18 +100,7 @@ export class ForBlock<T = any> {
 
 	private reuseTemplate(t: Template, item: T, index: number) {
 		let result = this.renderFn(item, index)
-
-		// Assume you are referencing a node with some additional data,
-		// If here doesn't release it, error will happens.
-		t.beforeDisconnectCallback(PartCallbackParameterMask.MoveImmediately | PartCallbackParameterMask.MoveFromOwnStateChange | PartCallbackParameterMask.MoveAsDirectNode)
-				
 		t.update(result.values)
-
-		// `lu:for` use it's slot to cache child parts.
-		if (this.slot.connected) {
-			t.afterConnectCallback(PartCallbackParameterMask.MoveImmediately | PartCallbackParameterMask.MoveFromOwnStateChange | PartCallbackParameterMask.MoveAsDirectNode)
-		}
-
 		this.templates.push(t)
 	}
 

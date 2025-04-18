@@ -202,16 +202,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 			let tr = trs[i]
 
 			if (oldT && oldT.canUpdateBy(tr)) {
-
-				// Assume you are referencing a node with some additional data,
-				// If here doesn't release it, error will happens.
-				oldT.beforeDisconnectCallback(PartCallbackParameterMask.MoveImmediately | PartCallbackParameterMask.MoveFromOwnStateChange | PartCallbackParameterMask.MoveAsDirectNode)
-				
 				oldT.update(tr.values)
-
-				if (this.connected) {
-					oldT.afterConnectCallback(PartCallbackParameterMask.MoveImmediately | PartCallbackParameterMask.MoveFromOwnStateChange | PartCallbackParameterMask.MoveAsDirectNode)
-				}
 			}
 			else {
 				let newT = tr.maker.make(tr.context)
