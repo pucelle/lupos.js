@@ -8,7 +8,7 @@ export enum PartCallbackParameterMask {
 	 * Note when first time initialize, this value is not included.
 	 * 
 	 * E.g., `<lu:if {...}><div :binding />...`
-	 * - after `<lu:if>` state change, for `:binding`, it connects or disconnects "MoveFromOwnStateChange".
+	 * - after `<lu:if>` state change, for `:binding`, it "MoveFromOwnStateChange".
 	 * - But if the whole context get connected or disconnect,
 	 *   the `:binding` do same action follows it, then it's not "MoveFromOwnStateChange".
 	 */
