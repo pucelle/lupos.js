@@ -18,7 +18,11 @@ enum RefType {
  * - `<XXX :ref.binding=${this.prop}>`- Reference previous binding `:binding=...`.
  * - `<XXX :ref=${function(comOrElOrBinding){...}}>`- Reference target element by a ref function, `this` is current context.
  * 
- * Note when referring an optional binding like `?:binding`
+ * Note `:ref` doesn't support conditional binding: `?:ref`.
+ * 
+ * Note `:ref` can't visit or bind scoped data. e.g.: following examples will not work:
+ * - `<div :ref=${(el) => this.refElWithData(el, localVariable)}>`
+ * - `<div :ref=${(el) => if (localVariable) this.refElWithData(el)}>`
  */
 export class RefBinding implements Binding, Part {
 
