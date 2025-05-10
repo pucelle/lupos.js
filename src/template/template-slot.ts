@@ -94,6 +94,11 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 		}
 	}
 
+	/** Whether has some real content rendered. */
+	hasContent(): boolean {
+		return this.content !== null
+	}
+
 	/** 
 	 * Update by value parameter after known it's type.
 	 * Note value must be strictly of the content type specified.

@@ -417,6 +417,11 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		return this.$contentSlot.beforeDisconnectCallback(getComponentSlotParameter(param))
 	}
 
+	/** Whether has some real content rendered. */
+	hasContentRendered(): boolean {
+		return this.$contentSlot.hasContent()
+	}
+
 	/** After any tracked data change, enqueue it to update in next animation frame. */
 	protected willUpdate() {
 		if (!this.connected || this.$needsUpdate) {
