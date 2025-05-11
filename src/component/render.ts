@@ -9,11 +9,8 @@ export type RenderResultRenderer = RenderResult | (() => RenderResult)
 
 
 /** 
- * Render a `<slot>` tag to contain content specified by html`...` bound with `context`,
+ * Render a component like with `<slot>` as tag to contain content specified by html`...` bound with `context`,
  * or contain responsive content render by function like `() => html`...`` bound with `context`.
- * 
- * E.g., render a popup or contextmenu based on current context after some interactions.
- * Returns a component like instance which attach to the context that provided.
  */
 export function render(renderer: RenderResultRenderer, context: any = null): RenderedComponentLike {
 	return new RenderedComponentLike(renderer, context)
@@ -31,6 +28,10 @@ export class RenderedComponentLike<E = any> extends Component<E> {
 
 	/** `renderer` can be overwritten. */
 	renderer: RenderResultRenderer
+
+	/** Component generated from `getAs`. */
+	private componentRenderedAs: Component | null = null
+	private componentRenderedNeedsValidate = true
 
 	constructor(renderer: RenderResultRenderer, context: any) {
 		super(document.createElement('slot'))
@@ -54,5 +55,39 @@ export class RenderedComponentLike<E = any> extends Component<E> {
 		else {
 			return this.renderer
 		}
+	}
+
+	protected onUpdated() {
+		super.onUpdated()
+		this.componentRenderedNeedsValidate = true
+	}
+
+	/** 
+	 * Get the component bound with first rendered element.
+	 * E.g., render a popup or contextmenu based on current rendered.
+ 	 * Normally you should wait for render complete to get, or you will get `null`.
+ 	 */
+	getAs<T extends typeof Component = typeof Component>(cons: T): InstanceType<T> | null {
+		if (!this.hasContentRendered()) {
+			this.componentRenderedAs = null
+			return null
+		}
+
+		if (this.componentRenderedNeedsValidate) {
+			this.componentRenderedNeedsValidate = false
+			let firstElement = this.el.firstElementChild
+
+			// Re-rendered new component.
+			if (firstElement && firstElement !== this.componentRenderedAs?.el) {
+				let com = cons.from(firstElement)!
+				if (!com) {
+					throw new Error(`The "renderer" must render a "<${cons.name}>" type of component!`)
+				}
+
+				this.componentRenderedAs = com
+			}
+		}
+
+		return this.componentRenderedAs as InstanceType<T> | null
 	}
 }

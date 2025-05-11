@@ -419,7 +419,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 
 	/** Whether has some real content rendered. */
 	hasContentRendered(): boolean {
-		return this.$contentSlot.hasContent()
+		return this.$contentSlot && this.$contentSlot.hasContent()
 	}
 
 	/** After any tracked data change, enqueue it to update in next animation frame. */
