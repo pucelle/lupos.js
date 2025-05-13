@@ -479,21 +479,34 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		return null
 	}
 	
-	/** Append current element into a container, and do connect. */
-	appendTo(container: Element) {
+	/** Append current element into a container, and do connect.
+	 * If `canPlayEnterTransition` is specified as `true`, which is also default action,
+	 * will play enter transition after appended.
+	 */
+	appendTo(container: Element, canPlayEnterTransition: boolean = true) {
 		if (this.connected) {
 			this.remove()
 		}
-		
+
 		container.append(this.el)
 		
 		if (document.contains(this.el)) {
-			this.afterConnectCallback(PartCallbackParameterMask.MoveAsDirectNode)
+			let mask = PartCallbackParameterMask.MoveAsDirectNode
+
+			if (!canPlayEnterTransition) {
+				mask |= PartCallbackParameterMask.MoveImmediately
+			}
+			
+			this.afterConnectCallback(mask)
 		}
 	}
 
-	/** Insert current element before an element, and do connect. */
-	insertBefore(sibling: Element) {
+	/** 
+	 * Insert current element before an element, and do connect.
+	 * If `canPlayEnterTransition` is specified as `true`, which is also default action,
+	 * will play enter transition after inserted.
+	 */
+	insertBefore(sibling: Element, canPlayEnterTransition: boolean = true) {
 		if (this.connected) {
 			this.remove()
 		}
@@ -501,12 +514,22 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		sibling.before(this.el)
 
 		if (document.contains(this.el)) {
-			this.afterConnectCallback(PartCallbackParameterMask.MoveAsDirectNode)
+			let mask = PartCallbackParameterMask.MoveAsDirectNode
+
+			if (!canPlayEnterTransition) {
+				mask |= PartCallbackParameterMask.MoveImmediately
+			}
+
+			this.afterConnectCallback(mask)
 		}
 	}
 
-	/** Insert current element after an element, and do connect. */
-	insertAfter(sibling: Element) {
+	/** 
+	 * Insert current element after an element, and do connect.
+	 * If `canPlayEnterTransition` is specified as `true`, which is also default action,
+	 * will play enter transition after inserted.
+	 */
+	insertAfter(sibling: Element, canPlayEnterTransition: boolean = true) {
 		if (this.connected) {
 			this.remove()
 		}
@@ -514,13 +537,19 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		sibling.after(this.el)
 
 		if (document.contains(this.el)) {
-			this.afterConnectCallback(PartCallbackParameterMask.MoveAsDirectNode)
+			let mask = PartCallbackParameterMask.MoveAsDirectNode
+
+			if (!canPlayEnterTransition) {
+				mask |= PartCallbackParameterMask.MoveImmediately
+			}
+
+			this.afterConnectCallback(mask)
 		}
 	}
 
 	/** 
 	 * Remove or will remove element from document.
-	 * by default it disconnect immediately and will not play any leave transition,
+	 * By default it disconnect immediately and will not play any leave transition,
 	 * except `canPlayLeaveTransition` specified as `true`.
 	 */
 	remove(canPlayLeaveTransition: boolean = false): Promise<void> | void {
@@ -539,11 +568,14 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		// Wait for disconnect promise, then remove node.
 		if (canPlayLeaveTransition && result) {
 			return result.then(() => {
-				this.el.remove()
+				if (!this.connected) {
+					this.el.remove()
+				}
 			})
 		}
-		
-		this.el.remove()
+		else {
+			this.el.remove()
+		}
 	}
 
 	/** Connect current component manually even it's not in document. */
