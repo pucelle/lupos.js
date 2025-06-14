@@ -126,7 +126,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * @param element: The element from which to check component instance.
 	 * @param searchDepth: Max search depth, default value is `30`.
 	 */
-	static fromClosest<C extends {new (...args: any): any}>(this: C, element: Element, searchDepth: number = 30): InstanceType<C> | null {
+	static fromClosest<C extends {new (...args: any): any}>(this: C, element: Element, searchDepth: number = 50): InstanceType<C> | null {
 		let el: Element | null = element
 		let depth = 0
 
