@@ -40,7 +40,7 @@ export class ForBlock<T = any> {
 	/** Update data items. */
 	updateData(data: Iterable<T>) {
 
-		// Must clone, will compare with old and new.
+		// Must clone, will compare it with the data at next time updating.
 		let newData = [...data]
 
 		let oldData = this.data
@@ -67,7 +67,7 @@ export class ForBlock<T = any> {
 				this.createTemplate(newItem!, toIndex, nextOldT!)
 			}
 			else if (type === EditType.Delete) {
-				this.removeTemplate(fromT!)
+				this.removeTemplate(fromT!, fromIndex)
 			}
 		}
 
@@ -84,7 +84,7 @@ export class ForBlock<T = any> {
 	}
 
 	private createTemplate(item: T, index: number, nextOldT: Template | null) {
-		let result = this.renderFn(item, index)
+		let result = this.renderFn(item, index)!
 		let t = result.maker.make(result.context)
 
 		this.insertTemplate(t, nextOldT)
@@ -99,12 +99,12 @@ export class ForBlock<T = any> {
 	}
 
 	private reuseTemplate(t: Template, item: T, index: number) {
-		let result = this.renderFn(item, index)
+		let result = this.renderFn(item, index)!
 		t.update(result.values)
 		this.templates.push(t)
 	}
 
-	private removeTemplate(t: Template) {
+	private removeTemplate(t: Template, _index: number) {
 		t.recycleNodes()
 	}
 
