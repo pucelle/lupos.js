@@ -1,4 +1,4 @@
-import {setContext, untilUpdateComplete, useContext} from '@pucelle/ff'
+import {setContext, untilUpdateComplete, useContext} from '@pucelle/lupos'
 import * as lupos from '../../../'
 
 

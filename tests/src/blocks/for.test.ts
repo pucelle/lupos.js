@@ -1,4 +1,4 @@
-import {untilUpdateComplete} from '@pucelle/ff'
+import {untilUpdateComplete} from '@pucelle/lupos'
 import * as lupos from '../../../'
 
 

@@ -1,4 +1,4 @@
-import {DOMEvents, untilUpdateComplete, sleep, TransitionOptions, Transition} from '@pucelle/ff'
+import {DOMEvents, promiseWithResolves, untilUpdateComplete} from '@pucelle/lupos'
 import * as lupos from '../../../'
 import {jest} from '@jest/globals'
 
@@ -6,7 +6,7 @@ import {jest} from '@jest/globals'
 describe('Test :transition', () => {
 
 	// Jest env has no web animation API.
-	const perFrameFade = Transition.define(function(el: HTMLElement, options: TransitionOptions = {}) {
+	const perFrameFade = lupos.Transition.define(function(el: HTMLElement, options: lupos.TransitionOptions = {}) {
 		return {
 			...options,
 			perFrame: (progress: number) => {
@@ -24,7 +24,7 @@ describe('Test :transition', () => {
 		expect(Number(div.style.opacity)).toBeGreaterThan(0)
 		expect(Number(div.style.opacity)).toBeLessThan(1)
 
-		await sleep(110)
+		await sleep(150)
 		expect(Number(div.style.opacity)).toBe(1)
 	}
 
@@ -37,7 +37,7 @@ describe('Test :transition', () => {
 		expect(Number(div.style.opacity)).toBeGreaterThan(0)
 		expect(Number(div.style.opacity)).toBeLessThan(1)
 
-		await sleep(110)
+		await sleep(150)
 		expect(Number(div.style.opacity)).toBe(0)
 	}
 
@@ -204,3 +204,12 @@ describe('Test :transition', () => {
 		await expectPlayingLeaveTransition(div)
 	})
 })
+
+
+/** Returns a promise which will be resolved after counting timeout for `ms` milliseconds. */
+function sleep(ms: number = 0) {
+	let {promise, resolve} = promiseWithResolves()
+	setTimeout(resolve, ms)
+	
+	return promise
+}
