@@ -1,6 +1,5 @@
 import {SlotPosition, SlotStartInnerPositionType, SlotPositionType} from './slot-position'
 import {TemplateMaker, TemplateInitResult} from './template-maker'
-import {noop} from '@pucelle/ff'
 import {getTemplatePartParameter, Part, PartCallbackParameterMask, PartPositionType} from '../part'
 import {SlotPositionMap} from './slot-position-map'
 import {CompiledTemplateResult} from './template-result-compiled'
@@ -38,7 +37,7 @@ export class Template<A extends any[] = any[]> implements Part {
 	 * If `maker` is `null`, normally create template from `new Template(...)`,
 	 * not `Maker.make(...)`. then can only update by `slot.updateTemplateOnly(...)`.
 	 */
-	constructor(initResult: TemplateInitResult, maker: TemplateMaker | null = null, context: any) {
+	constructor(initResult: TemplateInitResult, maker: TemplateMaker | null = null, context: any = null) {
 		this.maker = maker
 		this.context = context
 
@@ -157,3 +156,6 @@ export class Template<A extends any[] = any[]> implements Part {
 		PositionMap.addPosition(this, position)
 	}
 }
+
+
+function noop() {}

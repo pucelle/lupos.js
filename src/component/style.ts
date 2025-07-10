@@ -1,4 +1,4 @@
-import {EffectMaker} from '@pucelle/ff'
+import {EffectMaker} from '@pucelle/lupos'
 import {TemplateResult} from '../template'
 import {ComponentConstructor} from './types'
 

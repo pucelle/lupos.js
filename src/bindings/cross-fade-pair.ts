@@ -1,4 +1,4 @@
-import {deleteCrossFadeElementForPairOnly, setCrossFadeElementForPairOnly} from '@pucelle/ff'
+import {deleteCrossFadeElementForPairOnly, setCrossFadeElementForPairOnly} from '../transition'
 import {Binding} from './types'
 import {Part} from '../part'
 

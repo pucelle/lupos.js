@@ -1,4 +1,4 @@
-import {Transition, TransitionResult} from '@pucelle/ff'
+import {Transition, TransitionResult} from '../transition'
 import {Binding} from './types'
 import {Part, PartCallbackParameterMask} from '../part'
 

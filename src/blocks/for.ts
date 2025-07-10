@@ -1,4 +1,4 @@
-import {EditType, getEditRecord} from '@pucelle/ff'
+import {EditType, getEditRecord} from '../structs/edit'
 import {CompiledTemplateResult, Template, TemplateSlot} from '../template'
 import {PartCallbackParameterMask} from '../part'
 

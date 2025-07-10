@@ -1,4 +1,4 @@
-import {ContextVariableConstructor, EventFirer, Observed, enqueueUpdate, beginTrack, endTrack, promiseWithResolves} from '@pucelle/ff'
+import {ContextVariableConstructor, EventFirer, Observed, enqueueUpdate, beginTrack, endTrack, promiseWithResolves} from '@pucelle/lupos'
 import {ensureComponentStyle, ComponentStyle} from './style'
 import {addElementComponentMap, getComponentFromElement} from './from-element'
 import {TemplateSlot, SlotPosition, SlotPositionType, CompiledTemplateResult, SlotContentType} from '../template'
