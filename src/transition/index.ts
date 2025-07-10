@@ -1,3 +1,4 @@
+export * as DOMScroll from './dom-scroll'
 export * from './easing'
 export * from './frame-loop'
 export * from './mixer'
