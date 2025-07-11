@@ -65,7 +65,7 @@ export class RenderedComponentLike<E = any> extends Component<E> {
 	/** 
 	 * Get the component bound with first rendered element.
 	 * E.g., render a popup or contextmenu based on current rendered.
- 	 * Normally you should wait for render complete to get, or you will get `null`.
+ 	 * Normally you should wait for render complete then get, or you will receive `null`.
  	 */
 	getAs<T extends typeof Component = typeof Component>(cons: T): InstanceType<T> | null {
 		if (!this.hasContentRendered()) {

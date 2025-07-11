@@ -108,7 +108,7 @@ export class Template<A extends any[] = any[]> implements Part {
 	 * Will not call connect callback, you should do it manually after current template updated.
 	 */
 	insertNodesBefore(position: SlotPosition) {
-		position.insertNodesBefore(this.el.content)
+		position.insertNodesBefore(...this.el.content.childNodes)
 		PositionMap.addPosition(this, position)
 	}
 

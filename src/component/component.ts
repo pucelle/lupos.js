@@ -336,7 +336,8 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	}
 
 	/** 
-	 * Apply rest slot range, which may be used to fill `<slot>` inside current component context.
+	 * Apply rest slot range from a dynamic component,
+	 * which may be used to fill `<slot>` inside current component context.
 	 * For internal usage only, and will be called by compiled codes.
 	 */
 	$applyRestSlotRange(slotRange: SlotRange) {

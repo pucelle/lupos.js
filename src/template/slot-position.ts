@@ -44,7 +44,7 @@ export class SlotPosition<T = SlotPositionType> {
 	}
 
 	/** Insert nodes before current position. */
-	insertNodesBefore(...newNodes: (ChildNode | DocumentFragment)[]) {
+	insertNodesBefore(...newNodes: ChildNode[]) {
 		if (this.type === SlotPositionType.Before) {
 			let node = this.target as ChildNode
 			node.before(...newNodes)
