@@ -194,7 +194,7 @@ export class Transition {
 			return false
 		}
 
-		let enterStartedEvent = new CustomEvent('transition-enter-started')
+		let enterStartedEvent = new CustomEvent('transition-enter-started', {bubbles: false})
 		this.el.dispatchEvent(enterStartedEvent)
 
 		let promises: Promise<boolean>[] = []
@@ -205,7 +205,7 @@ export class Transition {
 
 		let finished = (await Promise.all(promises)).every(v => v)
 		if (finished) {
-			let enterEndedEvent = new CustomEvent('transition-enter-ended')
+			let enterEndedEvent = new CustomEvent('transition-enter-ended', {bubbles: false})
 			this.el.dispatchEvent(enterEndedEvent)
 		}
 
@@ -228,7 +228,7 @@ export class Transition {
 			return false
 		}
 
-		let leaveStartedEvent = new CustomEvent('transition-leave-started')
+		let leaveStartedEvent = new CustomEvent('transition-leave-started', {bubbles: false})
 		this.el.dispatchEvent(leaveStartedEvent)
 
 		let promises: Promise<boolean>[] = []
@@ -239,7 +239,7 @@ export class Transition {
 
 		let finished = (await Promise.all(promises)).every(v => v)
 		if (finished) {
-			let leaveEndedEvent = new CustomEvent('transition-leave-ended')
+			let leaveEndedEvent = new CustomEvent('transition-leave-ended', {bubbles: false})
 			this.el.dispatchEvent(leaveEndedEvent)
 		}
 
