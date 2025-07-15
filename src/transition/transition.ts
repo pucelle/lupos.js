@@ -122,6 +122,7 @@ interface MixedTransition {
  * - `transition-enter-ended`: After enter transition ended.
  * - `transition-leave-started`: After leave transition started.
  * - `transition-leave-ended`: After leave transition ended.
+ * All these event are not able to bubble.
  */
 export class Transition {
 
