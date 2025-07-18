@@ -1,4 +1,4 @@
-import {DeepReadonly, untilUpdateComplete, promiseWithResolves} from '@pucelle/lupos'
+import {untilUpdateComplete, promiseWithResolves} from '@pucelle/lupos'
 import {PerFrameTransition, PerFrameTransitionOptions} from './per-frame-transition'
 import {WebTransition, WebTransitionKeyFrame, WebTransitionOptions} from './web-transition'
 
@@ -90,11 +90,11 @@ export type DefinedTransition<E extends Element = Element, O extends TransitionO
 export class TransitionResult<E extends Element = Element, O extends TransitionOptions = any>{
 
 	readonly getter: TransitionPropertiesGetter<E, O>
-	readonly options: DeepReadonly<O>
+	readonly options: O
 
 	constructor(getter: TransitionPropertiesGetter<E, O>, options: O = {} as any) {
 		this.getter = getter
-		this.options = options as DeepReadonly<O>
+		this.options = options
 	}
 }
 
@@ -186,7 +186,7 @@ export class Transition {
 	 * It will wait for update complete then reading dom properties.
 	 */
 	async enter(result: TransitionResult): Promise<boolean> {
-		let {phase} = result.options as DeepReadonly<TransitionOptions>
+		let {phase} = result.options
 		if (phase === 'leave' || phase === 'none') {
 			return false
 		}
@@ -220,7 +220,7 @@ export class Transition {
 	 * It will wait for update complete then reading dom properties.
 	 */
 	async leave(result: TransitionResult): Promise<boolean> {
-		let {phase} = result.options as DeepReadonly<TransitionOptions>
+		let {phase} = result.options
 		if (phase === 'enter' || phase === 'none') {
 			return false
 		}
