@@ -2,7 +2,7 @@
  * Contents that can be included in a `<tag>${...}<.tag>`.
  * **Do not** change the values of each enum item.
  */
-export enum SlotPositionType {
+export const enum SlotPositionType {
 
 	/** End position collapse with end of parent container range. */
 	AfterContent = 0,

@@ -2,7 +2,7 @@ import type {Component} from './component'
 
 
 /** To cache `element -> component` map. */
-const ElementComponentMap: WeakMap<Element, Component> = new WeakMap()
+const ElementComponentMap: WeakMap<Element, Component> = /*#__PURE__*/new WeakMap()
 
 
 /** Add an `element -> component` map after component created. */

@@ -8,7 +8,7 @@ export type ComponentStyle = TemplateResult | (() => TemplateResult)
 
 
 /** Caches component constructors that already applied style. */
-const ComponentStyleAndTagMap: WeakSet<ComponentConstructor> = new WeakSet()
+const ComponentStyleAndTagMap: WeakSet<ComponentConstructor> = /*#__PURE__*/new WeakSet()
 
 
 /** 

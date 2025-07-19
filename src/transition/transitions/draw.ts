@@ -18,7 +18,7 @@ export interface DrawTransitionOptions extends TransitionOptions {
  * When leave, erase the line or path from end to start.
  * Use Web Animations API, fallback to initial state after transition end.
  */
-export const draw = Transition.define(function(el: SVGGeometryElement, options: DrawTransitionOptions = {}) {
+export const draw = /*#__PURE__*/Transition.define(function(el: SVGGeometryElement, options: DrawTransitionOptions = {}) {
 	let {duration, speed} = options
 	let length = el.getTotalLength()
 

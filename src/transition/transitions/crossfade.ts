@@ -34,7 +34,7 @@ export interface CrossFadeTransitionOptions extends TransitionOptions {
 
 
 /** Cache "Crossfade Key" -> "enter / leave" -> Element. */
-const CrossFadeElementMatchMap: InternalPairKeysListMap<any, 'enter' | 'leave' | 'any', Element> = new InternalPairKeysListMap()
+const CrossFadeElementMatchMap: InternalPairKeysListMap<any, 'enter' | 'leave' | 'any', Element> = /*#__PURE__*/new InternalPairKeysListMap()
 
 
 /** 
@@ -69,7 +69,7 @@ export function getCrossFadeElementForPhase(key: any, phase: 'enter' | 'leave' |
  * So you can see one element cross fade to another element.
  * Use Web Animations API, fallback to initial state after transition end.
  */
-export const crossfade = Transition.define(async function(el: Element, options: CrossFadeTransitionOptions, phase: 'enter' | 'leave') {
+export const crossfade = /*#__PURE__*/Transition.define(async function(el: Element, options: CrossFadeTransitionOptions, phase: 'enter' | 'leave') {
 	CrossFadeElementMatchMap.add(options.key, phase, el)
 
 	// Sync same keyed enter and leave transitions.

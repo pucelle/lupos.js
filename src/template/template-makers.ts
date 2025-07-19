@@ -7,14 +7,14 @@ import {PartPositionType} from '../part'
 
 
 /** Template has only a text node inside. */
-const TextMaker = new HTMLMaker(' ')
+const TextMaker = /*#__PURE__*/new HTMLMaker(' ')
 
 /** Template has only a comment node inside. */
-const CommentMaker = new HTMLMaker('<!---->')
+const CommentMaker = /*#__PURE__*/new HTMLMaker('<!---->')
 
 
 /** Template maker to create a text node to update text content. */
-export const TextTemplateMaker = new TemplateMaker(function() {
+export const TextTemplateMaker = /*#__PURE__*/new TemplateMaker(function() {
 	let el = TextMaker.make()
 	let textNode = el.content.firstChild as Text
 	let position = new SlotPosition<SlotStartInnerPositionType>(SlotPositionType.Before, textNode)
@@ -35,7 +35,7 @@ export const TextTemplateMaker = new TemplateMaker(function() {
  * so can't automatically call their connect and disconnect callbacks.
  * Fit for containing nodes which have been registered as parts, like slot elements.
  */
-export const NodeTemplateMaker = new TemplateMaker(function() {
+export const NodeTemplateMaker = /*#__PURE__*/new TemplateMaker(function() {
 	let el = CommentMaker.make()
 	let comment = el.content.firstChild as Comment
 	let startInnerPosition = new SlotPosition<SlotStartInnerPositionType>(SlotPositionType.Before, comment)

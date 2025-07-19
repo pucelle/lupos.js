@@ -1,3 +1,5 @@
+import {Mixable, Mixer, TransitionAbleValue} from "./types"
+
 /** 
  * Make a mixer to mix two values and make a getter,
  * which can get a mixed value at any rate later.

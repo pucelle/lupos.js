@@ -100,7 +100,7 @@ export class TransitionResult<E extends Element = Element, O extends TransitionO
 
 
 /** Mixed transition type, enum of two, either web or per-frame. */
-enum MixedTransitionType {
+const enum MixedTransitionType {
 	PerFrame,
 	Web,
 }

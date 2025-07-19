@@ -7,7 +7,7 @@ import {Component} from './component'
  * second key is the variable property name,
  * and the value is the source component where declare this property.
  */
-export const ContextVariableUnionMap: InternalWeakPairKeysMap<Component, PropertyKey, Component> = new InternalWeakPairKeysMap()
+export const ContextVariableUnionMap: InternalWeakPairKeysMap<Component, PropertyKey, Component> = /*#__PURE__*/new InternalWeakPairKeysMap()
 
 export function setContextVariable(com: Component, prop: PropertyKey) {
 	ContextVariableUnionMap.set(com, prop, com)

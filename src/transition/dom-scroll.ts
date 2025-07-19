@@ -6,7 +6,7 @@ type HVDirection = 'horizontal' | 'vertical'
 
 
 /** Cache the element and the transition playing. */
-const RunningScrollTransitions: WeakMap<Element, PerFrameTransition> = new WeakMap()
+const RunningScrollTransitions: WeakMap<Element, PerFrameTransition> = /*#__PURE__*/new WeakMap()
 
 
 /**

@@ -3,7 +3,7 @@ import {Part, PartCallbackParameterMask} from '../part'
 import {Binding} from './types'
 
 
-enum RefType {
+const enum RefType {
 	Element,
 	Component,
 	Binding,

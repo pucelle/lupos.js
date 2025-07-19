@@ -24,7 +24,7 @@ export interface BlurTransitionOptions extends TransitionOptions {
  * When leave, do blur filter from with radius from 0 to specified value.
  * Use Web Animations API, fallback to initial state after transition end.
  */
-export const blur = Transition.define(function(_el: Element, options: BlurTransitionOptions = {radius: 5}) {
+export const blur = /*#__PURE__*/Transition.define(function(_el: Element, options: BlurTransitionOptions = {radius: 5}) {
 	let blurValue = typeof options.radius === 'number' ? options.radius + 'px' : options.radius
 
 	let o: TransitionProperties = {

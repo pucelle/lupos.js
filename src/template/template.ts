@@ -9,7 +9,7 @@ import {CompiledTemplateResult} from './template-result-compiled'
  * Help to cache template insert positions,
  * Especially manage positions when template insert and delete dynamically.
  */
-const PositionMap = new SlotPositionMap()
+const PositionMap = /*#__PURE__*/new SlotPositionMap()
 
 
 /** 

@@ -37,7 +37,7 @@ export interface EditRecord {
 }
 
 
-export enum EditType {
+export const enum EditType {
 
 	/** 
 	 * Ignores, will be used later as a matched item to move or as a reuseable item to reuse.

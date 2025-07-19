@@ -33,7 +33,7 @@ export interface FlyTransitionOptions extends TransitionOptions {
  * 
  * Use Web Animations API, fallback to initial state after transition end.
  */
-export const fly = Transition.define(function(_el: Element, options: FlyTransitionOptions = {}) {
+export const fly = /*#__PURE__*/Transition.define(function(_el: Element, options: FlyTransitionOptions = {}) {
 	let x = options.x || 0
 	let y = options.y || 0
 

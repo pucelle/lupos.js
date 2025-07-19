@@ -44,7 +44,7 @@ let IncrementalId = 1
 
 
 /** Components state. */
-enum ComponentStateMask {
+const enum ComponentStateMask {
 	Created = 2 ** 0,
 	ReadyAlready = 2 ** 1,
 	Connected = 2 ** 2,
@@ -596,15 +596,17 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 
 
 // For localhost debugging.
-if (location.hostname === "localhost"
-	|| location.hostname === "127.0.0.1"
-	|| location.protocol === 'file:'
-) {
-	let original = (Component as any).prototype.onCreated;
-	
-	(Component as any).prototype.onCreated = function() {
-		original.call(this)
-		this.el.setAttribute('com', this.constructor.name)
-		this.el.setAttribute('iid', this.iid)
+/*#__PURE__*/(() => {
+	if (location.hostname === "localhost"
+		|| location.hostname === "127.0.0.1"
+		|| location.protocol === 'file:'
+	) {
+		let original = (Component as any).prototype.onCreated;
+		
+		(Component as any).prototype.onCreated = function() {
+			original.call(this)
+			this.el.setAttribute('com', this.constructor.name)
+			this.el.setAttribute('iid', this.iid)
+		}
 	}
-}
+})()

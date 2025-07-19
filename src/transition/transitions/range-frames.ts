@@ -23,6 +23,6 @@ export interface FramesTransitionOptions extends TransitionOptions {
  * When leave, play from `endFrame` to `startFrame`.
  * Use Web Animations API, fallback to initial state after transition end.
  */
-export const rangeFrames = Transition.define(function(_el: Element, options: FramesTransitionOptions) {
+export const rangeFrames = /*#__PURE__*/Transition.define(function(_el: Element, options: FramesTransitionOptions) {
 	return options
 })

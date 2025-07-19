@@ -15,7 +15,7 @@ type PropertyFormatter = (value: string) => any
 const CustomElementConstructorMap: Map<
 	string,
 	{Com: ComponentConstructor, propertyMap: PropertyMapOf<ComponentConstructor> | undefined}
-> = new Map()
+> = /*#__PURE__*/new Map()
 
 
 /**

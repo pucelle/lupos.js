@@ -4,7 +4,7 @@ import {Part, PartCallbackParameterMask} from '../part'
 
 
 /** Cache those bindings that haven't trigger connect callback yet. */
-const NotConnectCallbackForFirstTime: WeakSet<TransitionBinding> = new WeakSet()
+const NotConnectCallbackForFirstTime: WeakSet<TransitionBinding> = /*#__PURE__*/new WeakSet()
 
 
 /**

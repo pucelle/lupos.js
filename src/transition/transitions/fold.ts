@@ -25,7 +25,7 @@ export interface FoldTransitionOptions extends TransitionOptions {
  * Note you should normally set `overflow: hidden` to avoid content overflow.
  * Uses Web Animations API, fallback to initial state after transition end.
  */
-export const fold = Transition.define(function(el: HTMLElement, options: FoldTransitionOptions = {}) {
+export const fold = /*#__PURE__*/Transition.define(function(el: HTMLElement, options: FoldTransitionOptions = {}) {
 	let direction = options.direction ?? 'vertical'
 	let size = direction === 'vertical' ? el.offsetHeight : el.offsetWidth
 	let prop = direction === 'vertical' ? 'height' : 'width'

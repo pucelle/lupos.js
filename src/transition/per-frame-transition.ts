@@ -2,6 +2,7 @@ import {EasingFunction, PerFrameTransitionEasingName, getEasingFunction} from '.
 import {makeMixer} from './mixer'
 import {EventFirer, promiseWithResolves} from '@pucelle/lupos'
 import {FrameLoop} from './frame-loop'
+import {Mixer, TransitionAbleValue} from './types'
 
 
 /** Transition events. */

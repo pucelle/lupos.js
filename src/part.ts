@@ -1,5 +1,5 @@
 /** Values of Part Callback Parameter. */
-export enum PartCallbackParameterMask {
+export const enum PartCallbackParameterMask {
 
 	/** 
 	 * If current part to be connected or disconnected from current context,
@@ -81,7 +81,7 @@ export interface Part {
 }
 
 /** Type of part position. */
-export enum PartPositionType {
+export const enum PartPositionType {
 
 	/** All other nodes. */
 	Normal = 0,

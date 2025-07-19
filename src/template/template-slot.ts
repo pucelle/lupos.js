@@ -9,7 +9,7 @@ import {NodeTemplateMaker, TextTemplateMaker} from './template-makers'
  * Represents the type of the contents that can be included
  * in a template literal like `<tag>${...}<.tag>`.
  */
-export enum SlotContentType {
+export const enum SlotContentType {
 	TemplateResult = 0,
 	TemplateResultList = 1,
 	Text = 2,
