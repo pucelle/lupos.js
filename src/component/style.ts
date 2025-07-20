@@ -1,25 +1,20 @@
 import {EffectMaker} from '@pucelle/lupos'
 import {TemplateResult} from '../template'
-import {ComponentConstructor} from './types'
 
 
 /** Type of the values returned from `Component.style()`. */
 export type ComponentStyle = TemplateResult | (() => TemplateResult)
 
 
-/** Caches component constructors that already applied style. */
-const ComponentStyleAndTagMap: WeakSet<ComponentConstructor> = /*#__PURE__*/new WeakSet()
-
-
 /** 
- * Call after any instance of component constructor created,
- * to ensure it's relied styles appended into document.
+ * Add component style to document head as a style tag.
+ * 
+ * It will be compiled to accept component declared style,
+ * and returns the style as original static property.
  */
-export function ensureComponentStyle(Com: ComponentConstructor) {
-	if (Com.hasOwnProperty('style') && !ComponentStyleAndTagMap.has(Com)) {
-		ComponentStyleAndTagMap.add(Com)
-		createStyleElement(Com.style!, Com.name)
-	}
+export function addComponentStyle(style: ComponentStyle, identifyName: string): ComponentStyle {
+	createStyleElement(style, identifyName)
+	return style
 }
 
 

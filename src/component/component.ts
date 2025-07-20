@@ -1,5 +1,5 @@
 import {ContextVariableConstructor, EventFirer, Observed, enqueueUpdate, beginTrack, endTrack, promiseWithResolves} from '@pucelle/lupos'
-import {ensureComponentStyle, ComponentStyle} from './style'
+import {ComponentStyle} from './style'
 import {addElementComponentMap, getComponentFromElement} from './from-element'
 import {TemplateSlot, SlotPosition, SlotPositionType, CompiledTemplateResult, SlotContentType} from '../template'
 import {ComponentConstructor, RenderResult} from './types'
@@ -153,18 +153,6 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * Although it supports dynamic css content, we would suggest using only static css content.
 	 */
 	static style: ComponentStyle | null = null
-
-	/** 
-	 * Call after component class declaration,
-	 * to ensure it's relied styles appended into document.
-	 * 
-	 * Why not call it automatically?
-	 * Before a style appended, it should ensure all super style,
-	 * and all referenced style appended, so can overwrite them.
-	 */
-	static ensureStyle() {
-		ensureComponentStyle(this)
-	}
 
 	/** Compiler will add this property after analysis render result. */
 	static SlotContentType: SlotContentType | null = null
