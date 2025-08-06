@@ -4,7 +4,7 @@ import {Binding} from './types'
 
 
 /**
- * `:slot` binding reference current element as one of `slotElements` sub property,
+ * `:slot` binds current element as one of `slotElements` sub property,
  * and later insert it into same named `<slot>` of closest component.
  * - `<el :slot="slotName">`
  * 

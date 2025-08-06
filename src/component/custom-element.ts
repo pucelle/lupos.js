@@ -1,4 +1,4 @@
-import {getComponentFromElement} from './from-element'
+import {getComponentByElement} from './from-element'
 import {ComponentConstructor} from './types'
 import {PartCallbackParameterMask} from '../part'
 
@@ -61,7 +61,7 @@ function defineCallbacks(name: string) {
 
 /** Connect callback of custom element. */
 function onConnected(el: HTMLElement) {
-	let com = getComponentFromElement(el)
+	let com = getComponentByElement(el)
 
 	// Component instance isn't created.
 	if (!com) {
@@ -101,7 +101,7 @@ function makeProperties(el: HTMLElement, propertyMap: PropertyMapOf<any>): Recor
 
 /** Disconnect callback of custom element. */
 function onDisconnected(el: HTMLElement) {
-	let com = getComponentFromElement(el)
+	let com = getComponentByElement(el)
 	if (com && com.connected) {
 		com.beforeDisconnectCallback(
 			PartCallbackParameterMask.MoveAsDirectNode

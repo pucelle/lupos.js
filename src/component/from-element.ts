@@ -11,13 +11,13 @@ export function addElementComponentMap(el: Element, com: Component) {
 }
 
 
-/** Get component instance from an associated element. */
-export function getComponentFromElement(el: Element): Component | undefined {
+/** Get component instance by an associated element. */
+export function getComponentByElement(el: Element): Component | undefined {
 	return ElementComponentMap.get(el)
 }
 
 
 /** Check whether an component associated with specified element. */
-export function hasComponentAtElement(el: Element): boolean {
+export function hasComponentForElement(el: Element): boolean {
 	return ElementComponentMap.has(el)
 }

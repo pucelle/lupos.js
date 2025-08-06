@@ -4,6 +4,7 @@ import {AnimationFrame} from '@pucelle/lupos'
 /** Callback with a timestamp as parameter. */
 type FrameLoopCallback = (duration: number) => void
 
+
 /** Repeated animation frames. */ 
 export class FrameLoop<F extends FrameLoopCallback = FrameLoopCallback> {
 	
@@ -79,12 +80,4 @@ export class FrameLoop<F extends FrameLoopCallback = FrameLoopCallback> {
 		
 		this.canceled = true
 	}
-}
-
-/** Repeated animation frames, call `fn` at every animation frame time. */
-export function frameLoop(fn: FrameLoopCallback): () => void {
-	let l = new FrameLoop(fn)
-	l.start()
-
-	return l.cancel.bind(l)
 }

@@ -12,7 +12,7 @@ type DynamicComponentBinder = (com: Component) => void
 
 /** 
  * Compiled by:
- * ```
+ * ```html
  * 	<${DynamicComponent}>
  * ```
  */

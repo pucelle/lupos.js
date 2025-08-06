@@ -3,7 +3,7 @@ import {Template, TemplateMaker, TemplateSlot} from '../template'
 
 /** 
  * Make it by compiling:
- * ```
+ * ```html
  * 	<lu:await ${...}>...</lu:await>
  * 	<lu:then>...</lu:then>
  * 	<lu:catch>...</lu:catch>

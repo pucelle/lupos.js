@@ -2,8 +2,8 @@ import {Binding} from './types'
 
 
 /**
- * `:html` binding will update `innerHTML` property of current element
- * to processed to become safe html codes.
+ * `:html` binding will update `innerHTML` property of current element.
+ * Note html codes will replace to safe codes.
  * - `:html=${HTMLCodes}`
  */
 export class HTMLBinding implements Binding {

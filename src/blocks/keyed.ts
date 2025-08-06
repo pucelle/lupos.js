@@ -3,7 +3,7 @@ import {CompiledTemplateResult, Template, TemplateSlot} from '../template'
 
 /** 
  * Make it by compiling:
- * ```
+ * ```html
  * 	<lu:keyed ${...}>...</lu:keyed>
  * ```
  */
@@ -41,7 +41,7 @@ export class KeyedBlock {
 
 /** 
  * Make it by compiling:
- * ```
+ * ```html
  * 	<lu:keyed cache ${...}>...</lu:keyed>
  * ```
  * Note it will cache all rendered templates.

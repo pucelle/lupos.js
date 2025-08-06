@@ -1,6 +1,6 @@
 import {ContextVariableConstructor, EventFirer, Observed, enqueueUpdate, beginTrack, endTrack, promiseWithResolves} from '@pucelle/lupos'
 import {ComponentStyle} from './style'
-import {addElementComponentMap, getComponentFromElement} from './from-element'
+import {addElementComponentMap, getComponentByElement} from './from-element'
 import {TemplateSlot, SlotPosition, SlotPositionType, CompiledTemplateResult, SlotContentType} from '../template'
 import {ComponentConstructor, RenderResult} from './types'
 import {getComponentSlotParameter, Part, PartCallbackParameterMask} from '../part'
@@ -118,7 +118,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * @param element: The element to get component instance at.
 	 */
 	static from<C extends {new (...args: any): any}>(this: C, element: Element): InstanceType<C> | null {
-		return getComponentFromElement(element) as any
+		return getComponentByElement(element) as any
 	}
 
 	/** 
