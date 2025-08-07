@@ -3,7 +3,7 @@
 
 ## About
 
-**lupos.js** is a lightweight Web Component library based on [lupos](https://github.com/pucelle/lupos).
+**lupos.js** is a Web Component library based on [lupos](https://github.com/pucelle/lupos).
 
 
 
