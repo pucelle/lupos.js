@@ -1,4 +1,4 @@
-import {ContextVariableConstructor, EventFirer, Observed, enqueueUpdate, beginTrack, endTrack, promiseWithResolves, Connectable} from '@pucelle/lupos'
+import {ContextVariableConstructor, EventFirer, Observed, enqueueUpdate, beginTrack, endTrack, promiseWithResolves} from '@pucelle/lupos'
 import {ComponentStyle} from './style'
 import {addElementComponentMap, getComponentByElement} from './from-element'
 import {TemplateSlot, SlotPosition, SlotPositionType, CompiledTemplateResult, SlotContentType} from '../template'
@@ -89,7 +89,7 @@ const enum ComponentStateMask {
  *  - Parent disconnect each child part
  * 		- Each child's disconnect lifecycle works just like parent
  */
-export class Component<E = any> extends EventFirer<E & ComponentEvents> implements Part, Observed, Connectable {
+export class Component<E = any> extends EventFirer<E & ComponentEvents> implements Part, Observed {
 
 	/** 
 	 * After a source component connected,
@@ -262,7 +262,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * 
 	 * If choose to overwrite `onConnected`, Never forget to call `super.onConnected()`.
 	 */
-	onConnected() {}
+	protected onConnected() {}
 
 	/** 
 	 * After component's element will soon be removed from document.
@@ -275,7 +275,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * 
 	 * If choose to overwrite `onWillDisconnect`, Never forget to call `super.onWillDisconnect()`.
 	 */
-	onWillDisconnect() {}
+	protected onWillDisconnect() {}
 
 	/** 
 	 * Returns a promise which will be resolved after the component is ready,
