@@ -1,4 +1,8 @@
-# lupos.js
+<h1 align="left">
+    <img src="https://github.com/pucelle/lupos.js/blob/master/images/logo.png?raw=true" width="32" height="32" alt="Lupos Logo" />
+    Lupos.js
+</h1>
+
 
 
 ## About
