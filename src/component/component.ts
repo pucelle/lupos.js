@@ -224,9 +224,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * 
 	 * Fired for only once.
 	 */
-	protected onCreated() {
-		this.$contentSlot = this.initContentSlot()
-	}
+	protected onCreated() {}
 
 	/** 
 	 * After every time the component get updated.
@@ -356,6 +354,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 
 		if ((this.$stateMask & ComponentStateMask.Created) === 0) {
 			this.$stateMask |= ComponentStateMask.Created
+			this.$contentSlot = this.initContentSlot()
 			this.onCreated()
 		}
 
