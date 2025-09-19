@@ -7,14 +7,14 @@
 
 ## About
 
-**lupos.js** is a library for building Web User Interface, powered by [lupos](https://github.com/pucelle/lupos).
+**lupos.js** is a library for building Component-Based Web User Interface, powered by [lupos](https://github.com/pucelle/lupos).
 
 
 
 ## Features
 
- - Component based programming uses ES Template Literal to describe component's rendering.
- - Uses [lupos](https://github.com/pucelle/lupos) to track get and set operations of component's properties, and compile `html` template literals with hoisted code for better performance.
+- Uses [lupos](https://github.com/pucelle/lupos) to track get and set operations of component's properties.
+- Uses `html` Template Literal to describe component's rendering, and compile templates with hoisted codes for better performance.
 
 
 
