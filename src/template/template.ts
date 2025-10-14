@@ -115,7 +115,7 @@ export class Template<A extends any[] = any[]> implements Part {
 	/** 
 	 * Recycle nodes that was firstly created in current template,
 	 * move them back to current template.
-	 * Note you must ensure these nodes have been inserted to a position.
+	 * Note you must ensure these nodes have been inserted to a position already.
 	 * Will call disconnect callback before recycling nodes.
 	 */
 	async recycleNodes() {
