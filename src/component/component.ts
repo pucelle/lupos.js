@@ -359,10 +359,6 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		}
 
 		this.$stateMask |= (ComponentStateMask.Connected | ComponentStateMask.WillCallConnectCallback)
-		this.onConnected()
-		this.fire('connected')
-
-		this.willUpdate()
 
 		// Postpone to connect child after updated.
 		// So it keeps consist with normal enqueuing update logic,
@@ -384,6 +380,11 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 				this.onReady()
 			}
 		})
+
+		// After binding `updated` because may bind more `updated` events in `onConnected`.
+		this.onConnected()
+		this.fire('connected')
+		this.willUpdate()
 	}
 
 	beforeDisconnectCallback(this: Component<{}>, param: PartCallbackParameterMask | 0): Promise<void> | void {
