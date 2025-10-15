@@ -100,20 +100,20 @@ export const crossfade = /*#__PURE__*/Transition.define(async function(el: Eleme
 		return fallback.getter(el, fallback.options, phase)
 	}
 
-	let useRectOf = options.rectSelector ? el.querySelector(options.rectSelector) ?? el : el
-	let prBox = pairEl.getBoundingClientRect()
+	let fromRectOf = options.rectSelector ? el.querySelector(options.rectSelector) ?? el : el
+	let toBox = pairEl.getBoundingClientRect()
 	let elBox = el.getBoundingClientRect()
-	let roBox = useRectOf === el ? elBox : useRectOf.getBoundingClientRect()
+	let fromBox = fromRectOf === el ? elBox : fromRectOf.getBoundingClientRect()
 	
 	// Transform coord from el origin to pair element origin, based on viewport origin.
-	let transformInViewport = fromBoxPair(roBox, prBox, options.fitMode ?? 'stretch')
+	let transformInViewport = fromBoxPair(fromBox, toBox, options.fitMode ?? 'stretch')
 
 	// TransformInViewport * elLocalToViewport = elLocalToViewport * TransformInEl
 	// TransformInEl = elLocalToViewport^-1 * TransformInViewport * elLocalToViewport
 	let transformInElOrigin = new DOMMatrix()
-		.translateSelf(elBox.x, elBox.y)
-		.preMultiplySelf(transformInViewport)
 		.translateSelf(-elBox.x, -elBox.y)
+		.multiplySelf(transformInViewport)
+		.translateSelf(elBox.x, elBox.y)
 
 	let o: WebTransitionProperties = {
 		startFrame: {
@@ -142,9 +142,9 @@ export const crossfade = /*#__PURE__*/Transition.define(async function(el: Eleme
 		// PairTransformInPair = pairLocalToViewport^-1 * PairTransformInViewport * pairLocalToViewport
 		//                     = pairLocalToViewport^-1 * TransformInViewport^-1 * pairLocalToViewport
 		let pTransform = new DOMMatrix()
-			.translateSelf(prBox.x, prBox.y)
-			.preMultiplySelf(transformInViewport.invertSelf())
-			.translateSelf(-prBox.x, -prBox.y)
+			.translateSelf(-toBox.x, -toBox.y)
+			.multiplySelf(transformInViewport.invertSelf())
+			.translateSelf(toBox.x, toBox.y)
 
 		let zIndex = parseInt(getComputedStyle(pairEl).zIndex) || 0
 
@@ -202,10 +202,11 @@ function fromBoxPair(fromBox: DOMRect, toBox: DOMRect, fitMode: 'contain' | 'cov
 		scaleX = scaleY = Math.max(scaleX, scaleY)
 	}
 
+	// DOMMatrix runs in post multiply order.
 	let matrix = new DOMMatrix()
-		.translateSelf(-fromX, -fromY)
-		.scaleSelf(scaleX, scaleY)
 		.translateSelf(toX, toY)
+		.scaleSelf(scaleX, scaleY)
+		.translateSelf(-fromX, -fromY)
 
 	return matrix
 }
