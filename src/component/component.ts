@@ -30,10 +30,12 @@ export interface ComponentEvents {
 
 	/** 
 	 * After every time the component get updated.
-	 * Right now all data has been assigned, content parts have been updated.
+	 * All the data, child nodes, child components are ready.
+	 * But child components were not updated.
 	 * 
 	 * Child components has been referenced, and have accepted data assignments,
-	 * and will be updated immediately.
+	 * You may continue to change properties what will be assigned to child components,
+	 * like reading element size, and assign to child components.
 	 */
 	'updated': () => void
 }
@@ -228,11 +230,12 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 
 	/** 
 	 * After every time the component get updated.
-	 * All the data, nodes of current component are ready.
+	 * All the data, child nodes, child components are ready.
 	 * But child components were not updated.
 	 * 
-	 * You can visit all child nodes, and can access and assign
-	 * properties to child components by their references.
+	 * Child components has been referenced, and have accepted data assignments,
+	 * You may continue to change properties what will be assigned to child components,
+	 * like reading element size, and assign to child components.
 	 */
 	protected onUpdated() {}
 
