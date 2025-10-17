@@ -289,10 +289,27 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		}
 	}
 
-	/** Returns a promise which will be resolved after the component is  next time updated. */
+	/** 
+	 * Returns a promise which will be resolved after the component is next time updated.
+	 * Note if immediately disconnected, this may never return.
+	 */
 	untilUpdated(this: Component<{}>): Promise<void> {
 		let {promise, resolve} = promiseWithResolves()
 		this.once('updated', resolve)
+		return promise
+	}
+
+	/** Returns a promise which will be resolved after the component is next time connected. */
+	untilConnected(this: Component<{}>): Promise<void> {
+		let {promise, resolve} = promiseWithResolves()
+		this.once('connected', resolve)
+		return promise
+	}
+
+	/** Returns a promise which will be resolved after the component is next time will disconnect. */
+	untilWillDisconnect(this: Component<{}>): Promise<void> {
+		let {promise, resolve} = promiseWithResolves()
+		this.once('will-disconnect', resolve)
 		return promise
 	}
 
@@ -570,10 +587,13 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		}
 	}
 
-	/** Connect current component manually even it's not in document. */
-	async connectManually(this: Component) {
+	/** 
+	 * Connect current component manually even it's not in document.
+	 * Returns whether connected successfully.
+	 */
+	async connectManually(this: Component): Promise<boolean> {
 		if (this.connected) {
-			return
+			return true
 		}
 
 		let param: PartCallbackParameterMask = PartCallbackParameterMask.MoveAsDirectNode
@@ -581,7 +601,8 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 
 		this.afterConnectCallback(param)
 
-		return this.untilUpdated()
+		await Promise.race([this.untilUpdated(), this.untilWillDisconnect()])
+		return this.connected
 	}
 }
 
