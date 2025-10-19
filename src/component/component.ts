@@ -560,6 +560,10 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * Remove or will remove element from document.
 	 * By default it disconnect immediately and will not play any leave transition,
 	 * except `canPlayLeaveTransition` specified as `true`.
+	 * 
+	 * `remove` process with transitions may failed if immediately appended again,
+	 * in this scenario leave transitions will be stopped,
+	 * can visit `connected` to know whether remove successfully.
 	 */
 	remove(canPlayLeaveTransition: boolean = false): Promise<void> | void {
 		if (!this.connected) {
