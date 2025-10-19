@@ -590,6 +590,8 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	/** 
 	 * Connect current component manually even it's not in document.
 	 * Returns whether connected successfully.
+	 * Skip and return `true` if already connected.
+	 * Please note child components may not have been updated yet.
 	 */
 	async connectManually(this: Component): Promise<boolean> {
 		if (this.connected) {
