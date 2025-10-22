@@ -1,9 +1,10 @@
 import * as lupos from '../../../'
+import {describe, it} from 'vitest'
 
 
 describe('Test Custom Element', () => {
 
-	test('Custom Element Connect', async () => {
+	it('Custom Element Connect', async () => {
 		class Com extends lupos.Component {
 
 			protected render() {

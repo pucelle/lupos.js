@@ -1,9 +1,10 @@
 import {PerFrameTransitionEasingName, WebTransitionEasingName, getEasingFunction, makeMixer} from '../../../'
+import {describe, it, expect} from 'vitest'
 
 
 describe('Test transition', () => {
 	
-	test('getEasingFunction', () => {
+	it('getEasingFunction', () => {
 		for (let name of ['linear', 'ease', 'ease-in', 'ease-out', 'ease-in-out'] as WebTransitionEasingName[]) {
 			let fn = getEasingFunction(name)
 			expect(fn(0)).toEqual(0)
@@ -11,7 +12,7 @@ describe('Test transition', () => {
 		}
 	})
 
-	test('getEasingFunction of custom easing names', () => {
+	it('getEasingFunction of custom easing names', () => {
 		for (let name of ['ease-in-elastic', 'ease-out-elastic', 'ease-in-out-elastic', 'ease-in-bounce', 'ease-out-bounce', 'ease-in-out-bounce'] as PerFrameTransitionEasingName[]) {
 			let fn = getEasingFunction(name)
 			expect(fn(0)).toEqual(0)
@@ -19,7 +20,7 @@ describe('Test transition', () => {
 		}
 	})
 
-	test('makeMixer', () => {
+	it('makeMixer', () => {
 
 		class Mixable {
 			value: number

@@ -1,9 +1,10 @@
 import {untilUpdateComplete} from '@pucelle/lupos'
 import * as lupos from '../../../'
+import {describe, it, expect} from 'vitest'
 
 
 describe('Test Dynamic Component Block', () => {
-	test('Dynamic Child Component', async () => {
+	it('Dynamic Child Component', async () => {
 		class Parent extends lupos.Component {
 
 			ChildCom: typeof Child1 | typeof Child2 = Child1

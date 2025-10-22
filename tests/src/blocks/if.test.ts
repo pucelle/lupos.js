@@ -1,9 +1,10 @@
 import {untilUpdateComplete} from '@pucelle/lupos'
 import * as lupos from '../../../'
+import {describe, it, expect} from 'vitest'
 
 
 describe('Test If Block', () => {
-	test('If Block', async () => {
+	it('If Block', async () => {
 		let render = (value: number) => {
 			return lupos.html`
 				<lu:if ${value === 1}>1</lu:if>
@@ -23,7 +24,7 @@ describe('Test If Block', () => {
 	})
 
 	
-	test('If Else Block', async () => {
+	it('If Else Block', async () => {
 		let render = (value: number) => {
 			return lupos.html`
 				<lu:if ${value === 1}>1</lu:if>
@@ -49,7 +50,7 @@ describe('Test If Block', () => {
 	})
 
 
-	test('If Else Cacheable Block', async () => {
+	it('If Else Cacheable Block', async () => {
 		let render = (value: number) => {
 			return lupos.html`
 				<lu:if ${value === 1} cache><div>1</div></lu:if>

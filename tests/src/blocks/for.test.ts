@@ -1,5 +1,6 @@
 import {untilUpdateComplete} from '@pucelle/lupos'
 import * as lupos from '../../../'
+import {describe, it, expect} from 'vitest'
 
 
 describe('Test For Block', () => {
@@ -16,7 +17,7 @@ describe('Test For Block', () => {
 	let slot = new lupos.TemplateSlot(new lupos.SlotPosition(lupos.SlotPositionType.AfterContent, container), null)
 
 
-	test('For Block', async () => {
+	it('For Block', async () => {
 
 		slot.update(render([1]))
 		await untilUpdateComplete()
@@ -36,7 +37,7 @@ describe('Test For Block', () => {
 	})
 
 
-	test('For Block with Random Data', async () => {
+	it('For Block with Random Data', async () => {
 		for (let i = 0; i < 10; i++) {
 			let list: number[] = []
 			list.push(Math.floor(Math.random() * 10))

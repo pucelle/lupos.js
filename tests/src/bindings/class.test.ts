@@ -1,8 +1,9 @@
 import * as lupos from '../../../'
+import {describe, it, expect} from 'vitest'
 
 
 describe('Test :class', () => {
-	test(':class=${...}', () => {
+	it(':class=${...}', () => {
 		let div = document.createElement('div')
 		div.className = 'c'
 		let b = new lupos.ClassBinding(div)
@@ -15,7 +16,7 @@ describe('Test :class', () => {
 	})
 
 
-	test(':class=${[...]}', () => {
+	it(':class=${[...]}', () => {
 		let div = document.createElement('div')
 		div.className = 'c'
 		let b = new lupos.ClassBinding(div)
@@ -28,7 +29,7 @@ describe('Test :class', () => {
 	})
 
 
-	test(':class=${{...}}', () => {
+	it(':class=${{...}}', () => {
 		let div = document.createElement('div')
 		div.className = 'c'
 		let b = new lupos.ClassBinding(div)
@@ -41,7 +42,7 @@ describe('Test :class', () => {
 	})
 
 	
-	test(':class.name=${...}', () => {
+	it(':class.name=${...}', () => {
 		let div = document.createElement('div')
 		div.className = 'c'
 		let b = new lupos.ClassBinding(div)

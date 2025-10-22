@@ -1,4 +1,5 @@
 import {EditType, getEditRecord} from '../../../out/structs/edit'
+import {describe, it, expect} from 'vitest'
 
 
 function restoredGraphEditOld<T>(oldItems: T[], newItems: T[], willReuse: boolean) {
@@ -82,7 +83,7 @@ function restoredGraphEditNew<T>(oldItems: T[], newItems: T[], willReuse: boolea
 
 
 describe('Test Graph Edit', () => {
-	test('delete and insert', () => {
+	it('delete and insert', () => {
 		let a: number[] = [1, 2, 3]
 		let b: number[] = []
 		
@@ -110,7 +111,7 @@ describe('Test Graph Edit', () => {
 	})
 
 
-	test('leave', () => {
+	it('leave', () => {
 		let a: number[] = [1, 2, 3]
 		let b: number[] = [1, 2, 3]
 		
@@ -132,7 +133,7 @@ describe('Test Graph Edit', () => {
 	})
 
 
-	test('move', () => {
+	it('move', () => {
 		let a: number[] = [1, 2, 3]
 		let b: number[] = [3, 1, 2]
 
@@ -164,7 +165,7 @@ describe('Test Graph Edit', () => {
 	})
 
 
-	test('move modify', () => {
+	it('move modify', () => {
 		let a: number[] = [1, 2, 3]
 		let b: number[] = [4, 1, 2]
 
@@ -206,7 +207,7 @@ describe('Test Graph Edit', () => {
 	})
 
 
-	test('move modify and insert delete', () => {
+	it('move modify and insert delete', () => {
 		let a: number[] = [1, 2, 3]
 		let b: number[] = [4, 5, 1, 2]
 
@@ -236,7 +237,7 @@ describe('Test Graph Edit', () => {
 	})
 
 
-	test('repeated items', () => {
+	it('repeated items', () => {
 		let a: number[] = [1, 2, 3]
 		let b: number[] = [1, 1, 2]
 
@@ -264,7 +265,7 @@ describe('Test Graph Edit', () => {
 	})
 
 
-	test('random data', () => {
+	it('random data', () => {
 		for (let i = 0; i < 100; i++) {
 			let a: number[] = []
 			let b: number[] = []

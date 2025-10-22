@@ -1,10 +1,11 @@
 import {setContext, untilUpdateComplete, useContext} from '@pucelle/lupos'
 import * as lupos from '../../../'
+import {describe, it, expect} from 'vitest'
 
 
 describe('Test Context Variable', () => {
 
-	test('useContext & setContext', async () => {
+	it('useContext & setContext', async () => {
 		class Parent extends lupos.Component {
 
 			@setContext

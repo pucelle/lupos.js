@@ -1,6 +1,6 @@
 import {DOMEvents, promiseWithResolves, untilUpdateComplete} from '@pucelle/lupos'
 import * as lupos from '../../../'
-import {jest} from '@jest/globals'
+import {describe, it, expect, vi} from 'vitest'
 
 
 describe('Test :transition', () => {
@@ -49,7 +49,7 @@ describe('Test :transition', () => {
 	}
 
 
-	test(':transition=${...}', async () => {
+	it(':transition=${...}', async () => {
 		class Com extends lupos.Component {
 
 			prop: boolean = false
@@ -70,9 +70,9 @@ describe('Test :transition', () => {
 		await untilUpdateComplete()
 
 		let div = com.el.firstElementChild as HTMLElement
-		let fn2 = jest.fn()
-		let fn3 = jest.fn()
-		let fn4 = jest.fn()
+		let fn2 = vi.fn()
+		let fn3 = vi.fn()
+		let fn4 = vi.fn()
 		DOMEvents.on(div, 'transition-enter-ended', fn2)
 		DOMEvents.on(div, 'transition-leave-started', fn3)
 		DOMEvents.on(div, 'transition-leave-ended', fn4)
@@ -83,7 +83,7 @@ describe('Test :transition', () => {
 
 		// Leave transition started
 		com.prop = false
-		await sleep(0)
+		await sleep(10)
 		expect(fn3).toHaveBeenCalledTimes(1)
 
 		// Leave transition from 1 to 0
@@ -94,7 +94,7 @@ describe('Test :transition', () => {
 	})
 
 
-	test('No transition for not directly moving node', async () => {
+	it('No transition for not directly moving node', async () => {
 		class Com extends lupos.Component {
 
 			prop: boolean = true
@@ -128,7 +128,7 @@ describe('Test :transition', () => {
 	})
 
 
-	test('Have transition for global modifier', async () => {
+	it('Have transition for global modifier', async () => {
 		class Com extends lupos.Component {
 
 			prop: boolean = true
@@ -164,7 +164,7 @@ describe('Test :transition', () => {
 	})
 
 
-	test('Have transition for component itself', async () => {
+	it('Have transition for component itself', async () => {
 		class Com extends lupos.Component {
 
 			prop: boolean = false

@@ -1,10 +1,11 @@
 import {untilUpdateComplete} from '@pucelle/lupos'
 import * as lupos from '../../../'
+import {describe, it, expect} from 'vitest'
 
 
 describe('Test :slot', () => {
 
-	test('Named :slot', async () => {
+	it('Named :slot', async () => {
 		class Parent extends lupos.Component {
 			protected render() {
 				return lupos.html`<Child><div :slot="slotName">Slot Default Content</div></Child>`
@@ -25,7 +26,7 @@ describe('Test :slot', () => {
 	})
 
 
-	test('Named :slot toggling', async () => {
+	it('Named :slot toggling', async () => {
 		class Parent extends lupos.Component {
 			prop: boolean = true
 			protected render() {
@@ -56,7 +57,7 @@ describe('Test :slot', () => {
 	})
 
 
-	test('Rest Slot', async () => {
+	it('Rest Slot', async () => {
 		class Parent extends lupos.Component {
 			protected render() {
 				return lupos.html`<Child><div>Slot Content</div></Child>`

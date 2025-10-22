@@ -1,10 +1,11 @@
 import {Observed, untilUpdateComplete} from '@pucelle/lupos'
 import * as lupos from '../../../'
+import {describe, it, expect} from 'vitest'
 
 
 describe('Test render', () => {
 
-	test('Render Static', async () => {
+	it('Render Static', async () => {
 		let rendered = lupos.render(lupos.html`<div>123</div>`)
 		rendered.appendTo(document.body)
 
@@ -13,7 +14,7 @@ describe('Test render', () => {
 	})
 
 
-	test('Render Dynamic', async () => {
+	it('Render Dynamic', async () => {
 		let o: Observed<{value: number}> = {value: 1}
 
 		let rendered = lupos.render(() => {

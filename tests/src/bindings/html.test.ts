@@ -1,8 +1,9 @@
 import * as lupos from '../../../'
+import {describe, it, expect} from 'vitest'
 
 
 describe('Test :html', () => {
-	test(':html=${...}', () => {
+	it(':html=${...}', () => {
 		let div = document.createElement('div')
 		let b = new lupos.HTMLBinding(div)
 

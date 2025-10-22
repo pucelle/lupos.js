@@ -1,10 +1,11 @@
 import {untilUpdateComplete} from '@pucelle/lupos'
 import * as lupos from '../../../'
+import {describe, it, expect} from 'vitest'
 
 
 describe('Test TemplateSlot', () => {
 
-	test('TemplateSlot', async () => {
+	it('TemplateSlot', async () => {
 		let container = document.createElement('div')
 		let pos1 = new lupos.SlotPosition(lupos.SlotPositionType.AfterContent, container)
 		let slot = new lupos.TemplateSlot<any>(pos1, null)

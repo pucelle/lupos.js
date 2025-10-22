@@ -1,9 +1,10 @@
 import {untilUpdateComplete} from '@pucelle/lupos'
 import * as lupos from '../../../'
+import {describe, it, expect} from 'vitest'
 
 
 describe('Test Keyed Block', () => {
-	test('Keyed Block', async () => {
+	it('Keyed Block', async () => {
 		let render = (value: number) => {
 			return lupos.html`
 				<lu:keyed ${value}><div>${value}</div></lu:if>

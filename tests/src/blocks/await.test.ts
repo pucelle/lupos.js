@@ -1,9 +1,10 @@
 import {untilUpdateComplete} from '@pucelle/lupos'
 import * as lupos from '../../../'
+import {describe, it, expect} from 'vitest'
 
 
 describe('Test Await Block', () => {
-	test('Await Block', async () => {
+	it('Await Block', async () => {
 		let render = (promise: Promise<any>) => {
 			return lupos.html`
 				<lu:await ${promise}>Pending</lu:await>

@@ -1,9 +1,10 @@
 import {untilUpdateComplete} from '@pucelle/lupos'
 import * as lupos from '../../../out'
+import {describe, it, expect} from 'vitest'
 
 
 describe('Test Switch Block', () => {
-	test('Switch Block', async () => {
+	it('Switch Block', async () => {
 		let render = (value: number) => {
 			return lupos.html`
 				<lu:switch ${value}>
@@ -24,7 +25,7 @@ describe('Test Switch Block', () => {
 		expect(container.textContent).toEqual('')
 	})
 
-	test('Switch with Default Block', async () => {
+	it('Switch with Default Block', async () => {
 		let render = (value: number) => {
 			return lupos.html`
 				<lu:switch ${value}>
@@ -52,7 +53,7 @@ describe('Test Switch Block', () => {
 	})
 
 	
-	test('Switch Cacheable Block', async () => {
+	it('Switch Cacheable Block', async () => {
 		let render = (value: number) => {
 			return lupos.html`
 				<lu:switch ${value}>

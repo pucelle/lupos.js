@@ -1,5 +1,6 @@
 import * as lupos from '../../../'
 import {SlotPositionMap} from '../../../out/template/slot-position-map'
+import {describe, it, expect} from 'vitest'
 
 
 describe('Test SlotPositionMap', () => {
@@ -12,7 +13,7 @@ describe('Test SlotPositionMap', () => {
 		return new lupos.Template({el: document.createElement('template'), position: createFakePosition()})
 	}
 
-	test('SlotPositionMap', async () => {
+	it('SlotPositionMap', async () => {
 		let m = new SlotPositionMap()
 
 		let t1 = createFakeTemplate()

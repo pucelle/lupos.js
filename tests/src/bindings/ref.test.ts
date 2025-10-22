@@ -1,9 +1,10 @@
 import {untilUpdateComplete} from '@pucelle/lupos'
 import * as lupos from '../../../'
+import {describe, it, expect} from 'vitest'
 
 
 describe('Test :ref', () => {
-	test(':ref component', async () => {
+	it(':ref component', async () => {
 		class Parent extends lupos.Component {
 			ref!: Child
 			protected render() {
@@ -22,7 +23,7 @@ describe('Test :ref', () => {
 	})
 
 
-	test(':ref element & toggling', async () => {
+	it(':ref element & toggling', async () => {
 		class Com extends lupos.Component {
 			ref!: HTMLElement | null
 			prop: boolean = true
