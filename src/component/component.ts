@@ -292,11 +292,17 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	/** 
 	 * Returns a promise which will be resolved after the component is next time updated.
 	 * Note if immediately disconnected, this may never return.
+	 * Note if not enqueued, will soon resolve.
 	 */
 	untilUpdated(this: Component<{}>): Promise<void> {
-		let {promise, resolve} = promiseWithResolves()
-		this.once('updated', resolve)
-		return promise
+		if (this.$needsUpdate) {
+			let {promise, resolve} = promiseWithResolves()
+			this.once('updated', resolve)
+			return promise
+		}
+		else {
+			return Promise.resolve()
+		}
 	}
 
 	/** Returns a promise which will be resolved after the component is next time connected. */
