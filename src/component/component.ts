@@ -209,6 +209,63 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		return (this.$stateMask & ComponentStateMask.Connected) > 0
 	}
 
+	/** After any tracked data change, enqueue it to update in next animation frame. */
+	protected willUpdate() {
+		if (!this.connected || this.$needsUpdate) {
+			return
+		}
+
+		// Component create earlier, update earlier.
+		enqueueUpdate(this.update, this, this.iid)
+		this.$needsUpdate = true
+	}
+	
+	/** 
+	 * Doing update immediately.
+	 * Update can only work after connected,
+	 * and after calls `willUpdate` cause `needsUpdate=true`.
+	 */
+	update(this: Component<{}>) {
+		if (!this.connected || !this.$needsUpdate) {
+			return
+		}
+
+		this.updateRendering()
+		this.onUpdated()
+		this.$needsUpdate = false
+		this.fire('updated')
+	}
+
+	/** Update and track rendering contents. */
+	protected updateRendering() {
+		beginTrack(this.willUpdate, this)
+		let result: CompiledTemplateResult | CompiledTemplateResult[] | string | null
+
+		try {
+			result = this.render() as typeof result
+		}
+		catch (err) {
+			result = null
+			console.warn(err)
+		}
+
+		this.$contentSlot.update(result)
+
+		// `endTrack` here is important.
+		// This will cause can track the update process of `ForBlock`.
+		endTrack()
+	}
+
+	/** 
+	 * Defines the results the current component should render.
+	 * Child class should overwrite this method, normally returns html`...` or a string.
+	 * You can choose to not overwrite `render()` to keep it returns `null`,
+	 * when you don't want to render any child nodes.
+	 */
+	protected render(): RenderResult {
+		return null
+	}
+
 	/** Init `contentSlot`. */
 	protected initContentSlot(): TemplateSlot {
 		let position = new SlotPosition<SlotPositionType.AfterContent>(SlotPositionType.AfterContent, this.el)
@@ -216,7 +273,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 
 		return new TemplateSlot(position, Com.SlotContentType!)
 	}
-
+	
 	/**
 	 * Called when component was connected and all properties were assigned.
 	 * All the child nodes are not prepared yet, until `onReady`.
@@ -437,83 +494,25 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		return this.$contentSlot && this.$contentSlot.hasContent()
 	}
 
-	/** After any tracked data change, enqueue it to update in next animation frame. */
-	protected willUpdate() {
-		if (!this.connected || this.$needsUpdate) {
-			return
-		}
-
-		// Component create earlier, update earlier.
-		enqueueUpdate(this.update, this, this.iid)
-		this.$needsUpdate = true
-	}
-	
-	/** 
-	 * Doing update immediately.
-	 * Update can only work after connected,
-	 * and after calls `willUpdate` cause `needsUpdate=true`.
-	 */
-	update(this: Component<{}>) {
-		if (!this.connected || !this.$needsUpdate) {
-			return
-		}
-
-		this.updateRendering()
-		this.onUpdated()
-		this.$needsUpdate = false
-		this.fire('updated')
-	}
-
-	/** Update and track rendering contents. */
-	protected updateRendering() {
-		beginTrack(this.willUpdate, this)
-		let result: CompiledTemplateResult | CompiledTemplateResult[] | string | null
-
-		try {
-			result = this.render() as typeof result
-		}
-		catch (err) {
-			result = null
-			console.warn(err)
-		}
-
-		this.$contentSlot.update(result)
-
-		// `endTrack` here is important.
-		// This will cause can track the update process of `ForBlock`.
-		endTrack()
-	}
-
-	/** 
-	 * Defines the results the current component should render.
-	 * Child class should overwrite this method, normally returns html`...` or a string.
-	 * You can choose to not overwrite `render()` to keep it returns `null`,
-	 * when you don't want to render any child nodes.
-	 */
-	protected render(): RenderResult {
-		return null
-	}
-	
 	/** Append current element into a container, and do connect.
 	 * If `canPlayEnterTransition` is specified as `true`, which is also default action,
 	 * will play enter transition after appended.
 	 */
 	appendTo(container: Element, canPlayEnterTransition: boolean = true) {
+		if (this.connected) {
+			this.remove()
+		}
+
 		container.append(this.el)
 		
 		if (document.contains(this.el)) {
-			if (!this.connected) {
-				let mask = PartCallbackParameterMask.MoveAsDirectNode
+			let mask = PartCallbackParameterMask.MoveAsDirectNode
 
-				if (!canPlayEnterTransition) {
-					mask |= PartCallbackParameterMask.MoveImmediately
-				}
-				
-				this.afterConnectCallback(mask)
+			if (!canPlayEnterTransition) {
+				mask |= PartCallbackParameterMask.MoveImmediately
 			}
-		}
-		else if (this.connected) {
-			this.remove()
+			
+			this.afterConnectCallback(mask)
 		}
 	}
 
