@@ -499,13 +499,9 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * will play enter transition after appended.
 	 */
 	appendTo(container: Element, canPlayEnterTransition: boolean = true) {
-		if (this.connected) {
-			this.remove()
-		}
-
 		container.append(this.el)
 		
-		if (document.contains(this.el)) {
+		if (document.contains(this.el) && !this.connected) {
 			let mask = PartCallbackParameterMask.MoveAsDirectNode
 
 			if (!canPlayEnterTransition) {
