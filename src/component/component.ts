@@ -501,14 +501,19 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	appendTo(container: Element, canPlayEnterTransition: boolean = true) {
 		container.append(this.el)
 		
-		if (document.contains(this.el) && !this.connected) {
-			let mask = PartCallbackParameterMask.MoveAsDirectNode
+		if (document.contains(this.el)) {
+			if (!this.connected) {
+				let mask = PartCallbackParameterMask.MoveAsDirectNode
 
-			if (!canPlayEnterTransition) {
-				mask |= PartCallbackParameterMask.MoveImmediately
+				if (!canPlayEnterTransition) {
+					mask |= PartCallbackParameterMask.MoveImmediately
+				}
+				
+				this.afterConnectCallback(mask)
 			}
-			
-			this.afterConnectCallback(mask)
+		}
+		else if (this.connected) {
+			this.remove()
 		}
 	}
 
