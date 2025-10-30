@@ -1,4 +1,4 @@
-import {EffectMaker} from '@pucelle/lupos'
+import {Effector} from '@pucelle/lupos'
 import {TemplateResult} from '../template'
 
 
@@ -29,7 +29,7 @@ function createStyleElement(style: ComponentStyle, identifyName: string) {
 	styleTag.setAttribute('name', identifyName)
 
 	if (typeof style === 'function') {
-		new EffectMaker(() => {
+		new Effector(() => {
 			styleTag.textContent = String((style as () => TemplateResult)())
 		}).connect()
 	}
