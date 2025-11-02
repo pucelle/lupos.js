@@ -32,7 +32,7 @@ export const enum PartCallbackParameterMask {
 	 * 
 	 * Use it only internally.
 	 */
-	AsDirectContextNode = 4,
+	AsDirectContextNodeInternal = 4,
 
 	/** 
 	 * If nodes of current part has been connected or disconnected immediately,
@@ -97,7 +97,7 @@ export function getComponentSlotParameter(param: PartCallbackParameterMask | 0):
 	// Replace `AsDirectNode` to as `AsContextNode` for a component.
 	if (param & PartCallbackParameterMask.AsDirectNode) {
 		param &= ~PartCallbackParameterMask.AsDirectNode
-		param |= PartCallbackParameterMask.AsDirectContextNode
+		param |= PartCallbackParameterMask.AsDirectContextNodeInternal
 	}
 
 	// Remove `FromOwnStateChange`.
@@ -118,8 +118,8 @@ export function getTemplatePartParameter(param: PartCallbackParameterMask | 0, p
 	}
 
 	// If has `AsContextNode` and is in Context Position, replace to `AsDirectNode`.
-	if (param & PartCallbackParameterMask.AsDirectContextNode) {
-		param &= ~PartCallbackParameterMask.AsDirectContextNode
+	if (param & PartCallbackParameterMask.AsDirectContextNodeInternal) {
+		param &= ~PartCallbackParameterMask.AsDirectContextNodeInternal
 
 		if (position === PartPositionType.ContextNode) {
 			param |= PartCallbackParameterMask.AsDirectNode
