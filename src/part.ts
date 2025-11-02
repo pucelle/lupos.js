@@ -2,45 +2,44 @@
 export const enum PartCallbackParameterMask {
 
 	/** 
-	 * If current part to be connected or disconnected from current context,
-	 * but not because follow current context, this value is unioned.
+	 * To be connected or disconnected from some state change,
+	 * but not because of parent component connect or disconnect.
 	 * 
-	 * Note when first time initialize, this value is not included.
-	 * 
-	 * E.g., `<lu:if {...}><div :binding />...`
-	 * - after `<lu:if>` state change, for `:binding`, it "MoveFromOwnStateChange".
-	 * - But if the whole context get connected or disconnect,
-	 *   the `:binding` do same action follows it, then it's not "MoveFromOwnStateChange".
+	 * E.g., for `<lu:if {...}><div :binding />...`, for `:binding`:
+	 * - After `<lu:if>` state change, it is true.
+	 * - Otherwise no matter whole component connect or disconnect, it's false.
 	 */
-	MoveFromOwnStateChange = 1,
+	FromOwnStateChange = 1,
 
 	/** 
-	 * If nodes of current part will be inserted or removed directly from their parent,
-	 * this value is unioned.
+	 * If node will be directly inserted or removed from their parent,
+	 * this value is true.
 	 * 
-	 * E.g., `<lu:if {...}><div :transition><div :transition>...`.
-	 * The first transition can play after `<lu:if>` state change because it is "AsDirectNodeToMove" .
-	 * The second transition can't play after `<lu:if>` state change because it is not directly moved.
+	 * E.g., for `<lu:if {...}><div1 :transition><div2 :transition>...`, after `<lu:if>` state change:
+	 * `div1` can play because it is "AsDirectNode".
+	 * `div2` can't play because it is not "AsDirectNode".
 	 */
-	MoveAsDirectNode = 2,
+	AsDirectNode = 2,
 
 	/** 
-	 * If nodes of current context will be inserted or removed directly from their parent,
-	 * this value is unioned.
+	 * If node will be inserted or removed directly from their parent,
+	 * and it's also a component, this value is true.
 	 * 
-	 * E.g., `<lu:if {...}><Com :transition>...`.
-	 * `<Com>` will pass this parameter to content slot after `<lu:if>` state change.
+	 * It exists because "AsDirectNode" itself doesn't broadcast to child components,
+	 * but if connect or disconnect happens at an outer component, and the child component
+	 * itself "AsDirectNode", we should transform it to "AsDirectContextNode" and pass it to
+	 * this component, and inside it get transform back to "AsDirectNode" for component node.
+	 * 
+	 * Use it only internally.
 	 */
-	MoveAsContextNode = 4,
+	AsDirectContextNode = 4,
 
 	/** 
-	 * If nodes of current part has been moved immediately,
-	 * this value is unioned.
+	 * If nodes of current part has been connected or disconnected immediately,
+	 * this value is true.
 	 * 
-	 * E.g., if any ancestral element was removed directly,
-	 * no transition needs to be played.
-	 * 
-	 * Or connect manually immediately, and no transition needs to be played too.
+	 * E.g., if any ancestral element was removed directly, or connect manually
+	 * immediately, no transition needs to be played.
 	 */
 	MoveImmediately = 8,
 }
@@ -53,7 +52,7 @@ export const enum PartCallbackParameterMask {
 export interface Part {
 
 	/** 
-	 * After nodes or any ancestral nodes of current part were inserted into document.
+	 * After node or any ancestral node of current part were inserted into document.
 	 * 
 	 * For component as a part, all data has been assigned,
 	 * component has been enqueued to update, but hasn't been updated.
@@ -62,18 +61,16 @@ export interface Part {
 	 * For other parts, the part has been totally updated already,
 	 * and all child parts (exclude component) has been updated.
 	 * 
-	 * If part was moved to another place, would not call this connect callback.
-	 * 
-	 * Will also broadcasted calls connect callback recursively for all descendant parts.
+	 * Will also broadcast connect callback recursively to all descendant parts.
 
 	 * - `param`: AND byte operate of `PartCallbackParameterMask`.
 	 */
 	afterConnectCallback(param: PartCallbackParameterMask | 0): void
 
 	/** 
-	 * Before nodes or any ancestral nodes of current part are going to be removed.
+	 * Before node or any ancestral node of current part are going to be removed.
 	 * 
-	 * Will also broadcast calling recursively for all descendant parts.
+	 * Will also broadcast disconnect calling recursively to all descendant parts.
 	 * 
 	 * - `param`: AND byte operate of `PartCallbackParameterMask`.
 	 */
@@ -97,14 +94,14 @@ export const enum PartPositionType {
 /** Get content slot parameter from component callback parameter. */
 export function getComponentSlotParameter(param: PartCallbackParameterMask | 0): PartCallbackParameterMask | 0 {
 
-	// Replace `MoveAsDirectNode` to as `MoveAsContextNode`.
-	if (param & PartCallbackParameterMask.MoveAsDirectNode) {
-		param &= ~PartCallbackParameterMask.MoveAsDirectNode
-		param |= PartCallbackParameterMask.MoveAsContextNode
+	// Replace `AsDirectNode` to as `AsContextNode` for a component.
+	if (param & PartCallbackParameterMask.AsDirectNode) {
+		param &= ~PartCallbackParameterMask.AsDirectNode
+		param |= PartCallbackParameterMask.AsDirectContextNode
 	}
 
-	// Remove `MoveFromOwnStateChange`.
-	param &= ~PartCallbackParameterMask.MoveFromOwnStateChange
+	// Remove `FromOwnStateChange`.
+	param &= ~PartCallbackParameterMask.FromOwnStateChange
 	
 	return param
 }
@@ -113,19 +110,19 @@ export function getComponentSlotParameter(param: PartCallbackParameterMask | 0):
 /** Get part callback parameter by template callback parameter and part position. */
 export function getTemplatePartParameter(param: PartCallbackParameterMask | 0, position: PartPositionType): PartCallbackParameterMask | 0 {
 
-	// Removes `MoveAsDirectNode` if is in Direct Position.
-	if (param & PartCallbackParameterMask.MoveAsDirectNode) {
+	// Removes `AsDirectNode` if is in Direct Position.
+	if (param & PartCallbackParameterMask.AsDirectNode) {
 		if (position !== PartPositionType.DirectNode) {
-			param &= ~PartCallbackParameterMask.MoveAsDirectNode
+			param &= ~PartCallbackParameterMask.AsDirectNode
 		}
 	}
 
-	// If has `MoveAsContextNode` and is in Context Position, replace to `MoveAsDirectNode`.
-	if (param & PartCallbackParameterMask.MoveAsContextNode) {
-		param &= ~PartCallbackParameterMask.MoveAsContextNode
+	// If has `AsContextNode` and is in Context Position, replace to `AsDirectNode`.
+	if (param & PartCallbackParameterMask.AsDirectContextNode) {
+		param &= ~PartCallbackParameterMask.AsDirectContextNode
 
 		if (position === PartPositionType.ContextNode) {
-			param |= PartCallbackParameterMask.MoveAsDirectNode
+			param |= PartCallbackParameterMask.AsDirectNode
 		}
 	}
 
@@ -146,11 +143,11 @@ export class PartDelegator implements Part {
 
 		if (this.connected) {
 			if (this.part) {
-				this.part.beforeDisconnectCallback(PartCallbackParameterMask.MoveFromOwnStateChange | PartCallbackParameterMask.MoveAsDirectNode)
+				this.part.beforeDisconnectCallback(PartCallbackParameterMask.FromOwnStateChange | PartCallbackParameterMask.AsDirectNode)
 			}
 
 			if (part) {
-				part.afterConnectCallback(PartCallbackParameterMask.MoveFromOwnStateChange | PartCallbackParameterMask.MoveAsDirectNode)
+				part.afterConnectCallback(PartCallbackParameterMask.FromOwnStateChange | PartCallbackParameterMask.AsDirectNode)
 			}
 		}
 

@@ -92,7 +92,7 @@ export class ForBlock<T = any> {
 
 		// `lu:for` use it's slot to cache child parts.
 		if (this.slot.connected) {
-			t.afterConnectCallback(PartCallbackParameterMask.MoveFromOwnStateChange | PartCallbackParameterMask.MoveAsDirectNode)
+			t.afterConnectCallback(PartCallbackParameterMask.FromOwnStateChange | PartCallbackParameterMask.AsDirectNode)
 		}
 
 		this.templates.push(t)

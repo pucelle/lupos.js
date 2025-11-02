@@ -187,7 +187,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 			newT.update(tr.values)
 
 			if (this.connected) {
-				newT.afterConnectCallback(PartCallbackParameterMask.MoveFromOwnStateChange | PartCallbackParameterMask.MoveAsDirectNode)
+				newT.afterConnectCallback(PartCallbackParameterMask.FromOwnStateChange | PartCallbackParameterMask.AsDirectNode)
 			}
 			
 			this.content = newT
@@ -221,7 +221,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 				newT.update(tr.values)
 
 				if (this.connected) {
-					newT.afterConnectCallback(PartCallbackParameterMask.MoveFromOwnStateChange | PartCallbackParameterMask.MoveAsDirectNode)
+					newT.afterConnectCallback(PartCallbackParameterMask.FromOwnStateChange | PartCallbackParameterMask.AsDirectNode)
 				}
 
 				content[i] = newT
@@ -305,7 +305,7 @@ export class TemplateSlot<T extends SlotContentType | null = SlotContentType> im
 				newT.update(values!)
 
 				if (this.connected) {
-					newT.afterConnectCallback(PartCallbackParameterMask.MoveFromOwnStateChange | PartCallbackParameterMask.MoveAsDirectNode)
+					newT.afterConnectCallback(PartCallbackParameterMask.FromOwnStateChange | PartCallbackParameterMask.AsDirectNode)
 				}
 			}
 
