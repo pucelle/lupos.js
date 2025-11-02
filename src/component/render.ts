@@ -41,12 +41,12 @@ export class RenderedComponentLike<E = any> extends Component<E> {
 	}
 	
 	/** Replace context of content slot. */
-	protected initContentSlot(): TemplateSlot {
+	protected override initContentSlot(): TemplateSlot {
 		let position = new SlotPosition<SlotEndOuterPositionType>(SlotPositionType.AfterContent, this.el)
 		return new TemplateSlot(position)
 	}
 
-	protected render(): RenderResult {
+	protected override render(): RenderResult {
 		trackGet(this, 'renderer')
 
 		if (typeof this.renderer === 'function') {
@@ -57,7 +57,7 @@ export class RenderedComponentLike<E = any> extends Component<E> {
 		}
 	}
 
-	protected onUpdated() {
+	protected override onUpdated() {
 		super.onUpdated()
 		this.componentRenderedNeedsValidate = true
 	}

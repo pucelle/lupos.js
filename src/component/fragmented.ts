@@ -13,7 +13,7 @@ export class Fragmented extends Component {
 	
 	renderFn!: () => RenderResult
 
-	protected render() {
+	protected override render() {
 		return this.renderFn()
 	}
 }
