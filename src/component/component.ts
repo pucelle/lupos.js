@@ -1,4 +1,4 @@
-import {ContextVariableConstructor, EventFirer, Observed, enqueueUpdate, beginTrack, endTrack, promiseWithResolves} from '@pucelle/lupos'
+import {ContextVariableConstructor, EventFirer, Observed, enqueueUpdate, beginTrack, endTrack, promiseWithResolves, Updatable, hasEnqueuedUpdate} from '@pucelle/lupos'
 import {ComponentStyle} from './style'
 import {addElementComponentMap, getComponentByElement} from './from-element'
 import {TemplateSlot, SlotPosition, SlotPositionType, CompiledTemplateResult, SlotContentType} from '../template'
@@ -91,7 +91,7 @@ const enum ComponentStateMask {
  *  - Parent disconnect each child part
  * 		- Each child's disconnect lifecycle works just like parent
  */
-export class Component<E = any> extends EventFirer<E & ComponentEvents> implements Part, Observed {
+export class Component<E = any> extends EventFirer<E & ComponentEvents> implements Part, Updatable, Observed {
 
 	/** 
 	 * After a source component connected,
@@ -168,7 +168,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * or for debugging a specified component.
 	 * Only for internal usages.
 	 */
-	protected readonly iid: number = IncrementalId++
+	readonly iid: number = IncrementalId++
 
 	/** State of current component, byte mask type. */
 	protected $stateMask: ComponentStateMask | 0 = 0
@@ -181,13 +181,6 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * which will be used to fill `<slot />` element the component itself render.
 	 */
 	protected $restSlotRange: SlotRange | null = null
-
-	/** 
-	 * Whether needs update.
-	 * Only when `needsUpdate` is `true`, current component can be updated.
-	 * This can avoid updating for twice, especially when connecting.
-	 */
-	protected $needsUpdate: boolean = false
 
 	/**
 	 * Caches slot elements which are marked as `<... slot="slotName">`.
@@ -210,35 +203,33 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	}
 
 	/** After any tracked data change, enqueue it to update in next animation frame. */
-	protected willUpdate() {
-		if (!this.connected || this.$needsUpdate) {
+	willUpdate() {
+		if (!this.connected) {
 			return
 		}
 
 		// Component create earlier, update earlier.
-		enqueueUpdate(this.update, this, this.iid)
-		this.$needsUpdate = true
+		enqueueUpdate(this)
 	}
 	
 	/** 
 	 * Doing update immediately.
-	 * Update can only work after connected,
-	 * and after calls `willUpdate` cause `needsUpdate=true`.
+	 * Can be an async function, and can call `untilChildUpdateComplete`
+	 * inside to wait for child components update completed.
 	 */
-	update(this: Component<{}>) {
-		if (!this.connected || !this.$needsUpdate) {
+	update(this: Component<{}>): void | Promise<void> {
+		if (!this.connected) {
 			return
 		}
 
 		this.updateRendering()
 		this.onUpdated()
-		this.$needsUpdate = false
 		this.fire('updated')
 	}
 
 	/** Update and track rendering contents. */
 	protected updateRendering() {
-		beginTrack(this.willUpdate, this)
+		beginTrack(this)
 		let result: CompiledTemplateResult | CompiledTemplateResult[] | string | null
 
 		try {
@@ -352,7 +343,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * Note if not enqueued, will soon resolve.
 	 */
 	untilUpdated(this: Component<{}>): Promise<void> {
-		if (this.$needsUpdate) {
+		if (hasEnqueuedUpdate(this)) {
 			let {promise, resolve} = promiseWithResolves()
 			this.once('updated', resolve)
 			return promise
@@ -475,7 +466,6 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 			return
 		}
 
-		this.$needsUpdate = false
 		this.$stateMask &= ~ComponentStateMask.Connected
 		this.onWillDisconnect()
 		this.fire('will-disconnect')

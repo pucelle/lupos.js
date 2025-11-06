@@ -1,4 +1,4 @@
-import {untilUpdateComplete} from '@pucelle/lupos'
+import {untilAllUpdateComplete} from '@pucelle/lupos'
 import {TransitionOptions, TransitionResult, Transition, WebTransitionProperties} from '../transition'
 import {assignWithoutKeys} from './utils'
 import {InternalPairKeysListMap} from '../../structs/map'
@@ -73,7 +73,7 @@ export const crossfade = /*#__PURE__*/Transition.define(async function(el: Eleme
 	CrossFadeElementMatchMap.add(options.key, phase, el)
 
 	// Sync same keyed enter and leave transitions.
-	await untilUpdateComplete()
+	await untilAllUpdateComplete()
 
 	let pairPhase: 'enter' | 'leave' = phase === 'enter' ? 'leave' : 'enter'
 	let useAnyPair = false
@@ -86,7 +86,7 @@ export const crossfade = /*#__PURE__*/Transition.define(async function(el: Eleme
 	}
 
 	// Delete key match after next-time update complete.
-	untilUpdateComplete().then(() => {
+	untilAllUpdateComplete().then(() => {
 		CrossFadeElementMatchMap.delete(options.key, phase, el)
 	})
 
