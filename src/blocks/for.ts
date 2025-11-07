@@ -99,8 +99,17 @@ export class ForBlock<T = any> {
 	}
 
 	private reuseTemplate(t: Template, item: T, index: number) {
+		
+		// Can't directly reuse, or transition will play unexpectedly.
+		t.beforeDisconnectCallback(PartCallbackParameterMask.FromOwnStateChange | PartCallbackParameterMask.AsDirectNode | PartCallbackParameterMask.MoveImmediately)
+
 		let result = this.renderFn(item, index)!
 		t.update(result.values)
+		
+		if (this.slot.connected) {
+			t.afterConnectCallback(PartCallbackParameterMask.FromOwnStateChange | PartCallbackParameterMask.AsDirectNode | PartCallbackParameterMask.MoveImmediately)
+		}
+		
 		this.templates.push(t)
 	}
 
