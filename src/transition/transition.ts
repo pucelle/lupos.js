@@ -1,4 +1,4 @@
-import {untilAllUpdateComplete, promiseWithResolves} from '@pucelle/lupos'
+import {UpdateQueue, promiseWithResolves} from '@pucelle/lupos'
 import {PerFrameTransition, PerFrameTransitionOptions} from './per-frame-transition'
 import {WebTransition, WebTransitionKeyFrame, WebTransitionOptions} from './web-transition'
 
@@ -258,7 +258,7 @@ export class Transition {
 
 		// Most transition getters will read dom properties.
 		// Ensure it firstly render, then play.
-		await untilAllUpdateComplete()
+		await UpdateQueue.untilAllComplete()
 
 		// May start to play another.
 		if (this.version !== version) {

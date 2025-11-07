@@ -1,4 +1,4 @@
-import {ContextVariableConstructor, EventFirer, Observed, enqueueUpdate, beginTrack, endTrack, promiseWithResolves, Updatable, hasEnqueuedUpdate} from '@pucelle/lupos'
+import {ContextVariableConstructor, EventFirer, Observed, UpdateQueue, beginTrack, endTrack, promiseWithResolves, Updatable} from '@pucelle/lupos'
 import {ComponentStyle} from './style'
 import {addElementComponentMap, getComponentByElement} from './from-element'
 import {TemplateSlot, SlotPosition, SlotPositionType, CompiledTemplateResult, SlotContentType} from '../template'
@@ -209,7 +209,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		}
 
 		// Component create earlier, update earlier.
-		enqueueUpdate(this)
+		UpdateQueue.enqueue(this)
 	}
 	
 	/** 
@@ -343,7 +343,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * Note if not enqueued, will soon resolve.
 	 */
 	untilUpdated(this: Component<{}>): Promise<void> {
-		if (hasEnqueuedUpdate(this)) {
+		if (UpdateQueue.hasEnqueued(this)) {
 			let {promise, resolve} = promiseWithResolves()
 			this.once('updated', resolve)
 			return promise
@@ -455,10 +455,12 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 			}
 		})
 
+		// Before calls `onConnected` because may calls `untilUpdated` in `onConnected`.
+		this.willUpdate()
+
 		// After binding `updated` because may bind more `updated` events in `onConnected`.
 		this.onConnected()
 		this.fire('connected')
-		this.willUpdate()
 	}
 
 	beforeDisconnectCallback(this: Component<{}>, param: PartCallbackParameterMask | 0): Promise<void> | void {
@@ -588,10 +590,10 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	}
 
 	/** 
-	 * Connect current component manually even it's not in document.
+	 * Connect current component manually even it's not in document,
+	 * and also wait for all child components updated.
 	 * Returns whether connected successfully.
 	 * Skip and return `true` if already connected.
-	 * Please note child components may not have been updated yet.
 	 */
 	async connectManually(this: Component): Promise<boolean> {
 		if (this.connected) {
@@ -603,7 +605,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 
 		this.afterConnectCallback(param)
 
-		await Promise.race([this.untilUpdated(), this.untilWillDisconnect()])
+		await UpdateQueue.untilChildComplete(this)
 		return this.connected
 	}
 }
