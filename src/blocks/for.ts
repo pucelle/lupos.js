@@ -57,7 +57,7 @@ export class ForBlock<T = any> {
 			let newItem = toIndex >= 0 ? newData[toIndex] : null
 
 			if (type === EditType.Leave) {
-				this.reuseTemplate(fromT!, newItem!, toIndex)
+				this.leaveTemplate(fromT!, newItem!, toIndex)
 			}
 			else if (type === EditType.Move || type === EditType.MoveModify) {
 				this.moveTemplate(fromT!, nextOldT)
@@ -95,6 +95,12 @@ export class ForBlock<T = any> {
 			t.afterConnectCallback(PartCallbackParameterMask.FromOwnStateChange | PartCallbackParameterMask.AsDirectNode)
 		}
 
+		this.templates.push(t)
+	}
+
+	private leaveTemplate(t: Template, item: T, index: number) {
+		let result = this.renderFn(item, index)!
+		t.update(result.values)
 		this.templates.push(t)
 	}
 
