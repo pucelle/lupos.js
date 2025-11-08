@@ -342,14 +342,15 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * Note if immediately disconnected, this may never return.
 	 * Note if not enqueued, will soon resolve.
 	 */
-	untilUpdated(this: Component<{}>): Promise<void> {
+	async untilUpdated(this: Component<{}>): Promise<void> {
+
+		// Wait for a micro task tick to see if enqueued.
+		await Promise.resolve()
+
 		if (UpdateQueue.hasEnqueued(this)) {
 			let {promise, resolve} = promiseWithResolves()
 			this.once('updated', resolve)
 			return promise
-		}
-		else {
-			return Promise.resolve()
 		}
 	}
 
@@ -455,12 +456,10 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 			}
 		})
 
-		// Before calls `onConnected` because may calls `untilUpdated` in `onConnected`.
-		this.willUpdate()
-
 		// After binding `updated` because may bind more `updated` events in `onConnected`.
 		this.onConnected()
 		this.fire('connected')
+		this.willUpdate()
 	}
 
 	beforeDisconnectCallback(this: Component<{}>, param: PartCallbackParameterMask | 0): Promise<void> | void {
