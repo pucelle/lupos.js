@@ -1,4 +1,4 @@
-import {ContextVariableConstructor, EventFirer, Observed, UpdateQueue, beginTrack, endTrack, Updatable, promisify} from '@pucelle/lupos'
+import {ContextVariableConstructor, EventFirer, Observed, UpdateQueue, beginTrack, endTrack, Updatable, promisify, promiseWithResolves} from '@pucelle/lupos'
 import {ComponentStyle} from './style'
 import {addElementComponentMap, getComponentByElement} from './from-element'
 import {TemplateSlot, SlotPosition, SlotPositionType, CompiledTemplateResult, SlotContentType} from '../template'
@@ -328,15 +328,20 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 
 	/** 
 	 * Returns a promise which will be resolved after the component is next time updated.
-	 * Note if has not enqueued yet, will enqueue it firstly.
-	 * Note if immediately disconnected, this may never return.
+	 * Note you need to ensure current component has been enqueued yet.
+	 * Note if immediately disconnected, `callback` will never be called.
 	 */
 	whenUpdated(this: Component<{}>, callback: () => void) {
-		if (!UpdateQueue.hasEnqueued(this)) {
-			this.willUpdate()
-		}
+		if (UpdateQueue.hasEnqueued(this)) {
+			this.once('updated', callback)
 
-		this.once('updated', callback)
+			this.once('will-disconnect', () => {
+				this.off('updated', callback)
+			})
+		}
+		else {
+			callback()
+		}
 	}
 
 	/** Returns a promise which will be resolved after the component is next time connected. */
@@ -366,6 +371,73 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	/** Returns a promise which will be resolved after the component is next time will disconnect. */
 	untilWillDisconnect(this: Component<{}>): Promise<void> {
 		return promisify(this.whenWillDisconnect, this)
+	}
+
+	/** 
+	 * Calls callback after all children, and all descendant components update completed.
+	 * 
+	 * Use it when you need to wait for child and descendant components
+	 * update completed and do some measurement.
+	 * 
+	 * Note you need to ensure current component has been enqueued or is updating.
+	 * 
+	 * ```ts
+	 * update() {
+	 *     this.updateRendering()
+	 *     this.whenChildComplete(this.doMoreAfterChildUpdateCompleted)
+	 *     ...
+	 * }
+	 * ```
+	 * 
+	 * or 
+	 * 
+	 * ```ts
+	 * com.willUpdate()
+	 * com.whenChildComplete(doMoreAfterChildUpdateCompleted)
+	 * ```
+	 */
+	whenChildComplete(this: Component, callback: () => void) {
+		if (UpdateQueue.isUpdating(this)) {
+			UpdateQueue.whenChildComplete(this, callback)
+		}
+		else if (UpdateQueue.hasEnqueued(this)) {
+			this.once('updated', () => {
+				UpdateQueue.whenChildComplete(this, callback)
+			})
+		}
+		else {
+			callback()
+		}
+	}
+
+	/** 
+	 * Returns a promise, which will be resolved after all children,
+	 * and all descendants update completed.
+	 * 
+	 * Use it when you need to wait for child and descendant components
+	 * update completed and do some measurement.
+	 * 
+	 * ```ts
+	 * async update() {
+	 *     this.updateRendering()
+	 *     await UpdateQueue.untilChildComplete()
+	 *     await barrierDOMReading()
+	 *     ...
+	 * }
+	 * ```
+	 * 
+	 * or 
+	 * 
+	 * ```ts
+	 * com.willUpdate()
+	 * await com.untilChildComplete()
+	 * ...
+	 * ```
+	 */
+	untilChildComplete(): Promise<void> {
+		let {promise, resolve} = promiseWithResolves<void>()
+		this.whenChildComplete(resolve)
+		return promise
 	}
 
 	/** 
@@ -456,10 +528,12 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 			}
 		})
 
+		// Earlier than `onConnected` because may calls `untilUpdated()` there.
+		this.willUpdate()
+
 		// After binding `updated` because may bind more `updated` events in `onConnected`.
 		this.onConnected()
 		this.fire('connected')
-		this.willUpdate()
 	}
 
 	beforeDisconnectCallback(this: Component<{}>, param: PartCallbackParameterMask | 0): Promise<void> | void {
