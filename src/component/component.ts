@@ -1,4 +1,4 @@
-import {ContextVariableConstructor, EventFirer, Observed, UpdateQueue, beginTrack, endTrack, promiseWithResolves, Updatable} from '@pucelle/lupos'
+import {ContextVariableConstructor, EventFirer, Observed, UpdateQueue, beginTrack, endTrack, Updatable, promisify} from '@pucelle/lupos'
 import {ComponentStyle} from './style'
 import {addElementComponentMap, getComponentByElement} from './from-element'
 import {TemplateSlot, SlotPosition, SlotPositionType, CompiledTemplateResult, SlotContentType} from '../template'
@@ -327,14 +327,26 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	protected onWillDisconnect() {}
 
 	/** 
-	 * Returns a promise which will be resolved after the component is ready,
-	 * `ready` means first time updated.
-	 * If is ready already, resolve the promise immediately.
+	 * Returns a promise which will be resolved after the component is next time updated.
+	 * Note if has not enqueued yet, will enqueue it firstly.
+	 * Note if immediately disconnected, this may never return.
 	 */
-	untilReady(this: Component<{}>): void | Promise<void> {
-		if ((this.$stateMask & ComponentStateMask.ReadyAlready) === 0) {
-			return this.untilUpdated()
+	whenUpdated(this: Component<{}>, callback: () => void) {
+		if (!UpdateQueue.hasEnqueued(this)) {
+			this.willUpdate()
 		}
+
+		this.once('updated', callback)
+	}
+
+	/** Returns a promise which will be resolved after the component is next time connected. */
+	whenConnected(this: Component<{}>, callback: () => void) {
+		this.once('connected', callback)
+	}
+
+	/** Returns a promise which will be resolved after the component is next time will disconnect. */
+	whenWillDisconnect(this: Component<{}>, callback: () => void) {
+		this.once('will-disconnect', callback)
 	}
 
 	/** 
@@ -342,30 +354,18 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * Note if immediately disconnected, this may never return.
 	 * Note if not enqueued, will soon resolve.
 	 */
-	async untilUpdated(this: Component<{}>): Promise<void> {
-
-		// Wait for a micro task tick to see if enqueued.
-		await Promise.resolve()
-
-		if (UpdateQueue.hasEnqueued(this)) {
-			let {promise, resolve} = promiseWithResolves()
-			this.once('updated', resolve)
-			return promise
-		}
+	untilUpdated(this: Component<{}>): Promise<void> {
+		return promisify(this.whenUpdated, this)
 	}
 
 	/** Returns a promise which will be resolved after the component is next time connected. */
 	untilConnected(this: Component<{}>): Promise<void> {
-		let {promise, resolve} = promiseWithResolves()
-		this.once('connected', resolve)
-		return promise
+		return promisify(this.whenConnected, this)
 	}
 
 	/** Returns a promise which will be resolved after the component is next time will disconnect. */
 	untilWillDisconnect(this: Component<{}>): Promise<void> {
-		let {promise, resolve} = promiseWithResolves()
-		this.once('will-disconnect', resolve)
-		return promise
+		return promisify(this.whenWillDisconnect, this)
 	}
 
 	/** 
@@ -590,9 +590,9 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 
 	/** 
 	 * Connect current component manually even it's not in document,
-	 * and also wait for all child components updated.
-	 * Returns whether connected successfully.
+	 * and also wait for component get updated.
 	 * Skip and return `true` if already connected.
+	 * Returns false if get disconnected before updated.
 	 */
 	async connectManually(this: Component): Promise<boolean> {
 		if (this.connected) {
@@ -604,7 +604,7 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 
 		this.afterConnectCallback(param)
 
-		await UpdateQueue.untilChildComplete(this)
+		await Promise.race([this.untilUpdated(), this.untilWillDisconnect()])
 		return this.connected
 	}
 }
