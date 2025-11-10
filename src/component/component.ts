@@ -328,19 +328,22 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 
 	/** 
 	 * Returns a promise which will be resolved after the component is next time updated.
-	 * Note you need to ensure current component has been enqueued yet.
-	 * Note if immediately disconnected, `callback` will never be called.
+	 * Note you need to ensure current component has been enqueued yet, or will enqueue soon.
+	 * Note if immediately disconnected, `callback` may never be called.
 	 */
 	whenUpdated(this: Component<{}>, callback: () => void) {
 		if (UpdateQueue.hasEnqueued(this)) {
 			this.once('updated', callback)
-
-			this.once('will-disconnect', () => {
-				this.off('updated', callback)
-			})
 		}
 		else {
-			callback()
+			Promise.resolve().then(() => {
+				if (UpdateQueue.hasEnqueued(this)) {
+					this.once('updated', callback)
+				}
+				else {
+					callback()
+				}
+			})
 		}
 	}
 
@@ -400,13 +403,10 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 		if (UpdateQueue.isUpdating(this)) {
 			UpdateQueue.whenChildComplete(this, callback)
 		}
-		else if (UpdateQueue.hasEnqueued(this)) {
-			this.once('updated', () => {
+		else {
+			this.whenUpdated(() => {
 				UpdateQueue.whenChildComplete(this, callback)
 			})
-		}
-		else {
-			callback()
 		}
 	}
 
