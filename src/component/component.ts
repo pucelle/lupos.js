@@ -327,8 +327,8 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	protected onWillDisconnect() {}
 
 	/** 
-	 * Returns a promise which will be resolved after the component is next time updated.
-	 * Note you need to ensure current component has been enqueued yet, or will enqueue soon.
+	 * Calls callback after the component get updated for the next time.
+	 * Note you need to ensure current component has been enqueued, or will be enqueued soon.
 	 * Note if immediately disconnected, `callback` may never be called.
 	 */
 	whenUpdated(this: Component<{}>, callback: () => void) {
@@ -359,8 +359,11 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 
 	/** 
 	 * Returns a promise which will be resolved after the component is next time updated.
-	 * Note if immediately disconnected, this may never return.
-	 * Note if not enqueued, will soon resolve.
+	 * Note you need to ensure current component has been enqueued, or will be enqueued soon.
+	 * Note if immediately disconnected, this may never be resolved.
+	 * 
+	 * If want to interpolate data before child component updated,
+	 * we would suggest using `whenUpdate(...)`.
 	 */
 	untilUpdated(this: Component<{}>): Promise<void> {
 		return promisify(this.whenUpdated, this)
@@ -382,7 +385,8 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * Use it when you need to wait for child and descendant components
 	 * update completed and do some measurement.
 	 * 
-	 * Note you need to ensure current component has been enqueued or is updating.
+	 * Note you need to ensure current component has been enqueued or is updating,
+	 * or will be enqueued soon.
 	 * 
 	 * ```ts
 	 * update() {
@@ -400,12 +404,17 @@ export class Component<E = any> extends EventFirer<E & ComponentEvents> implemen
 	 * ```
 	 */
 	whenChildComplete(this: Component, callback: () => void) {
-		if (UpdateQueue.isUpdating(this)) {
+		if (UpdateQueue.hasEnqueued(this)) {
 			UpdateQueue.whenChildComplete(this, callback)
 		}
 		else {
-			this.whenUpdated(() => {
-				UpdateQueue.whenChildComplete(this, callback)
+			Promise.resolve().then(() => {
+				if (UpdateQueue.hasEnqueued(this)) {
+					UpdateQueue.whenChildComplete(this, callback)
+				}
+				else {
+					callback()
+				}
 			})
 		}
 	}
