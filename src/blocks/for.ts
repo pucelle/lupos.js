@@ -55,19 +55,26 @@ export class ForBlock<T = any> {
 			let nextOldT = this.getItemAtIndex(oldTs, insertIndex)
 			let fromT = this.getItemAtIndex(oldTs, fromIndex)
 			let newItem = toIndex >= 0 ? newData[toIndex] : null
+			let result = newItem ? this.renderFn(newItem, toIndex) : null
 
 			if (type === EditType.Leave) {
-				this.leaveTemplate(fromT!, newItem!, toIndex)
+				this.leaveTemplate(fromT!, result!)
 			}
 			else if (type === EditType.Move || type === EditType.MoveModify) {
-				this.moveTemplate(fromT!, nextOldT)
-				this.reuseTemplate(fromT!, newItem!, toIndex)
+				if (fromT!.canUpdateBy(result!)) {
+					this.moveTemplate(fromT!, nextOldT)
+					this.reuseTemplate(fromT!, result!)
+				}
+				else {
+					this.removeTemplate(fromT!)
+					this.createTemplate(result!, nextOldT!)
+				}
 			}
 			else if (type === EditType.Insert) {
-				this.createTemplate(newItem!, toIndex, nextOldT!)
+				this.createTemplate(result!, nextOldT!)
 			}
 			else if (type === EditType.Delete) {
-				this.removeTemplate(fromT!, fromIndex)
+				this.removeTemplate(fromT!)
 			}
 		}
 
@@ -83,8 +90,7 @@ export class ForBlock<T = any> {
 		}
 	}
 
-	private createTemplate(item: T, index: number, nextOldT: Template | null) {
-		let result = this.renderFn(item, index)!
+	private createTemplate(result: CompiledTemplateResult, nextOldT: Template | null) {
 		let t = result.maker.make(result.context)
 
 		this.insertTemplate(t, nextOldT)
@@ -98,28 +104,26 @@ export class ForBlock<T = any> {
 		this.templates.push(t)
 	}
 
-	private leaveTemplate(t: Template, item: T, index: number) {
-		let result = this.renderFn(item, index)!
+	private leaveTemplate(t: Template, result: CompiledTemplateResult) {
 		t.update(result.values)
 		this.templates.push(t)
 	}
 
-	private reuseTemplate(t: Template, item: T, index: number) {
-		
+	private reuseTemplate(t: Template, result: CompiledTemplateResult) {
+
 		// Can't directly reuse, or transition will play unexpectedly.
 		t.beforeDisconnectCallback(PartCallbackParameterMask.FromOwnStateChange | PartCallbackParameterMask.AsDirectNode | PartCallbackParameterMask.MoveImmediately)
 
-		let result = this.renderFn(item, index)!
 		t.update(result.values)
 		
 		if (this.slot.connected) {
 			t.afterConnectCallback(PartCallbackParameterMask.FromOwnStateChange | PartCallbackParameterMask.AsDirectNode | PartCallbackParameterMask.MoveImmediately)
 		}
-		
+
 		this.templates.push(t)
 	}
 
-	private removeTemplate(t: Template, _index: number) {
+	private removeTemplate(t: Template) {
 		t.recycleNodes()
 	}
 
