@@ -10,23 +10,24 @@
 		"url": "https://github.com/pucelle/lupos.js.git"
 	},
 	"type": "module",
-	"main": "out/index.js",
-	"types": "out/index.d.ts",
+	"main": "web/out/index.js",
+	"types": "web/out/index.d.ts",
 	"sideEffects": false,
 	"scripts": {
-		"build": "luc -e",
-		"watch": "luc -e -w",
+		"build": "cd web && luc -e && cd ../ssr && luc -e",
+		"watch": "cd web && luc -e -w",
 		"prepublish": "npm run build",
 		"build-test": "cd tests && luc -e",
 		"watch-test": "cd tests && luc -e -w",
 		"test": "vitest"
 	},
 	"dependencies": {
-		"@pucelle/lupos": "^0.1.0"
+		"@pucelle/lupos": "^0.1.0",
+		"linkedom": "^0.18.12"
 	},
 	"devDependencies": {
 		"typescript": "^5.8.3",
 		"vitest": "^3.2.4",
-		"jsdom": "^27.0.1"
+		"happy-dom": "^20.0.10"
 	}
 }

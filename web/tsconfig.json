@@ -2,13 +2,12 @@
 	"compilerOptions": {
 		"module": "ESNext",
 		"moduleResolution": "Node",
-		"target": "ES2022",
+		"target": "ES2024",
 		"lib": ["ESNext", "DOM", "DOM.Iterable"],
 		"rootDir": "src",
-        "outDir": "out",
-		"allowJs": true,
-		"esModuleInterop": true, 
-		"declaration": false,
+		"outDir": "out",
+		"composite": true,
+		"declaration": true,
 		"strict": true,
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
@@ -16,12 +15,11 @@
 		"noFallthroughCasesInSwitch": true,
 		"noImplicitAny": true,
 		"noImplicitThis": true,
-		"skipLibCheck": true,
-		"paths": {
-			"@pucelle/lupos.js": ["./"],
-		}
+		"noImplicitOverride": true
 	},
-	"references": [
-        { "path": "../web" }
-    ]
+	"exclude": [
+		"node_modules",
+		"tests",
+		"out",
+	],
 }

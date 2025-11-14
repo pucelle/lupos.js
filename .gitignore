@@ -1,5 +1,6 @@
 node_modules
 /out
+/ssr/out
 /docs
 /dist
 /tests/**/*.js
