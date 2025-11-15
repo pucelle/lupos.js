@@ -12,6 +12,10 @@
 	"type": "module",
 	"main": "web/out/index.js",
 	"types": "web/out/index.d.ts",
+	"exports": {
+		".": "./web/out/index.js",
+		"./ssr": "./ssr/out/index.js"
+	},
 	"sideEffects": false,
 	"scripts": {
 		"build": "cd web && luc -e && cd ../ssr && luc -e",

@@ -63,7 +63,7 @@ function defineCallbacks(name: string) {
 	})
 }
 
-/** Connect callback of custom element. */
+/** Calls connect callback of specified custom element. */
 export function connectCustomElement(el: HTMLElement) {
 	if (!CustomElementConstructorMap.has(el.localName)) {
 		return
@@ -73,8 +73,14 @@ export function connectCustomElement(el: HTMLElement) {
 
 	// Component instance isn't created.
 	if (!com) {
-		let {Com, propertyMap} = CustomElementConstructorMap.get(el.localName)!
 
+		// Simply empty children for ssr custom node.
+		if (el.hasAttribute('ssr')) {
+			el.removeAttribute('ssr')
+			el.innerHTML = ''
+		}
+
+		let {Com, propertyMap} = CustomElementConstructorMap.get(el.localName)!
 		com = new Com(el)
 
 		if (propertyMap) {

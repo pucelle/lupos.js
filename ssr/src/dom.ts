@@ -1,6 +1,6 @@
 import {UpdateQueue} from '@pucelle/lupos'
 import * as linkedom from 'linkedom'
-import {connectCustomElement, flushComponentStyles, render, RenderResult, updateInSSR} from '../../web/out'
+import {connectCustomElement, flushComponentStyles, render, RenderResult, resetInSSR} from '../../web/out'
 
 
 /** 
@@ -22,7 +22,7 @@ export class SSR {
 		flushComponentStyles()
 
 		// Set `inSSR` to `true`.
-		updateInSSR(true)
+		resetInSSR(true)
 	}
 
 	private initWindow(): Window {
@@ -68,7 +68,6 @@ export class SSR {
 		let rendered = render(toRender)
 		rendered.connectManually()
 		await UpdateQueue.untilAllComplete()
-		
 		return rendered.el.innerHTML
 	}
 
@@ -84,6 +83,9 @@ export class SSR {
 
 		for (let el of customElements) {
 			connectCustomElement(el)
+
+			// Indicates it's come from ssr.
+			el.setAttribute('ssr', '')
 		}
 	}
 }

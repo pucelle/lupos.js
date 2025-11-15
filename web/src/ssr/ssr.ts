@@ -3,6 +3,6 @@ export let inSSR = false
 
 
 /** Update `inSSR` variable, only for SSR env. */
-export function updateInSSR(value: boolean) {
+export function resetInSSR(value: boolean) {
 	inSSR = value
 }
