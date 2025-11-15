@@ -1,5 +1,5 @@
-import {setContext, untilUpdateComplete, useContext} from '@pucelle/lupos'
-import * as lupos from '../../../'
+import {setContext, UpdateQueue, useContext} from '@pucelle/lupos'
+import * as lupos from '../../../web/out'
 import {describe, it, expect} from 'vitest'
 
 
@@ -25,7 +25,7 @@ describe('Test Context Variable', () => {
 		let parent = new Parent()
 		parent.appendTo(document.body)
 
-		await untilUpdateComplete()
+		await UpdateQueue.untilAllComplete()
 		let child = Child.fromClosest(parent.el.firstElementChild!)!
 		expect(child.prop).toBe(1)
 
@@ -33,7 +33,7 @@ describe('Test Context Variable', () => {
 		expect(child.prop).toBe(2)
 
 		parent.remove()
-		await untilUpdateComplete()
+		await UpdateQueue.untilAllComplete()
 		expect(child.prop).toBe(undefined)
 	})
 })

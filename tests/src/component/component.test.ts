@@ -1,5 +1,5 @@
-import {untilUpdateComplete} from '@pucelle/lupos'
-import * as lupos from '../../../'
+import {UpdateQueue} from '@pucelle/lupos'
+import * as lupos from '../../../web/out'
 import {describe, it, vi, expect} from 'vitest'
 
 
@@ -31,7 +31,7 @@ describe('Test Component', () => {
 		expect(parent.connected).toBe(false)
 
 		parent.appendTo(document.body)
-		await untilUpdateComplete()
+		await UpdateQueue.untilAllComplete()
 		let child = Child.fromClosest(parent.el.firstElementChild!)!
 
 		expect(fn1).toHaveBeenCalledTimes(1)

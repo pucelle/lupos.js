@@ -1,4 +1,4 @@
-import * as lupos from '../../../'
+import * as lupos from '../../../web/out'
 import {describe, it, expect} from 'vitest'
 
 

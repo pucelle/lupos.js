@@ -1,5 +1,5 @@
-import {untilUpdateComplete} from '@pucelle/lupos'
-import * as lupos from '../../../'
+import {UpdateQueue} from '@pucelle/lupos'
+import * as lupos from '../../../web/out'
 import {describe, it, expect} from 'vitest'
 
 
@@ -21,7 +21,7 @@ describe('Test :slot', () => {
 		
 		let parent = new Parent()
 		parent.appendTo(document.body)
-		await untilUpdateComplete()
+		await UpdateQueue.untilAllComplete()
 		expect(parent.el.querySelector('slot > *')).toBeInstanceOf(HTMLElement)
 	})
 
@@ -43,15 +43,15 @@ describe('Test :slot', () => {
 
 		let parent = new Parent()
 		parent.appendTo(document.body)
-		await untilUpdateComplete()
+		await UpdateQueue.untilAllComplete()
 		expect(parent.el.querySelector('slot')?.textContent).toBe('Slot Content')
 
 		parent.prop = false
-		await untilUpdateComplete()
+		await UpdateQueue.untilAllComplete()
 		expect(parent.el.querySelector('slot')?.textContent).toBe('Default Slot Content')
 
 		parent.prop = true
-		await untilUpdateComplete()
+		await UpdateQueue.untilAllComplete()
 	
 		expect(parent.el.querySelector('slot')?.textContent).toBe('Slot Content')
 	})
@@ -73,7 +73,7 @@ describe('Test :slot', () => {
 
 		let parent = new Parent()
 		parent.appendTo(document.body)
-		await untilUpdateComplete()
+		await UpdateQueue.untilAllComplete()
 		expect(parent.el.querySelector('slot')?.textContent).toBe('Slot Content')
 	})
 })

@@ -1,5 +1,5 @@
-import {untilUpdateComplete} from '@pucelle/lupos'
-import * as lupos from '../../../'
+import {UpdateQueue} from '@pucelle/lupos'
+import * as lupos from '../../../web/out'
 import {describe, it, expect} from 'vitest'
 
 
@@ -22,12 +22,12 @@ describe('Test Await Block', () => {
 		})
 
 		slot.update(render(promise))
-		await untilUpdateComplete()
+		await UpdateQueue.untilAllComplete()
 		expect(container.textContent).toEqual('Pending')
 
 		resolve!(null)
 		await Promise.resolve()
-		await untilUpdateComplete()
+		await UpdateQueue.untilAllComplete()
 		expect(container.textContent).toEqual('Then')
 
 		let reject: (reason: any) => void
@@ -36,12 +36,12 @@ describe('Test Await Block', () => {
 		})
 
 		slot.update(render(promise))
-		await untilUpdateComplete()
+		await UpdateQueue.untilAllComplete()
 		expect(container.textContent).toEqual('Pending')
 
 		reject!(null)
 		await Promise.resolve()
-		await untilUpdateComplete()
+		await UpdateQueue.untilAllComplete()
 		expect(container.textContent).toEqual('Catch')
 	})
 })

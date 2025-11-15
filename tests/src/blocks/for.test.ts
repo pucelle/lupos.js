@@ -1,5 +1,5 @@
-import {untilUpdateComplete} from '@pucelle/lupos'
-import * as lupos from '../../../'
+import {UpdateQueue} from '@pucelle/lupos'
+import * as lupos from '../../../web/out'
 import {describe, it, expect} from 'vitest'
 
 
@@ -20,19 +20,19 @@ describe('Test For Block', () => {
 	it('For Block', async () => {
 
 		slot.update(render([1]))
-		await untilUpdateComplete()
+		await UpdateQueue.untilAllComplete()
 		expect(container.textContent).toEqual('1')
 
 		slot.update(render([1, 2]))
-		await untilUpdateComplete()
+		await UpdateQueue.untilAllComplete()
 		expect(container.textContent).toEqual('12')
 
 		slot.update(render([2, 3]))
-		await untilUpdateComplete()
+		await UpdateQueue.untilAllComplete()
 		expect(container.textContent).toEqual('23')
 
 		slot.update(render([]))
-		await untilUpdateComplete()
+		await UpdateQueue.untilAllComplete()
 		expect(container.textContent).toEqual('')
 	})
 
@@ -43,7 +43,7 @@ describe('Test For Block', () => {
 			list.push(Math.floor(Math.random() * 10))
 
 			slot.update(render(list))
-			await untilUpdateComplete()
+			await UpdateQueue.untilAllComplete()
 			expect(container.textContent).toEqual(list.join(''))
 		}
 	})

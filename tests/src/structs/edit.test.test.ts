@@ -1,4 +1,4 @@
-import {EditType, getEditRecord} from '../../../out/structs/edit'
+import {EditType, getEditRecord} from '../../../web/out/structs/edit'
 import {describe, it, expect} from 'vitest'
 
 

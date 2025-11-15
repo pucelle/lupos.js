@@ -1,5 +1,5 @@
-import {untilUpdateComplete} from '@pucelle/lupos'
-import * as lupos from '../../../'
+import {UpdateQueue} from '@pucelle/lupos'
+import * as lupos from '../../../web/out'
 import {describe, it, expect} from 'vitest'
 
 
@@ -31,7 +31,7 @@ describe('Test Dynamic Component Block', () => {
 
 		let parent = new Parent()
 		parent.appendTo(document.body)
-		await untilUpdateComplete()
+		await UpdateQueue.untilAllComplete()
 
 		let child1 = Child1.from(parent.el.firstElementChild!)!
 		expect(child1).toBeInstanceOf(Child1)
@@ -39,7 +39,7 @@ describe('Test Dynamic Component Block', () => {
 		expect(parent.el.textContent).toBe('Child Component Content')
 
 		parent.ChildCom = Child2
-		await untilUpdateComplete()
+		await UpdateQueue.untilAllComplete()
 		expect(child1.connected).toBe(false)
 		expect(Child2.from(parent.el.firstElementChild!)).toBeInstanceOf(Child2)
 		expect(parent.el.textContent).toBe('Child Component Content')

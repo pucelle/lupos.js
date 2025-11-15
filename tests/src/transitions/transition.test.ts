@@ -1,4 +1,4 @@
-import {PerFrameTransitionEasingName, WebTransitionEasingName, getEasingFunction, makeMixer} from '../../../'
+import {PerFrameTransitionEasingName, WebTransitionEasingName, getEasingFunction, makeMixer} from '../../../web/out'
 import {describe, it, expect} from 'vitest'
 
 

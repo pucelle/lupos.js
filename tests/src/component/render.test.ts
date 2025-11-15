@@ -1,5 +1,5 @@
-import {Observed, untilUpdateComplete} from '@pucelle/lupos'
-import * as lupos from '../../../'
+import {Observed, UpdateQueue} from '@pucelle/lupos'
+import * as lupos from '../../../web/out'
 import {describe, it, expect} from 'vitest'
 
 
@@ -9,7 +9,7 @@ describe('Test render', () => {
 		let rendered = lupos.render(lupos.html`<div>123</div>`)
 		rendered.appendTo(document.body)
 
-		await untilUpdateComplete()
+		await UpdateQueue.untilAllComplete()
 		expect(rendered.el.innerHTML).toBe(`<div>123</div>`)
 	})
 
@@ -22,11 +22,11 @@ describe('Test render', () => {
 		})
 
 		rendered.appendTo(document.body)
-		await untilUpdateComplete()
+		await UpdateQueue.untilAllComplete()
 		expect(rendered.el.innerHTML).toBe(`<div>1</div>`)
 
 		o.value = 2
-		await untilUpdateComplete()
+		await UpdateQueue.untilAllComplete()
 		expect(rendered.el.innerHTML).toBe(`<div>2</div>`)
 	})
 })

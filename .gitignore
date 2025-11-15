@@ -1,10 +1,9 @@
 node_modules
-/out
+/web/out
 /ssr/out
 /docs
 /dist
-/tests/**/*.js
-/tests/**/*.js.map
+/tests/out/**/*.js
 .VSCodeCounter
 *.tsbuildinfo
 **/.DS_STORE

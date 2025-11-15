@@ -1,5 +1,5 @@
-import {untilUpdateComplete} from '@pucelle/lupos'
-import * as lupos from '../../../out'
+import {UpdateQueue} from '@pucelle/lupos'
+import * as lupos from '../../../web/out'
 import {describe, it, expect} from 'vitest'
 
 
@@ -17,11 +17,11 @@ describe('Test Switch Block', () => {
 		let slot = new lupos.TemplateSlot<null>(new lupos.SlotPosition(lupos.SlotPositionType.AfterContent, container), null)
 
 		slot.update(render(1))
-		await untilUpdateComplete()
+		await UpdateQueue.untilAllComplete()
 		expect(container.textContent).toEqual('1')
 
 		slot.update(render(2))
-		await untilUpdateComplete()
+		await UpdateQueue.untilAllComplete()
 		expect(container.textContent).toEqual('')
 	})
 
@@ -40,15 +40,15 @@ describe('Test Switch Block', () => {
 		let slot = new lupos.TemplateSlot<null>(new lupos.SlotPosition(lupos.SlotPositionType.AfterContent, container), null)
 
 		slot.update(render(1))
-		await untilUpdateComplete()
+		await UpdateQueue.untilAllComplete()
 		expect(container.textContent).toEqual('1')
 
 		slot.update(render(2))
-		await untilUpdateComplete()
+		await UpdateQueue.untilAllComplete()
 		expect(container.textContent).toEqual('2')
 
 		slot.update(render(3))
-		await untilUpdateComplete()
+		await UpdateQueue.untilAllComplete()
 		expect(container.textContent).toEqual('3')
 	})
 
@@ -67,17 +67,17 @@ describe('Test Switch Block', () => {
 		let slot = new lupos.TemplateSlot<null>(new lupos.SlotPosition(lupos.SlotPositionType.AfterContent, container), null)
 
 		slot.update(render(1))
-		await untilUpdateComplete()
+		await UpdateQueue.untilAllComplete()
 		let div = container.firstElementChild
 		expect(container.textContent).toEqual('1')
 
 		slot.update(render(2))
-		await untilUpdateComplete()
+		await UpdateQueue.untilAllComplete()
 		expect(container.textContent).toEqual('2')
 		expect(container.firstElementChild === div).toEqual(false)
 
 		slot.update(render(1))
-		await untilUpdateComplete()
+		await UpdateQueue.untilAllComplete()
 		expect(container.textContent).toEqual('1')
 		expect(container.firstElementChild).toEqual(div)
 	})

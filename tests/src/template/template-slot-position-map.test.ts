@@ -1,5 +1,5 @@
-import * as lupos from '../../../'
-import {SlotPositionMap} from '../../../out/template/slot-position-map'
+import * as lupos from '../../../web/out'
+import {SlotPositionMap} from '../../../web/out/template/slot-position-map'
 import {describe, it, expect} from 'vitest'
 
 

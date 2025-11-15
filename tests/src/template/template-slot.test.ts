@@ -1,5 +1,5 @@
-import {untilUpdateComplete} from '@pucelle/lupos'
-import * as lupos from '../../../'
+import {UpdateQueue} from '@pucelle/lupos'
+import * as lupos from '../../../web/out'
 import {describe, it, expect} from 'vitest'
 
 
@@ -13,19 +13,19 @@ describe('Test TemplateSlot', () => {
 		let text = document.createTextNode('3')
 
 		slot.update(result)
-		await untilUpdateComplete()
+		await UpdateQueue.untilAllComplete()
 		expect(container.textContent).toBe('1')
 
 		slot.update([result, result])
-		await untilUpdateComplete()
+		await UpdateQueue.untilAllComplete()
 		expect(container.textContent).toBe('11')
 
 		slot.update('2')
-		await untilUpdateComplete()
+		await UpdateQueue.untilAllComplete()
 		expect(container.textContent).toBe('2')
 
 		slot.update(text)
-		await untilUpdateComplete()
+		await UpdateQueue.untilAllComplete()
 		expect(container.textContent).toBe('3')
 	})
 })

@@ -44,23 +44,31 @@ export function defineCustomElement<T extends ComponentConstructor>(name: string
 
 /** Defines custom element's connect and disconnect callbacks. */
 function defineCallbacks(name: string) {
+	if (typeof customElements === 'undefined') {
+		return
+	}
+
 	customElements.define(name, class LuposElement extends HTMLElement {
 
 		// W3C Spec says connect callback will not be called when inserting an element to a document fragment,
 		// but I still find it is occurred sometimes.
 		connectedCallback() {
-			onConnected(this)
+			connectCustomElement(this)
 		}
 
 		// Note moving or removing element from its parent will dispatch disconnected callback each time.
 		disconnectedCallback() {
-			onDisconnected(this)
+			onCustomElementDisconnected(this)
 		}
 	})
 }
 
 /** Connect callback of custom element. */
-function onConnected(el: HTMLElement) {
+export function connectCustomElement(el: HTMLElement) {
+	if (!CustomElementConstructorMap.has(el.localName)) {
+		return
+	}
+	
 	let com = getComponentByElement(el)
 
 	// Component instance isn't created.
@@ -100,7 +108,7 @@ function makeProperties(el: HTMLElement, propertyMap: PropertyMapOf<any>): Recor
 }
 
 /** Disconnect callback of custom element. */
-function onDisconnected(el: HTMLElement) {
+function onCustomElementDisconnected(el: HTMLElement) {
 	let com = getComponentByElement(el)
 	if (com && com.connected) {
 		com.beforeDisconnectCallback(
